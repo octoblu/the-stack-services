@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ "$1" == "" ]; then
+  echo "Usage: the-stack config_dir [commands...]"
+  exit 1
+fi
+
 export INSTALL_DIR="$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)"
 export CONFIG_DIR=$(cd $1 && pwd)
 shift

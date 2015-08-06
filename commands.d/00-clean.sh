@@ -7,8 +7,6 @@ for CONTAINER in "$(docker ps --quiet)"; do
   docker kill $CONTAINER > /dev/null
 done
 
-
-
 etcdctl rm --recursive /octoblu &> /dev/null
 etcdctl rm --recursive /docker &> /dev/null
 etcdctl rm --recursive /meshblu &> /dev/null

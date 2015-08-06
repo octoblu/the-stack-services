@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ETCD_PAIRS=$(cat $INSTALL_DIR/config.d/*)
+ETCD_PAIRS=$(cat $CONFIG_DIR/config.d/*)
 
 while read -r ETCD_PAIR; do
   PAIR=($ETCD_PAIR)

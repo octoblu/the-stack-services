@@ -1,0 +1,13 @@
+[Unit]
+Description=Run global-flow-runner-update 60 seconds after boot
+After=docker.service
+
+[Timer]
+OnStartupSec=1 minute
+
+[Install]
+WantedBy=timers.target
+
+[X-Fleet]
+Global=true
+MachineMetadata=Role=octo-runner

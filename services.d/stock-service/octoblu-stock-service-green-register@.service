@@ -1,0 +1,24 @@
+[Unit]
+Description=Register with vulcand for octoblu-stock-service-green
+BindsTo=octoblu-stock-service-green@%i.service
+After=octoblu-stock-service-green@%i.service
+
+[Service]
+EnvironmentFile=/etc/environment
+RemainAfterExit=yes
+ExecStart=/bin/sh -c "/usr/bin/echo 'Adding backend, server, and frontend to vulcand' && \
+  /usr/bin/docker run --rm octoblu/vctl backend upsert \
+    --id octoblu-stock-service-green \
+    --vulcan http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):8182 && \
+  /usr/bin/docker run --rm octoblu/vctl server upsert \
+    --id octoblu-stock-service-green-%i \
+    --backend octoblu-stock-service-green \
+    --url http://${COREOS_PRIVATE_IPV4}:$(/usr/bin/etcdctl get /octoblu/stock-service/green/port) \
+    --vulcan http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):8182 \
+"
+
+ExecStop=/bin/sh -c "/usr/bin/echo 'Removing server from vulcand' && \
+  /usr/bin/docker run --rm octoblu/vctl server rm --id octoblu-stock-service-green-%i --vulcan http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):8182"
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-stock-service-green@%i.service

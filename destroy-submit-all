@@ -1,0 +1,22 @@
+#!/bin/bash
+
+echo "starting... api-octoblu \n"
+./destroy-submit api-octoblu
+echo "starting... apo-octoblu \n"
+./destroy-submit app-octoblu
+echo "starting... deployinate-service \n"
+./destroy-submit deployinate-service
+echo "starting... flow-deploy-service \n"
+./destroy-submit flow-deploy-service
+echo "starting... little-bits-cloud-proxy \n"
+./destroy-submit little-bits-cloud-proxy
+echo "starting... oauth-provider \n"
+./destroy-submit oauth-provider
+echo "starting... oauth-provider \n"
+./destroy-submit stock-service
+echo "starting... tentacle-service \n"
+./destroy-submit tentacle-service
+echo "starting... triggers-service \n"
+./destroy-submit triggers-service
+echo "starting... weather-service \n"
+./destroy-submit weather-service

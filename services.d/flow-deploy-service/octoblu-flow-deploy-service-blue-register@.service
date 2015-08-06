@@ -1,0 +1,24 @@
+[Unit]
+Description=Register with vulcand for octoblu-flow-deploy-service-blue
+BindsTo=octoblu-flow-deploy-service-blue@%i.service
+After=octoblu-flow-deploy-service-blue@%i.service
+
+[Service]
+EnvironmentFile=/etc/environment
+RemainAfterExit=yes
+ExecStart=/bin/sh -c "/usr/bin/echo 'Adding backend, server, and frontend to vulcand' && \
+  /usr/bin/docker run --rm octoblu/vctl backend upsert \
+    --id octoblu-flow-deploy-service-blue \
+    --vulcan http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):8182 && \
+  /usr/bin/docker run --rm octoblu/vctl server upsert \
+    --id octoblu-flow-deploy-service-blue-%i \
+    --backend octoblu-flow-deploy-service-blue \
+    --url http://${COREOS_PRIVATE_IPV4}:$(/usr/bin/etcdctl get /octoblu/flow-deploy-service/blue/port) \
+    --vulcan http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):8182 \
+"
+
+ExecStop=/bin/sh -c "/usr/bin/echo 'Removing server from vulcand' && \
+  /usr/bin/docker run --rm octoblu/vctl server rm --id octoblu-flow-deploy-service-blue-%i --vulcan http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):8182"
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-flow-deploy-service-blue@%i.service

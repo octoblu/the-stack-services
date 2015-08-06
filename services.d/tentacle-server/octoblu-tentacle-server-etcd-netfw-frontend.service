@@ -1,0 +1,23 @@
+[Unit]
+Description=etcd-netfw frontend for tentacle-server
+Wants=docker.service
+After=docker.service
+
+[Service]
+TimeoutStartSec=0
+ExecStartPre=-/usr/bin/docker kill octoblu-tentacle-server-etcd-netfw-frontend
+ExecStartPre=-/usr/bin/docker rm octoblu-tentacle-server-etcd-netfw-frontend
+ExecStartPre=/usr/bin/docker pull octoblu/etcd-netfw
+ExecStart=/usr/bin/sh -c "/usr/bin/docker run    \
+  --rm \
+  --name octoblu-tentacle-server-etcd-netfw-frontend \
+  -p 1528:1337 \
+  octoblu/etcd-netfw \
+    -etcdAddress=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
+    -servicePath=/octoblu/tentacle-server/etcd-netfw \
+"
+ExecStop=/usr/bin/docker kill octoblu-tentacle-server-etcd-netfw-frontend
+
+[X-Fleet]
+Global=true
+MachineMetadata=Services=true

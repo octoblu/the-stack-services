@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+export INSTALL_DIR="$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)"
+COMMANDSD="${INSTALL_DIR}/commands.d"
+
+if [[ -n "$@" ]]; then
+  COMMANDS=$@
+else
+  COMMANDS="-"
+fi
+
+function run_sub_command {
+  echo
+  echo " + $1"
+  if [[ -f "$1" ]]; then
+    . $1
+    echo " - $1"
+  else
+    echo " ! command does not exist"
+  fi
+}
+
+for c in $COMMANDS; do
+	c="${c#-}"
+	for f in $COMMANDSD/*$c.sh; do
+		run_sub_command $f
+	done
+done

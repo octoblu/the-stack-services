@@ -1,0 +1,24 @@
+[Unit]
+Description=Register with vulcand for octoblu-api-octoblu-green
+BindsTo=octoblu-api-octoblu-green@%i.service
+After=octoblu-api-octoblu-green@%i.service
+
+[Service]
+EnvironmentFile=/etc/environment
+RemainAfterExit=yes
+ExecStart=/bin/sh -c "/usr/bin/echo 'Adding backend, server, and frontend to vulcand' && \
+  /usr/bin/docker run --rm octoblu/vctl backend upsert \
+    --id octoblu-api-octoblu-green \
+    --vulcan http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):8182 && \
+  /usr/bin/docker run --rm octoblu/vctl server upsert \
+    --id octoblu-api-octoblu-green-%i \
+    --backend octoblu-api-octoblu-green \
+    --url http://${COREOS_PRIVATE_IPV4}:$(/usr/bin/etcdctl get /octoblu/api-octoblu/green/port) \
+    --vulcan http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):8182 \
+"
+
+ExecStop=/bin/sh -c "/usr/bin/echo 'Removing server from vulcand' && \
+  /usr/bin/docker run --rm octoblu/vctl server rm --id octoblu-api-octoblu-green-%i --vulcan http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):8182"
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-api-octoblu-green@%i.service

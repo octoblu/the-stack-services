@@ -1,0 +1,38 @@
+[Unit]
+Description=octoblu-deployinate-service-blue
+Wants=vulcand.service
+After=vulcand.service
+
+[Service]
+TimeoutStartSec=300
+Restart=always
+ExecStartPre=/bin/sh -c '/usr/bin/docker login \
+  --username $(/usr/bin/etcdctl get /docker/quay.io/username) \
+  --password $(/usr/bin/etcdctl get /docker/quay.io/password) \
+  --email $(/usr/bin/etcdctl get /docker/quay.io/email) \
+  quay.io'
+ExecStartPre=/usr/bin/etcdctl get /octoblu/deployinate-service/blue/port || /usr/bin/echo "etcd did not contain /octoblu/deployinate-service/blue/port" && exit 1
+ExecStartPre=/usr/bin/etcdctl get /octoblu/deployinate-service/blue/docker_url || /usr/bin/echo "etcd did not contain /octoblu/deployinate-service/blue/docker_url" && exit 1
+ExecStartPre=-/usr/bin/docker kill octoblu-deployinate-service-blue-env-%i
+ExecStartPre=-/usr/bin/docker rm octoblu-deployinate-service-blue-env-%i
+ExecStartPre=-/usr/bin/docker kill octoblu-deployinate-service-blue-%i
+ExecStartPre=-/usr/bin/docker rm octoblu-deployinate-service-blue-%i
+ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
+  --name octoblu-deployinate-service-blue-env-%i \
+  -e ETCDCTL_PEERS=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
+  quay.io/octoblu/etcd-to-env /octoblu/deployinate-service/env > /tmp/octoblu-deployinate-service-blue.env \
+"
+ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
+  --name octoblu-deployinate-service-blue-%i \
+  --env-file /tmp/octoblu-deployinate-service-blue.env \
+  -p $(/usr/bin/etcdctl get /octoblu/deployinate-service/blue/port):80 \
+  $(/usr/bin/etcdctl get /octoblu/deployinate-service/blue/docker_url) \
+"
+ExecStop=/usr/bin/docker stop octoblu-deployinate-service-blue-%i
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+Conflicts=octoblu-deployinate-service-blue@*.service
+MachineMetadata=Services=true

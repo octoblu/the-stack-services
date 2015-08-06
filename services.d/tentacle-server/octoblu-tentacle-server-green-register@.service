@@ -1,0 +1,23 @@
+[Unit]
+Description=Register with etcd-netfw for octoblu-tentacle-server-green
+BindsTo=octoblu-tentacle-server-green@%i.service
+After=octoblu-tentacle-server-green@%i.service
+
+[Service]
+EnvironmentFile=/etc/environment
+RemainAfterExit=yes
+ExecStart=/bin/sh -c "/usr/bin/echo 'Adding backend to etcd-netfw' && \
+  docker run --rm \
+    -e ETCDCTL_PEERS=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
+    octoblu/etcd-netfwctl \
+      --host $COREOS_PRIVATE_IPV4 \
+      --port $(etcdctl get octoblu/tentacle-server/green/port) \
+      --etcd-key octoblu/tentacle-server/etcd-netfw/backends/green/%i/location \
+"
+
+ExecStop=/bin/sh -c " echo 'Removing backend %i' \
+  /usr/bin/etcdctl rm /octoblu/tentacle-server/etcd-netfw/backends/green/%i/location \
+"
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-tentacle-server-green@%i.service

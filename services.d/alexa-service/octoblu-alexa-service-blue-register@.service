@@ -1,0 +1,24 @@
+[Unit]
+Description=Register with vulcand for octoblu-alexa-service-blue
+BindsTo=octoblu-alexa-service-blue@%i.service
+After=octoblu-alexa-service-blue@%i.service
+
+[Service]
+EnvironmentFile=/etc/environment
+RemainAfterExit=yes
+ExecStart=/bin/sh -c "/usr/bin/echo 'Adding backend, server, and frontend to vulcand' && \
+  /usr/bin/docker run --rm octoblu/vctl backend upsert \
+    --id octoblu-alexa-service-blue \
+    --vulcan http://$(/usr/bin/etcdctl get /vulcand/host):8182 && \
+  /usr/bin/docker run --rm octoblu/vctl server upsert \
+    --id octoblu-alexa-service-blue-%i \
+    --backend octoblu-alexa-service-blue \
+    --url http://${COREOS_PUBLIC_IPV4}:$(/usr/bin/etcdctl get /octoblu/alexa-service/blue/port) \
+    --vulcan http://$(/usr/bin/etcdctl get /vulcand/host):8182 \
+"
+
+ExecStop=/bin/sh -c "/usr/bin/echo 'Removing server from vulcand' && \
+  /usr/bin/docker run --rm octoblu/vctl server rm --id octoblu-alexa-service-blue-%i --vulcan http://$(/usr/bin/etcdctl get /vulcand/host):8182"
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-alexa-service-blue@%i.service

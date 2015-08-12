@@ -4,6 +4,7 @@ BindsTo=octoblu-app-octoblu-blue@%i.service
 After=octoblu-app-octoblu-blue@%i.service
 
 [Service]
+TimeoutStartSec=300
 EnvironmentFile=/etc/environment
 RemainAfterExit=yes
 ExecStart=/bin/sh -c "/usr/bin/echo 'Adding backend, server, and frontend to vulcand' && \

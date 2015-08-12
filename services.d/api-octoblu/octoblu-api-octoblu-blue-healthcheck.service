@@ -4,6 +4,7 @@ Wants=vulcand.service
 After=vulcand.service
 
 [Service]
+TimeoutStartSec=300
 EnvironmentFile=/etc/environment
 RemainAfterExit=yes
 ExecStartPre=-/usr/bin/docker pull quay.io/octoblu/deployinate-healthcheck

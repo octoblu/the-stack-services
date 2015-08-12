@@ -4,6 +4,7 @@ BindsTo=octoblu-tentacle-server-green@%i.service
 After=octoblu-tentacle-server-green@%i.service
 
 [Service]
+TimeoutStartSec=300
 EnvironmentFile=/etc/environment
 RemainAfterExit=yes
 ExecStart=/bin/sh -c "/usr/bin/echo 'Adding backend to etcd-netfw' && \

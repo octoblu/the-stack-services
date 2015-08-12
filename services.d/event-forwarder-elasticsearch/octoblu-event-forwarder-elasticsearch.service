@@ -1,0 +1,37 @@
+[Unit]
+Description=octoblu-event-forwarder-elasticsearch
+Wants=docker.service
+After=docker.service
+
+[Service]
+TimeoutStartSec=300
+TimeoutStopSec=30
+Restart=always
+ExecStartPre=/bin/sh -c '/usr/bin/docker login \
+  --username $(/usr/bin/etcdctl get /docker/quay.io/username) \
+  --password $(/usr/bin/etcdctl get /docker/quay.io/password) \
+  --email $(/usr/bin/etcdctl get /docker/quay.io/email) \
+  quay.io'
+ExecStartPre=/usr/bin/etcdctl get /octoblu/event-forwarder-elasticsearch/docker_url || /usr/bin/echo "etcd did not contain /octoblu/event-forwarder-elasticsearch/docker_url" && exit 1
+ExecStartPre=-/usr/bin/docker kill octoblu-event-forwarder-elasticsearch-env
+ExecStartPre=-/usr/bin/docker rm octoblu-event-forwarder-elasticsearch-env
+ExecStartPre=-/usr/bin/docker kill octoblu-event-forwarder-elasticsearch
+ExecStartPre=-/usr/bin/docker rm octoblu-event-forwarder-elasticsearch
+ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
+  --name octoblu-event-forwarder-elasticsearch-env \
+  -e ETCDCTL_PEERS=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
+  quay.io/octoblu/etcd-to-env /octoblu/event-forwarder-elasticsearch/env > /tmp/octoblu-event-forwarder-elasticsearch.env \
+"
+ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
+  --name octoblu-event-forwarder-elasticsearch \
+  --env-file /tmp/octoblu-event-forwarder-elasticsearch.env \
+  $(/usr/bin/etcdctl get /octoblu/event-forwarder-elasticsearch/docker_url) \
+"
+ExecStop=/usr/bin/docker stop octoblu-event-forwarder-elasticsearch
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+Conflicts=octoblu-event-forwarder-elasticsearch.service
+MachineMetadata=Services=true

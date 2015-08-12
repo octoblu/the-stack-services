@@ -17,6 +17,7 @@ ExecStartPre=/usr/bin/etcdctl get /octoblu/api-octoblu/green/docker_url || /usr/
 ExecStartPre=-/usr/bin/docker kill octoblu-api-octoblu-green-env-%i
 ExecStartPre=-/usr/bin/docker rm octoblu-api-octoblu-green-env-%i
 ExecStartPre=-/usr/bin/docker kill octoblu-api-octoblu-green-%i
+ExecStartPre=-/bin/sh -c "docker kill $(docker ps | grep -v 'CONTAINER ID' | grep $(etcdctl get /octoblu/api-octoblu/green/port) | awk '{print $1}')"
 ExecStartPre=-/usr/bin/docker rm octoblu-api-octoblu-green-%i
 ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
   --name octoblu-api-octoblu-green-env-%i \

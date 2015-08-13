@@ -13,8 +13,11 @@ ExecStartPre=/bin/sh -c '/usr/bin/docker login \
   quay.io'
 ExecStartPre=/usr/bin/etcdctl get /octoblu/alexa-service/blue/port || /usr/bin/echo "etcd did not contain /octoblu/alexa-service/blue/port" && exit 1
 ExecStartPre=/usr/bin/etcdctl get /octoblu/alexa-service/blue/docker_url || /usr/bin/echo "etcd did not contain /octoblu/alexa-service/blue/docker_url" && exit 1
+ExecStartPre=-/usr/bin/docker kill octoblu-alexa-service-blue-env-%i
+ExecStartPre=-/usr/bin/docker rm octoblu-alexa-service-blue-env-%i
+ExecStartPre=-/usr/bin/docker kill octoblu-alexa-service-blue-%i
 ExecStartPre=-/usr/bin/docker rm octoblu-alexa-service-blue-%i
-ExecStartPre=-/bin/sh -c "/usr/bin/docker run --rm \
+ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
   --name octoblu-alexa-service-blue-env-%i \
   -e ETCDCTL_PEERS=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
   quay.io/octoblu/etcd-to-env /octoblu/alexa-service/env > /tmp/octoblu-alexa-service-blue.env \
@@ -25,6 +28,7 @@ ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   -p $(/usr/bin/etcdctl get /octoblu/alexa-service/blue/port):80 \
   $(/usr/bin/etcdctl get /octoblu/alexa-service/blue/docker_url) \
 "
+ExecStop=/usr/bin/docker stop octoblu-alexa-service-blue-%i
 
 [Install]
 WantedBy=multi-user.target

@@ -4,6 +4,7 @@ Wants=vulcand.service
 After=vulcand.service
 
 [Service]
+TimeoutStartSec=300
 EnvironmentFile=/etc/environment
 RemainAfterExit=yes
 ExecStartPre=-/usr/bin/docker pull quay.io/octoblu/deployinate-healthcheck
@@ -16,7 +17,7 @@ ExecStart=/bin/sh -c "/usr/bin/echo 'Checking backends before switching vulcand'
     --backend octoblu-alexa-service-blue \
     --route \"Host(\\\"$(/usr/bin/etcdctl get /octoblu/alexa-service/host)\\\")\" \
     --trustForwardHeader \
-    --vulcan http://$(/usr/bin/etcdctl get /vulcand/host):8182 && \
+    --vulcan http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):8182 && \
   /usr/bin/etcdctl set /octoblu/alexa-service/active blue \
 "
 

@@ -18,6 +18,12 @@ ExecStart=/bin/sh -c "/usr/bin/echo 'Checking backends before switching vulcand'
     --route \"Host(\\\"$(/usr/bin/etcdctl get /octoblu/api-octoblu/host)\\\")\" \
     --trustForwardHeader \
     --vulcan http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):8182 && \
+  /usr/bin/docker run --rm octoblu/vctl frontend upsert \
+    --id octoblu-app-octoblu-api \
+    --backend octoblu-api-octoblu-green \
+    --route "Host(\\"$(/usr/bin/etcdctl get /octoblu/app-octoblu/host)\\") && PathRegexp(\\"/api/.*\\")" \
+    --trustForwardHeader \
+    --vulcan http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):8182 && \
   /usr/bin/etcdctl set /octoblu/api-octoblu/active green \
 "
 

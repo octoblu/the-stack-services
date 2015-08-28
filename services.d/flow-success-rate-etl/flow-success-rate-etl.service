@@ -1,0 +1,19 @@
+[Unit]
+Description=Flow Success Rate ETL
+Requires=docker.service
+
+[Service]
+Type=simple
+TimeoutStartSec=50
+ExecStartPre=-/usr/bin/docker kill flow-success-rate-etl
+ExecStartPre=-/usr/bin/docker rm flow-success-rate-etl
+ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
+  --name flow-success-rate-etl \
+  -e ETCDCTL_PEERS=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
+  quay.io/octoblu/etcd-to-env /octoblu/flow-success-rate-etl/env > /tmp/flow-success-rate-etl.env \
+"
+ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
+  --name flow-success-rate-etl \
+  --env-file /tmp/flow-success-rate-etl.env \
+  quay.io/octoblu/flow-success-rate-etl:latest \
+"

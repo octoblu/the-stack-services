@@ -10,4 +10,3 @@ WantedBy=timers.target
 
 [X-Fleet]
 Global=true
-MachineMetadata=Role=octo-runner

@@ -1,0 +1,19 @@
+[Unit]
+Description=Device Status Gateblu ETL
+Requires=docker.service
+
+[Service]
+Type=simple
+TimeoutStartSec=50
+ExecStartPre=-/usr/bin/docker kill device-status-gateblu-etl
+ExecStartPre=-/usr/bin/docker rm device-status-gateblu-etl
+ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
+  --name device-status-gateblu-etl \
+  -e ETCDCTL_PEERS=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
+  quay.io/octoblu/etcd-to-env /octoblu/device-status-gateblu-etl/env > /tmp/device-status-gateblu-etl.env \
+"
+ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
+  --name device-status-gateblu-etl \
+  --env-file /tmp/device-status-gateblu-etl.env \
+  quay.io/octoblu/device-status-gateblu-etl:latest \
+"

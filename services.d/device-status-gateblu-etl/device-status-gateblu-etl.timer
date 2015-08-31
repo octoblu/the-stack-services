@@ -1,0 +1,12 @@
+[Unit]
+Description=Run device-status-gateblu-etl
+
+[Timer]
+OnBootSec=3 minutes
+OnUnitActiveSec=5 minute
+
+[Install]
+WantedBy=timers.target
+
+[X-Fleet]
+X-ConditionMachineOf=device-status-gateblu-etl.service

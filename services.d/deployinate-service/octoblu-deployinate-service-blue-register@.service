@@ -19,7 +19,7 @@ ExecStart=/bin/sh -c "/usr/bin/echo 'Adding backend, server, and frontend to vul
 "
 
 ExecStop=/bin/sh -c "/usr/bin/echo 'Removing server from vulcand' && \
-  /usr/bin/docker run --rm octoblu/vctl server rm --id octoblu-deployinate-service-blue-%i --vulcan http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):8182"
+  /usr/bin/docker run --rm octoblu/vctl server rm --backend octoblu-deployinate-service-blue --id octoblu-deployinate-service-blue-%i --vulcan http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):8182"
 
 [X-Fleet]
 X-ConditionMachineOf=octoblu-deployinate-service-blue@%i.service

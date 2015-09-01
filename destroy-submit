@@ -10,6 +10,10 @@ fi
 unit=$1
 unit_blue=octoblu-$unit-blue@.service
 unit_green=octoblu-$unit-green@.service
+unit_green_healthcheck=octoblu-$unit-green-healthcheck.service
+unit_blue_healthcheck=octoblu-$unit-blue-healthcheck.service
+unit_green_register=octoblu-$unit-green-register@.service
+unit_blue_register=octoblu-$unit-blue-register@.service
 
 printf "unit:> %s  \n" $unit
 
@@ -19,14 +23,23 @@ fleetctl destroy $unit_blue
 printf "destroying:> %s\n" $unit_green
 fleetctl destroy $unit_green
 
+printf "destroying:> %s\n" $unit_blue_healthcheck
+fleetctl destroy $unit_blue_healthcheck
+
+printf "destroying:> %s\n" $unit_green_healthcheck
+fleetctl destroy $unit_green_healthcheck
+
+printf "destroying:> %s\n" $unit_blue_register
+fleetctl destroy $unit_blue_register
+
+printf "destroying:> %s\n" $unit_green_register
+fleetctl destroy $unit_green_register
+
 printf "waiting:> to stop \n";
 sleep 30
 
 printf "submitting:> %s \n" $unit_blue
-fleetctl submit $INSTALL_DIR/services.d/$unit/$unit_blue
-
-printf "submitting:> %s \n" $unit_green
-fleetctl submit $INSTALL_DIR/services.d/$unit/$unit_green
+fleetctl submit $INSTALL_DIR/services.d/$unit/*.service
 
 sleep 30
 

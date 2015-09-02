@@ -30,7 +30,7 @@ ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   -p $(/usr/bin/etcdctl get /octoblu/api-octoblu/green/port):80 \
   $(/usr/bin/etcdctl get /octoblu/api-octoblu/green/docker_url) \
 "
-ExecStop=/usr/bin/docker kill octoblu-api-octoblu-blue-%i
+ExecStop=/usr/bin/docker kill octoblu-api-octoblu-green-%i
 
 [Install]
 WantedBy=multi-user.target

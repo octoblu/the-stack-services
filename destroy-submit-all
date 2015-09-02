@@ -1,8 +1,20 @@
 #!/bin/bash
 
+echo "starting... alexa-octoblu \n"
+./destroy-submit alexa-octoblu
+echo "starting... device-status-gateblu-etl \n"
+./destroy-submit device-status-gateblu-etl
+echo "starting... device-status-flow-etl \n"
+./destroy-submit device-status-flow-etl
+echo "starting... email-service \n"
+./destroy-submit email-service
+echo "starting... event-forwarder-elasticsearch \n"
+./destroy-submit event-forwarder-elasticsearch
+echo "starting... flow-success-rate-etl \n"
+./destroy-submit flow-success-rate-etl
 echo "starting... api-octoblu \n"
 ./destroy-submit api-octoblu
-echo "starting... apo-octoblu \n"
+echo "starting... app-octoblu \n"
 ./destroy-submit app-octoblu
 echo "starting... deployinate-service \n"
 ./destroy-submit deployinate-service
@@ -12,8 +24,12 @@ echo "starting... little-bits-cloud-proxy \n"
 ./destroy-submit little-bits-cloud-proxy
 echo "starting... oauth-provider \n"
 ./destroy-submit oauth-provider
-echo "starting... oauth-provider \n"
+echo "starting... stock-service \n"
 ./destroy-submit stock-service
+echo "starting... sms-service \n"
+./destroy-submit sms-service
+echo "starting... sns-service \n"
+./destroy-submit sns-service
 echo "starting... tentacle-service \n"
 ./destroy-submit tentacle-service
 echo "starting... triggers-service \n"

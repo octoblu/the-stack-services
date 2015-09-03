@@ -27,7 +27,7 @@ ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   -p 1528:80 \
   $(/usr/bin/etcdctl get /octoblu/tentacle-server/green/docker_url) \
 "
-ExecStop=/usr/bin/docker stop octoblu-tentacle-server-green
+ExecStop=/usr/bin/docker kill octoblu-tentacle-server-green
 
 [Install]
 WantedBy=multi-user.target

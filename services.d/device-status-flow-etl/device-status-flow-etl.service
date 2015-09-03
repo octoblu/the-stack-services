@@ -17,3 +17,7 @@ ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   --env-file /tmp/device-status-flow-etl.env \
   quay.io/octoblu/device-status-flow-etl:latest \
 "
+
+[X-Fleet]
+MachineMetadata=Services=true
+

@@ -1,0 +1,12 @@
+[Unit]
+Description=Run device-status-flow-etl-pull 60 seconds after boot
+After=docker.service
+
+[Timer]
+OnStartupSec=1 minute
+
+[Install]
+WantedBy=timers.target
+
+[X-Fleet]
+Global=true

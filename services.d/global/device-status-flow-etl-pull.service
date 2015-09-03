@@ -1,0 +1,10 @@
+[Unit]
+Description=Flow Runner Update
+
+[Service]
+TimeoutStartSec=300
+ExecStart=/usr/bin/docker pull quay.io/octoblu/device-status-flow-etl:latest
+
+[X-Fleet]
+Global=true
+MachineMetadata=Services=true

@@ -1,0 +1,10 @@
+[Unit]
+Description= Device Detail Gateblu ETL
+
+[Service]
+TimeoutStartSec=300
+ExecStart=/usr/bin/docker pull quay.io/octoblu/device-detail-gateblu-etl:latest
+
+[X-Fleet]
+Global=true
+MachineMetadata=Services=true

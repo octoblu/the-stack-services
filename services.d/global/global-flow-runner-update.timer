@@ -3,7 +3,7 @@ Description=Run global-flow-runner-update 60 seconds after boot
 After=docker.service
 
 [Timer]
-OnStartupSec=1 minute
+OnStartupSec=3 minute
 
 [Install]
 WantedBy=timers.target

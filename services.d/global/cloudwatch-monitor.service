@@ -7,7 +7,7 @@ Type=simple
 TimeoutStartSec=50
 ExecStartPre=-/usr/bin/docker kill cloudwatch-monitor
 ExecStartPre=-/usr/bin/docker rm cloudwatch-monitor
-ExecStart=/usr/bin/docker run    --name cloudwatch-monitor    --privileged    octoblu/cloudwatch-monitor
+ExecStart=/usr/bin/docker run    --name cloudwatch-monitor --net host   --privileged    octoblu/cloudwatch-monitor
 
 [X-Fleet]
 Global=true

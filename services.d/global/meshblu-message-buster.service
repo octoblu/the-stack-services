@@ -20,5 +20,4 @@ ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   $(/usr/bin/etcdctl get /octoblu/meshblu-message-buster/docker_url)"
 
 [X-Fleet]
-Global=true
 MachineMetadata=Services=true

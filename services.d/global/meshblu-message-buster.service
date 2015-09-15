@@ -11,12 +11,14 @@ ExecStartPre=/bin/sh -c "/usr/bin/docker pull $(/usr/bin/etcdctl get /octoblu/me
 ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
   --name meshblu-message-buster-env \
   -e ETCDCTL_PEERS=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
+  --net host \
   quay.io/octoblu/etcd-to-env /octoblu/meshblu-message-buster/env > /tmp/meshblu-message-buster.env \
 "
 ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   --name meshblu-message-buster \
   -e INSTANCE_HOSTNAME=$(hostname) \
   --env-file /tmp/meshblu-message-buster.env \
+  --net host \
   $(/usr/bin/etcdctl get /octoblu/meshblu-message-buster/docker_url)"
 
 [X-Fleet]

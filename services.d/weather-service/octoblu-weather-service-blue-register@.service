@@ -7,17 +7,18 @@ After=octoblu-weather-service-blue@%i.service
 TimeoutStartSec=300
 EnvironmentFile=/etc/environment
 RemainAfterExit=yes
-ExecStart=/bin/sh -c "/usr/bin/echo 'Adding backend, server, and frontend to vulcand' && \
-  /usr/bin/docker run --rm octoblu/vctl backend upsert \
-    --id octoblu-weather-service-blue \
-    --vulcan http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):8182 && \
-  /usr/bin/docker run --rm octoblu/vctl server upsert \
-    --id octoblu-weather-service-blue-%i \
-    --backend octoblu-weather-service-blue \
-    --url http://${COREOS_PRIVATE_IPV4}:$(/usr/bin/etcdctl get /octoblu/weather-service/blue/port) \
-    --vulcan http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):8182 \
-"
+ExecStart=/bin/sh -c "/usr/bin/docker run \
+     --name octoblu-weather-service-blue-register-%i \
+     --rm \
+     --net host \
+     --env URL=http://${COREOS_PRIVATE_IPV4}:$(/usr/bin/etcdctl get /octoblu/weather-service/blue/port) \
+     --env BACKEND_ID=octoblu-weather-service-blue \
+     --env SERVER_ID=octoblu-weather-service-blue-%i \
+     --env VULCAN_URL=http://localhost:8182 \
+     --env TIMEOUT_SECS=5 \
+     octoblu/register-sidekick"
 
+ExecStop=-/usr/bin/docker kill octoblu-weather-service-blue-register-%i
 ExecStop=/bin/sh -c "/usr/bin/echo 'Removing server from vulcand' && \
   /usr/bin/docker run --rm octoblu/vctl server rm --backend octoblu-weather-service-blue --id octoblu-weather-service-blue-%i --vulcan http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):8182"
 

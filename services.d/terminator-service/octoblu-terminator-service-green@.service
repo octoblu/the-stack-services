@@ -28,7 +28,7 @@ ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   -p $(/usr/bin/etcdctl get /octoblu/terminator-service/green/port):80 \
   $(/usr/bin/etcdctl get /octoblu/terminator-service/green/docker_url) \
 "
-ExecStop=/usr/bin/docker stop octoblu-terminator-service-green-%i
+ExecStop=/usr/bin/docker kill octoblu-terminator-service-green-%i
 
 [Install]
 WantedBy=multi-user.target

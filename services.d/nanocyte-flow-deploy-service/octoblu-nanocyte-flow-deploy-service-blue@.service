@@ -28,7 +28,7 @@ ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   -p $(/usr/bin/etcdctl get /octoblu/nanocyte-flow-deploy-service/blue/port):80 \
   $(/usr/bin/etcdctl get /octoblu/nanocyte-flow-deploy-service/blue/docker_url) \
 "
-ExecStop=/usr/bin/docker stop octoblu-nanocyte-flow-deploy-service-blue-%i
+ExecStop=/usr/bin/docker kill octoblu-nanocyte-flow-deploy-service-blue-%i
 
 [Install]
 WantedBy=multi-user.target

@@ -28,7 +28,7 @@ ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   -p $(/usr/bin/etcdctl get /octoblu/alexa-service/blue/port):80 \
   $(/usr/bin/etcdctl get /octoblu/alexa-service/blue/docker_url) \
 "
-ExecStop=/usr/bin/docker stop octoblu-alexa-service-blue-%i
+ExecStop=/usr/bin/docker kill octoblu-alexa-service-blue-%i
 
 [Install]
 WantedBy=multi-user.target

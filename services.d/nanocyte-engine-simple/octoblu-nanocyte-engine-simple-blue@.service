@@ -1,0 +1,38 @@
+[Unit]
+Description=octoblu-nanocyte-engine-simple-blue
+Wants=vulcand.service
+After=vulcand.service
+
+[Service]
+TimeoutStartSec=300
+Restart=always
+ExecStartPre=/bin/sh -c '/usr/bin/docker login \
+  --username $(/usr/bin/etcdctl get /docker/quay.io/username) \
+  --password $(/usr/bin/etcdctl get /docker/quay.io/password) \
+  --email $(/usr/bin/etcdctl get /docker/quay.io/email) \
+  quay.io'
+ExecStartPre=/usr/bin/etcdctl get /octoblu/nanocyte-engine-simple/blue/port || /usr/bin/echo "etcd did not contain /octoblu/nanocyte-engine-simple/blue/port" && exit 1
+ExecStartPre=/usr/bin/etcdctl get /octoblu/nanocyte-engine-simple/blue/docker_url || /usr/bin/echo "etcd did not contain /octoblu/nanocyte-engine-simple/blue/docker_url" && exit 1
+ExecStartPre=-/usr/bin/docker kill octoblu-nanocyte-engine-simple-blue-env-%i
+ExecStartPre=-/usr/bin/docker rm octoblu-nanocyte-engine-simple-blue-env-%i
+ExecStartPre=-/usr/bin/docker kill octoblu-nanocyte-engine-simple-blue-%i
+ExecStartPre=-/usr/bin/docker rm octoblu-nanocyte-engine-simple-blue-%i
+ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
+  --name octoblu-nanocyte-engine-simple-blue-env-%i \
+  -e ETCDCTL_PEERS=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
+  quay.io/octoblu/etcd-to-env /octoblu/nanocyte-engine-simple/env > /tmp/octoblu-nanocyte-engine-simple-blue.env \
+"
+ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
+  --name octoblu-nanocyte-engine-simple-blue-%i \
+  --env-file /tmp/octoblu-nanocyte-engine-simple-blue.env \
+  -p $(/usr/bin/etcdctl get /octoblu/nanocyte-engine-simple/blue/port):80 \
+  $(/usr/bin/etcdctl get /octoblu/nanocyte-engine-simple/blue/docker_url) \
+"
+ExecStop=/usr/bin/docker kill octoblu-nanocyte-engine-simple-blue-%i
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+Conflicts=octoblu-nanocyte-engine-simple-blue@*.service
+MachineMetadata=Services=true

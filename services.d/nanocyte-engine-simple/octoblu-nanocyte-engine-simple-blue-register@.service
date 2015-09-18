@@ -1,6 +1,7 @@
 [Unit]
 Description=Register with vulcand for octoblu-nanocyte-engine-simple-blue
 BindsTo=octoblu-nanocyte-engine-simple-blue@%i.service
+PartOf=octoblu-nanocyte-engine-simple-blue@%i.service
 After=octoblu-nanocyte-engine-simple-blue@%i.service
 
 [Service]

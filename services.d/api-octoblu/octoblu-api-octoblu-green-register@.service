@@ -7,17 +7,18 @@ After=octoblu-api-octoblu-green@%i.service
 TimeoutStartSec=300
 EnvironmentFile=/etc/environment
 RemainAfterExit=yes
-ExecStart=/bin/sh -c "/usr/bin/echo 'Adding backend, server, and frontend to vulcand' && \
-  /usr/bin/docker run --net host --rm octoblu/vctl backend upsert \
-    --id octoblu-api-octoblu-green \
-    --vulcan http://localhost:8182 && \
-  /usr/bin/docker run --net host --rm octoblu/vctl server upsert \
-    --id octoblu-api-octoblu-green-%i \
-    --backend octoblu-api-octoblu-green \
-    --url http://${COREOS_PRIVATE_IPV4}:$(/usr/bin/etcdctl get /octoblu/api-octoblu/green/port) \
-    --vulcan http://localhost:8182 \
-"
+ExecStart=/bin/sh -c "/usr/bin/docker run \
+     --name octoblu-api-octoblu-green-register-%i \
+     --rm \
+     --net host \
+     --env URL=http://${COREOS_PRIVATE_IPV4}:$(/usr/bin/etcdctl get /octoblu/api-octoblu/green/port) \
+     --env BACKEND_ID=octoblu-api-octoblu-green \
+     --env SERVER_ID=octoblu-api-octoblu-green-%i \
+     --env VULCAN_URL=http://localhost:8182 \
+     --env TIMEOUT_SECS=5 \
+     octoblu/register-sidekick"
 
+ExecStop=-/usr/bin/docker kill octoblu-api-octoblu-green-register-%i
 ExecStop=/bin/sh -c "/usr/bin/echo 'Removing server from vulcand' && \
   /usr/bin/docker run --rm octoblu/vctl server rm --backend octoblu-api-octoblu-green --id octoblu-api-octoblu-green-%i --vulcan http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):8182"
 

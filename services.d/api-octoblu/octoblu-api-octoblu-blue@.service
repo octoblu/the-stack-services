@@ -5,7 +5,6 @@ After=vulcand.service
 
 [Service]
 TimeoutStartSec=300
-TimeoutStopSec=30
 Restart=always
 ExecStartPre=/bin/sh -c '/usr/bin/docker login \
   --username $(/usr/bin/etcdctl get /docker/quay.io/username) \
@@ -17,7 +16,6 @@ ExecStartPre=/usr/bin/etcdctl get /octoblu/api-octoblu/blue/docker_url || /usr/b
 ExecStartPre=-/usr/bin/docker kill octoblu-api-octoblu-blue-env-%i
 ExecStartPre=-/usr/bin/docker rm octoblu-api-octoblu-blue-env-%i
 ExecStartPre=-/usr/bin/docker kill octoblu-api-octoblu-blue-%i
-ExecStartPre=-/bin/sh -c "docker kill $(docker ps | grep -v 'CONTAINER ID' | grep $(etcdctl get /octoblu/api-octoblu/blue/port) | awk '{print $1}')"
 ExecStartPre=-/usr/bin/docker rm octoblu-api-octoblu-blue-%i
 ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
   --name octoblu-api-octoblu-blue-env-%i \
@@ -30,7 +28,7 @@ ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   -p $(/usr/bin/etcdctl get /octoblu/api-octoblu/blue/port):80 \
   $(/usr/bin/etcdctl get /octoblu/api-octoblu/blue/docker_url) \
 "
-ExecStop=/usr/bin/docker kill octoblu-api-octoblu-blue-%i
+ExecStop=/usr/bin/docker stop octoblu-api-octoblu-blue-%i
 
 [Install]
 WantedBy=multi-user.target

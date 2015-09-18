@@ -28,7 +28,7 @@ ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   -p $(/usr/bin/etcdctl get /octoblu/triggers-service/green/port):80 \
   $(/usr/bin/etcdctl get /octoblu/triggers-service/green/docker_url) \
 "
-ExecStop=/usr/bin/docker stop octoblu-triggers-service-green-%i
+ExecStop=/usr/bin/docker kill octoblu-triggers-service-green-%i
 
 [Install]
 WantedBy=multi-user.target

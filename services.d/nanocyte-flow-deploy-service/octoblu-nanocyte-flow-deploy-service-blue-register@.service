@@ -1,0 +1,26 @@
+[Unit]
+Description=Register with vulcand for octoblu-nanocyte-flow-deploy-service-blue
+BindsTo=octoblu-nanocyte-flow-deploy-service-blue@%i.service
+After=octoblu-nanocyte-flow-deploy-service-blue@%i.service
+
+[Service]
+TimeoutStartSec=300
+EnvironmentFile=/etc/environment
+RemainAfterExit=yes
+ExecStart=/bin/sh -c "/usr/bin/docker run \
+     --name octoblu-nanocyte-flow-deploy-service-blue-register-%i \
+     --rm \
+     --net host \
+     --env URL=http://${COREOS_PRIVATE_IPV4}:$(/usr/bin/etcdctl get /octoblu/nanocyte-flow-deploy-service/blue/port) \
+     --env BACKEND_ID=octoblu-nanocyte-flow-deploy-service-blue \
+     --env SERVER_ID=octoblu-nanocyte-flow-deploy-service-blue-%i \
+     --env VULCAN_URL=http://localhost:8182 \
+     --env TIMEOUT_SECS=5 \
+     octoblu/register-sidekick"
+
+ExecStop=-/usr/bin/docker kill octoblu-nanocyte-flow-deploy-service-blue-register-%i
+ExecStop=/bin/sh -c "/usr/bin/echo 'Removing server from vulcand' && \
+  /usr/bin/docker run --rm octoblu/vctl server rm --backend octoblu-nanocyte-flow-deploy-service-blue --id octoblu-nanocyte-flow-deploy-service-blue-%i --vulcan http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):8182"
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-nanocyte-flow-deploy-service-blue@%i.service

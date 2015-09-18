@@ -28,7 +28,7 @@ ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   -p $(/usr/bin/etcdctl get /octoblu/flow-deploy-service/green/port):80 \
   $(/usr/bin/etcdctl get /octoblu/flow-deploy-service/green/docker_url) \
 "
-ExecStop=/usr/bin/docker stop octoblu-flow-deploy-service-green-%i
+ExecStop=/usr/bin/docker kill octoblu-flow-deploy-service-green-%i
 
 [Install]
 WantedBy=multi-user.target

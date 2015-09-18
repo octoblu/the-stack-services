@@ -28,7 +28,7 @@ ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   -p $(/usr/bin/etcdctl get /octoblu/sms-service/green/port):80 \
   $(/usr/bin/etcdctl get /octoblu/sms-service/green/docker_url) \
 "
-ExecStop=/usr/bin/docker stop octoblu-sms-service-green-%i
+ExecStop=/usr/bin/docker kill octoblu-sms-service-green-%i
 
 [Install]
 WantedBy=multi-user.target

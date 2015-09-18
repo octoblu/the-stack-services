@@ -28,7 +28,7 @@ ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   -p $(/usr/bin/etcdctl get /octoblu/oauth-provider/blue/port):80 \
   $(/usr/bin/etcdctl get /octoblu/oauth-provider/blue/docker_url) \
 "
-ExecStop=/usr/bin/docker stop octoblu-oauth-provider-blue-%i
+ExecStop=/usr/bin/docker kill octoblu-oauth-provider-blue-%i
 
 [Install]
 WantedBy=multi-user.target

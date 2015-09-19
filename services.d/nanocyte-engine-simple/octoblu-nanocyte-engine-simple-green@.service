@@ -2,6 +2,7 @@
 Description=octoblu-nanocyte-engine-simple-green
 Wants=vulcand.service
 After=vulcand.service
+Wants=octoblu-nanocyte-engine-simple-green-register@%i.service
 
 [Service]
 TimeoutStartSec=300

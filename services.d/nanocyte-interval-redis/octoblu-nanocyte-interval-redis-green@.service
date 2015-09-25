@@ -28,7 +28,7 @@ ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   -p $(/usr/bin/etcdctl get /octoblu/nanocyte-interval-redis/green/port):80 \
   $(/usr/bin/etcdctl get /octoblu/nanocyte-interval-redis/green/docker_url) \
 "
-ExecStop=/usr/bin/docker stop octoblu-nanocyte-interval-redis-green-%i
+ExecStop=/usr/bin/docker kill octoblu-nanocyte-interval-redis-green-%i
 
 [Install]
 WantedBy=multi-user.target

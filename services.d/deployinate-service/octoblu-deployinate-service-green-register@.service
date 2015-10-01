@@ -1,7 +1,5 @@
 [Unit]
 Description=Register with vulcand for octoblu-deployinate-service-green
-BindsTo=octoblu-deployinate-service-green@%i.service
-After=octoblu-deployinate-service-green@%i.service
 
 [Service]
 TimeoutStartSec=300

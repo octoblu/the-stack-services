@@ -1,7 +1,5 @@
 [Unit]
 Description=Register with vulcand for octoblu-alexa-service-green
-BindsTo=octoblu-alexa-service-green@%i.service
-After=octoblu-alexa-service-green@%i.service
 
 [Service]
 TimeoutStartSec=300

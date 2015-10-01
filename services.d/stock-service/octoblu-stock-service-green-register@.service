@@ -1,7 +1,5 @@
 [Unit]
 Description=Register with vulcand for octoblu-stock-service-green
-BindsTo=octoblu-stock-service-green@%i.service
-After=octoblu-stock-service-green@%i.service
 
 [Service]
 TimeoutStartSec=300

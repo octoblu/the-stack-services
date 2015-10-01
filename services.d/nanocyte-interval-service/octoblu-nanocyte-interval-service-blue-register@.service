@@ -1,7 +1,5 @@
 [Unit]
 Description=Register with vulcand for octoblu-nanocyte-interval-service-blue
-BindsTo=octoblu-nanocyte-interval-service-blue@%i.service
-After=octoblu-nanocyte-interval-service-blue@%i.service
 
 [Service]
 TimeoutStartSec=300

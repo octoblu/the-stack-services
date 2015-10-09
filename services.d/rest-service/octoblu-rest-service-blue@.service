@@ -1,0 +1,40 @@
+[Unit]
+Description=octoblu-rest-service-blue
+Wants=vulcand.service
+After=vulcand.service
+
+[Service]
+TimeoutStartSec=300
+Restart=always
+ExecStartPre=/bin/sh -c '/usr/bin/docker login \
+  --username $(/usr/bin/etcdctl get /docker/quay.io/username) \
+  --password $(/usr/bin/etcdctl get /docker/quay.io/password) \
+  --email $(/usr/bin/etcdctl get /docker/quay.io/email) \
+  quay.io'
+ExecStartPre=/usr/bin/etcdctl get /octoblu/rest-service/blue/port || /usr/bin/echo "etcd did not contain /octoblu/rest-service/blue/port" && exit 1
+ExecStartPre=/usr/bin/etcdctl get /octoblu/rest-service/blue/docker_url || /usr/bin/echo "etcd did not contain /octoblu/rest-service/blue/docker_url" && exit 1
+ExecStartPre=-/usr/bin/docker kill octoblu-rest-service-blue-env-%i
+ExecStartPre=-/usr/bin/docker rm octoblu-rest-service-blue-env-%i
+ExecStartPre=-/usr/bin/docker kill octoblu-rest-service-blue-%i
+ExecStartPre=-/usr/bin/docker rm octoblu-rest-service-blue-%i
+ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
+  --name octoblu-rest-service-blue-env-%i \
+  -e ETCDCTL_PEERS=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
+  quay.io/octoblu/etcd-to-env /octoblu/rest-service/env > /tmp/octoblu-rest-service-blue.env \
+"
+ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
+  --name octoblu-rest-service-blue-%i \
+  --env-file /tmp/octoblu-rest-service-blue.env \
+  -e HOSTNAME=$(/usr/bin/hostname) \
+  -e PORT=$(/usr/bin/etcdctl get /octoblu/rest-service/blue/port) \
+  -p $(/usr/bin/etcdctl get /octoblu/rest-service/blue/port):$(/usr/bin/etcdctl get /octoblu/rest-service/blue/port) \
+  $(/usr/bin/etcdctl get /octoblu/rest-service/blue/docker_url) \
+"
+ExecStop=/usr/bin/docker kill octoblu-rest-service-blue-%i
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+Conflicts=octoblu-rest-service-blue@*.service
+MachineMetadata=Services=true

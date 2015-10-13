@@ -1,7 +1,5 @@
 [Unit]
 Description=Register with vulcand for octoblu-email-service-blue
-BindsTo=octoblu-email-service-blue@%i.service
-After=octoblu-email-service-blue@%i.service
 
 [Service]
 TimeoutStartSec=300

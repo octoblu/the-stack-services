@@ -1,7 +1,5 @@
 [Unit]
 Description=Register with vulcand for octoblu-oauth-provider-blue
-BindsTo=octoblu-oauth-provider-blue@%i.service
-After=octoblu-oauth-provider-blue@%i.service
 
 [Service]
 TimeoutStartSec=300

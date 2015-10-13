@@ -1,7 +1,5 @@
 [Unit]
 Description=Register with vulcand for octoblu-sms-service-green
-BindsTo=octoblu-sms-service-green@%i.service
-After=octoblu-sms-service-green@%i.service
 
 [Service]
 TimeoutStartSec=300

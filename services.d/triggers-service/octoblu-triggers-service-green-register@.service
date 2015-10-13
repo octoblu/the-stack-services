@@ -1,7 +1,5 @@
 [Unit]
 Description=Register with vulcand for octoblu-triggers-service-green
-BindsTo=octoblu-triggers-service-green@%i.service
-After=octoblu-triggers-service-green@%i.service
 
 [Service]
 TimeoutStartSec=300

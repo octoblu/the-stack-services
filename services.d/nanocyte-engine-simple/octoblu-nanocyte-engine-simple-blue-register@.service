@@ -1,14 +1,13 @@
 [Unit]
 Description=Register with vulcand for octoblu-nanocyte-engine-simple-blue
-BindsTo=octoblu-nanocyte-engine-simple-blue@%i.service
-PartOf=octoblu-nanocyte-engine-simple-blue@%i.service
-After=octoblu-nanocyte-engine-simple-blue@%i.service
 
 [Service]
 TimeoutStartSec=300
 EnvironmentFile=/etc/environment
 RemainAfterExit=yes
 Restart=always
+ExecStartPre=-/usr/bin/docker kill octoblu-nanocyte-engine-simple-blue-register-%i
+ExecStartPre=-/usr/bin/docker rm octoblu-nanocyte-engine-simple-blue-register-%i
 ExecStart=/bin/sh -c "/usr/bin/docker run \
      --name octoblu-nanocyte-engine-simple-blue-register-%i \
      --rm \

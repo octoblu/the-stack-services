@@ -21,3 +21,4 @@ ExecStop=/usr/bin/docker kill vulcand
 
 [X-Fleet]
 Global=true
+MachineMetadata=Services=true

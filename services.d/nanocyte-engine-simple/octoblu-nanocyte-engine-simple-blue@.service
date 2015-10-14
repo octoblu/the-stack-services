@@ -2,7 +2,6 @@
 Description=octoblu-nanocyte-engine-simple-blue
 Wants=vulcand.service
 After=vulcand.service
-Wants=octoblu-nanocyte-engine-simple-blue-register@%i.service
 
 [Service]
 TimeoutStartSec=300
@@ -26,6 +25,7 @@ ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
 ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   --name octoblu-nanocyte-engine-simple-blue-%i \
   --env-file /tmp/octoblu-nanocyte-engine-simple-blue.env \
+  --memory 512m \
   -p $(/usr/bin/etcdctl get /octoblu/nanocyte-engine-simple/blue/port):80 \
   $(/usr/bin/etcdctl get /octoblu/nanocyte-engine-simple/blue/docker_url) \
 "

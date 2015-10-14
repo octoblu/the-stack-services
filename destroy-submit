@@ -35,14 +35,25 @@ fleetctl destroy $unit_blue_register
 printf "destroying:> %s\n" $unit_green_register
 fleetctl destroy $unit_green_register
 
-printf "waiting:> to stop \n";
-sleep 30
-
 printf "submitting:> %s \n" $unit_blue
-fleetctl submit $INSTALL_DIR/services.d/$unit/*.service
+fleetctl submit $INSTALL_DIR/services.d/$unit/$unit_blue
 
-sleep 30
+printf "submitting:> %s \n" $unit_green
+fleetctl submit $INSTALL_DIR/services.d/$unit/$unit_green
 
+printf "submitting:> %s \n" $unit_blue_healthcheck
+fleetctl submit $INSTALL_DIR/services.d/$unit/$unit_blue_healthcheck
+
+printf "submitting:> %s \n" $unit_green_healthcheck
+fleetctl submit $INSTALL_DIR/services.d/$unit/$unit_green_healthcheck
+
+printf "submitting:> %s \n" $unit_blue_register
+fleetctl submit $INSTALL_DIR/services.d/$unit/$unit_blue_register
+
+printf "submitting:> %s \n" $unit_green_register
+fleetctl submit $INSTALL_DIR/services.d/$unit/$unit_green_register
+
+printf "listing units:> \n"
 fleetctl list-units | grep $unit
 
 printf "done:> %s\n" $unit

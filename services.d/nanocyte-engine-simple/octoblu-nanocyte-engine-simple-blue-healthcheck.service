@@ -13,7 +13,7 @@ ExecStartPre=/bin/sh -c "/usr/bin/echo 'Checking backends before switching vulca
     -e ETCDCTL_PEERS=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
     quay.io/octoblu/deployinate-healthcheck octoblu nanocyte-engine-simple blue"
 ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
-    -m 512m \
+    --memory 512m \
     octoblu/vctl frontend upsert \
     --id octoblu-nanocyte-engine-simple \
     --backend octoblu-nanocyte-engine-simple-blue \

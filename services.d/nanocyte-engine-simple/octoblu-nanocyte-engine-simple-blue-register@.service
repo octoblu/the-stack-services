@@ -18,7 +18,8 @@ ExecStart=/bin/sh -c "/usr/bin/docker run \
      --env VULCAN_URL=http://localhost:8182 \
      --env TIMEOUT_SECS=5 \
      --env FRONTEND_TTL_SECS=11 \
-     $(/usr/bin/etcdctl get /image-versions/octoblu/nanocyte-engine-simple/docker_url || echo 'octoblu/register-sidekick')
+     $(/usr/bin/etcdctl get /image-versions/octoblu/register-sidekick/docker_url) \
+"
 
 ExecStop=-/usr/bin/docker kill octoblu-nanocyte-engine-simple-blue-register-%i
 ExecStop=/bin/sh -c "/usr/bin/echo 'Removing server from vulcand' && \

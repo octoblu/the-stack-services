@@ -27,6 +27,7 @@ ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   --env-file /tmp/octoblu-rest-service-green.env \
   -e HOSTNAME=$(/usr/bin/hostname) \
   -e PORT=$(/usr/bin/etcdctl get /octoblu/rest-service/green/port) \
+  --memory 512m \
   -p $(/usr/bin/etcdctl get /octoblu/rest-service/green/port):$(/usr/bin/etcdctl get /octoblu/rest-service/green/port) \
   $(/usr/bin/etcdctl get /octoblu/rest-service/green/docker_url) \
 "

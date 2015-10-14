@@ -1,12 +1,13 @@
 [Unit]
 Description=Register with vulcand for octoblu-rest-service-green
-BindsTo=octoblu-rest-service-green@%i.service
-After=octoblu-rest-service-green@%i.service
 
 [Service]
 TimeoutStartSec=300
 EnvironmentFile=/etc/environment
 RemainAfterExit=yes
+Restart=always
+ExecStartPre=-/usr/bin/docker kill octoblu-rest-service-green-register-%i
+ExecStartPre=-/usr/bin/docker rm octoblu-rest-service-green-register-%i
 ExecStart=/bin/sh -c "/usr/bin/docker run \
      --name octoblu-rest-service-green-register-%i \
      --rm \
@@ -16,7 +17,9 @@ ExecStart=/bin/sh -c "/usr/bin/docker run \
      --env SERVER_ID=octoblu-rest-service-green-%i \
      --env VULCAN_URL=http://localhost:8182 \
      --env TIMEOUT_SECS=5 \
-     octoblu/register-sidekick"
+     --env FRONTEND_TTL_SECS=11 \
+     $(/usr/bin/etcdctl get /image-versions/octoblu/register-sidekick/docker_url) \
+"
 
 ExecStop=-/usr/bin/docker kill octoblu-rest-service-green-register-%i
 ExecStop=/bin/sh -c "/usr/bin/echo 'Removing server from vulcand' && \

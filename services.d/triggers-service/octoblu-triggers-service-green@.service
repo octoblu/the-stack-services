@@ -25,6 +25,7 @@ ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
 ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   --name octoblu-triggers-service-green-%i \
   --env-file /tmp/octoblu-triggers-service-green.env \
+  --memory 512m \
   -p $(/usr/bin/etcdctl get /octoblu/triggers-service/green/port):80 \
   $(/usr/bin/etcdctl get /octoblu/triggers-service/green/docker_url) \
 "

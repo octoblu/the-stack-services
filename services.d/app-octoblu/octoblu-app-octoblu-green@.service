@@ -25,6 +25,7 @@ ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
 ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   --name octoblu-app-octoblu-green-%i \
   --env-file /tmp/octoblu-app-octoblu-green.env \
+  --memory 512m \
   -p $(/usr/bin/etcdctl get /octoblu/app-octoblu/green/port):80 \
   $(/usr/bin/etcdctl get /octoblu/app-octoblu/green/docker_url) \
 "

@@ -25,6 +25,7 @@ ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
 ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   --name octoblu-oauth-provider-blue-%i \
   --env-file /tmp/octoblu-oauth-provider-blue.env \
+  --memory 512m \
   -p $(/usr/bin/etcdctl get /octoblu/oauth-provider/blue/port):80 \
   $(/usr/bin/etcdctl get /octoblu/oauth-provider/blue/docker_url) \
 "

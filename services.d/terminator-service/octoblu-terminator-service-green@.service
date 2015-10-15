@@ -25,6 +25,7 @@ ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
 ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   --name octoblu-terminator-service-green-%i \
   --env-file /tmp/octoblu-terminator-service-green.env \
+  --memory 512m \
   -p $(/usr/bin/etcdctl get /octoblu/terminator-service/green/port):80 \
   $(/usr/bin/etcdctl get /octoblu/terminator-service/green/docker_url) \
 "

@@ -25,10 +25,11 @@ ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
 ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   --name octoblu-api-octoblu-green-%i \
   --env-file /tmp/octoblu-api-octoblu-green.env \
+  --memory 512m \
   -p $(/usr/bin/etcdctl get /octoblu/api-octoblu/green/port):80 \
   $(/usr/bin/etcdctl get /octoblu/api-octoblu/green/docker_url) \
 "
-ExecStop=/usr/bin/docker stop octoblu-api-octoblu-green-%i
+ExecStop=/usr/bin/docker kill octoblu-api-octoblu-green-%i
 
 [Install]
 WantedBy=multi-user.target

@@ -25,6 +25,7 @@ ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
 ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   --name octoblu-email-service-blue-%i \
   --env-file /tmp/octoblu-email-service-blue.env \
+  --memory 512m \
   -p $(/usr/bin/etcdctl get /octoblu/email-service/blue/port):80 \
   $(/usr/bin/etcdctl get /octoblu/email-service/blue/docker_url) \
 "

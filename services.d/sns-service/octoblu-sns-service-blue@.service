@@ -25,10 +25,11 @@ ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
 ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   --name octoblu-sns-service-blue-%i \
   --env-file /tmp/octoblu-sns-service-blue.env \
+  --memory 512m \
   -p $(/usr/bin/etcdctl get /octoblu/sns-service/blue/port):80 \
   $(/usr/bin/etcdctl get /octoblu/sns-service/blue/docker_url) \
 "
-ExecStop=/usr/bin/docker stop octoblu-sns-service-blue-%i
+ExecStop=/usr/bin/docker kill octoblu-sns-service-blue-%i
 
 [Install]
 WantedBy=multi-user.target

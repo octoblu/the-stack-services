@@ -25,6 +25,7 @@ ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
 ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   --name octoblu-alexa-service-green-%i \
   --env-file /tmp/octoblu-alexa-service-green.env \
+  --memory 512m \
   -p $(/usr/bin/etcdctl get /octoblu/alexa-service/green/port):80 \
   $(/usr/bin/etcdctl get /octoblu/alexa-service/green/docker_url) \
 "

@@ -25,6 +25,7 @@ ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
 ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   --name octoblu-deployinate-service-green-%i \
   --env-file /tmp/octoblu-deployinate-service-green.env \
+  --memory 512m \
   -p $(/usr/bin/etcdctl get /octoblu/deployinate-service/green/port):80 \
   $(/usr/bin/etcdctl get /octoblu/deployinate-service/green/docker_url) \
 "

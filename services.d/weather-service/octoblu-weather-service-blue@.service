@@ -25,6 +25,7 @@ ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
 ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   --name octoblu-weather-service-blue-%i \
   --env-file /tmp/octoblu-weather-service-blue.env \
+  --memory 512m \
   -p $(/usr/bin/etcdctl get /octoblu/weather-service/blue/port):80 \
   $(/usr/bin/etcdctl get /octoblu/weather-service/blue/docker_url) \
 "

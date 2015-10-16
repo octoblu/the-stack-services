@@ -36,4 +36,4 @@ WantedBy=multi-user.target
 
 [X-Fleet]
 Conflicts=octoblu-nanocyte-engine-simple-green@*.service
-MachineMetadata=Services=true
+MachineMetadata=Beta=true

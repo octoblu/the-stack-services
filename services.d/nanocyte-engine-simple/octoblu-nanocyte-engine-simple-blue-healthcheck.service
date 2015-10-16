@@ -23,4 +23,4 @@ ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   /usr/bin/etcdctl set /octoblu/nanocyte-engine-simple/active blue"
 
 [X-Fleet]
-MachineMetadata=Services=true
+MachineMetadata=Beta=true

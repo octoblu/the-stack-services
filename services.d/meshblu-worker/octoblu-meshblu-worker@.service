@@ -25,6 +25,7 @@ ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   --name octoblu-meshblu-worker-%i \
   --env-file /tmp/octoblu-meshblu-worker-%i.env \
   $(/usr/bin/etcdctl get /octoblu/meshblu-worker/docker_url) \
+  node worker.js \
 "
 ExecStop=/usr/bin/docker kill octoblu-meshblu-worker-%i
 
@@ -32,5 +33,4 @@ ExecStop=/usr/bin/docker kill octoblu-meshblu-worker-%i
 WantedBy=multi-user.target
 
 [X-Fleet]
-Conflicts=octoblu-meshblu-worker@*.service
 MachineMetadata=Beta=true

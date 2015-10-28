@@ -34,4 +34,3 @@ WantedBy=multi-user.target
 
 [X-Fleet]
 MachineMetadata=Beta=true
-MachineMetadata=Service=true

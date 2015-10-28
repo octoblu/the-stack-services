@@ -13,8 +13,8 @@ ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
 ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   --name register-service-elb \
   --net host \
-  -e ELB_NAME=service-cluster \
   -e INSTANCE_HOSTNAME=$(hostname) \
+  -e ELB_NAME=meshblu-service-cluster \
   --env-file /tmp/register-service-elb.env \
   $(/usr/bin/etcdctl get /octoblu/register-serivce-elb/docker_url)"
 

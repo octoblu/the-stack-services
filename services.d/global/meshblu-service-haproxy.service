@@ -6,12 +6,12 @@ Wants=docker.service
 TimeoutStartSec=0
 ExecStartPre=-/usr/bin/docker kill meshblu-service-haproxy
 ExecStartPre=-/usr/bin/docker rm meshblu-service-haproxy
-ExecStartPre=/usr/bin/docker pull $(etcdctl get /octoblu/meshblu-service-haproxy/docker_url)
-ExecStart=/usr/bin/sh -c "/usr/bin/docker run    \
+ExecStartPre=/bin/sh -c "/usr/bin/docker pull $(/usr/bin/etcdctl get /octoblu/meshblu-service-haproxy/docker_url)"
+ExecStart=/bin/sh -c "/usr/bin/docker run    \
   --rm \
   --name meshblu-service-haproxy \
   -p 8080:80 \
-  $(etcdctl get /octoblu/meshblu-service-haproxy/docker_url) \
+  $(/usr/bin/etcdctl get /octoblu/meshblu-service-haproxy/docker_url) \
 "
 ExecStop=/usr/bin/docker kill meshblu-service-haproxy
 

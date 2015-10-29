@@ -1,0 +1,20 @@
+[Unit]
+Description=yoda-proxy
+Wants=docker.service
+
+[Service]
+TimeoutStartSec=0
+ExecStartPre=-/usr/bin/docker kill yoda-proxy
+ExecStartPre=-/usr/bin/docker rm yoda-proxy
+ExecStartPre=/usr/bin/docker pull totem/yoda-proxy:latest
+ExecStart=/usr/bin/sh -c "/usr/bin/docker run    \
+  --rm \
+  --name yoda-proxy \
+  -p 8080:8080 \
+  totem/yoda-proxy:latest \
+"
+ExecStop=/usr/bin/docker kill yoda-proxy
+
+[X-Fleet]
+Global=true
+MachineMetadata=Services=true

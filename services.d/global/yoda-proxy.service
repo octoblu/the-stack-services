@@ -10,7 +10,8 @@ ExecStartPre=/usr/bin/docker pull totem/yoda-proxy:latest
 ExecStart=/usr/bin/sh -c "/usr/bin/docker run    \
   --rm \
   --name yoda-proxy \
-  -p 8080:8080 \
+  -e ETCD_URL=172.17.42.1:4001 \
+  -p 8080:80 \
   totem/yoda-proxy:latest \
 "
 ExecStop=/usr/bin/docker kill yoda-proxy

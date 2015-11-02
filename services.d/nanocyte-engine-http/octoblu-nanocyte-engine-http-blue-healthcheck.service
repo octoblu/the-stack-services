@@ -21,4 +21,4 @@ ExecStart=/bin/sh -c "/usr/bin/docker run --rm octoblu/vctl frontend upsert \
   /usr/bin/etcdctl set /octoblu/nanocyte-engine-http/active blue"
 
 [X-Fleet]
-MachineMetadata=Services=true
+MachineMetadata=Beta=true

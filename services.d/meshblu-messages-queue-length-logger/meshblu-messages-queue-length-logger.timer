@@ -1,0 +1,12 @@
+[Unit]
+Description=Run and log the length of the meshblu-messages queue
+
+[Timer]
+OnBootSec=3 minutes
+OnUnitActiveSec=1 minute
+
+[Install]
+WantedBy=timers.target
+
+[X-Fleet]
+X-ConditionMachineOf=meshblu-messages-queue-length-logger.service

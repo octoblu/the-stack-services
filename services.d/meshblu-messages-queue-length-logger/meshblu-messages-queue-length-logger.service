@@ -1,0 +1,13 @@
+[Unit]
+Description=Report meshblu-messages length
+Requires=docker.service
+
+[Service]
+Type=simple
+TimeoutStartSec=50
+ExecStartPre=-/usr/bin/docker kill meshblu-messages-queue-length-logger
+ExecStartPre=-/usr/bin/docker rm meshblu-messages-queue-length-logger
+ExecStart=/bin/sh -c "/usr/bin/docker run -it --rm redis --name meshblu-messages-queue-length-logger \
+  sh -c 'printf \"meshblu-messages-queue-length:\"; \
+  exec redis-cli -h \"meshblu-redis.csy8op.0001.usw2.cache.amazonaws.com\" llen meshblu-messages' \
+"

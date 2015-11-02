@@ -1,0 +1,25 @@
+[Unit]
+Description=Check meshblu for message dangling problems
+Requires=docker.service
+
+[Service]
+Type=simple
+TimeoutStartSec=300
+ExecStartPre=-/bin/sh -c "/usr/bin/docker kill meshblu-message-dangler"
+ExecStartPre=-/bin/sh -c "/usr/bin/docker rm meshblu-message-dangler"
+ExecStartPre=/bin/sh -c "/usr/bin/docker pull $(/usr/bin/etcdctl get /octoblu/meshblu-message-dangler/docker_url)"
+ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
+  --name meshblu-message-dangler-env \
+  -e ETCDCTL_PEERS=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
+  --net host \
+  quay.io/octoblu/etcd-to-env /octoblu/meshblu-message-dangler/env > /tmp/meshblu-message-dangler.env \
+"
+ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
+  --name meshblu-message-dangler \
+  -e INSTANCE_HOSTNAME=$(hostname) \
+  --env-file /tmp/meshblu-message-dangler.env \
+  --net host \
+  $(/usr/bin/etcdctl get /octoblu/meshblu-message-dangler/docker_url)"
+
+[X-Fleet]
+MachineMetadata=Services=true

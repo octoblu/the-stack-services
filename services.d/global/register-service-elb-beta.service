@@ -20,4 +20,4 @@ ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
 
 [X-Fleet]
 Global=true
-MachineMetadata=Services=true
+MachineMetadata=Beta=true

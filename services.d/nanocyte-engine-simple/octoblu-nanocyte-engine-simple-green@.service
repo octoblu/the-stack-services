@@ -25,7 +25,7 @@ ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
 ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   --name octoblu-nanocyte-engine-simple-green-%i \
   --env-file /tmp/octoblu-nanocyte-engine-simple-green.env \
-  --memory 512m \
+  --memory 2g \
   -p $(/usr/bin/etcdctl get /octoblu/nanocyte-engine-simple/green/port):80 \
   $(/usr/bin/etcdctl get /octoblu/nanocyte-engine-simple/green/docker_url) \
 "
@@ -36,4 +36,4 @@ WantedBy=multi-user.target
 
 [X-Fleet]
 Conflicts=octoblu-nanocyte-engine-simple-green@*.service
-MachineMetadata=Services=true
+MachineMetadata=Beta=true

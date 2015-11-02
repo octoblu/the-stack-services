@@ -1,0 +1,15 @@
+[Unit]
+Description=Report nanocyte engine length
+Requires=docker.service
+
+[Service]
+Type=simple
+TimeoutStartSec=50
+ExecStartPre=-/usr/bin/docker kill nanocyte-engine-queue-length-logger
+ExecStartPre=-/usr/bin/docker rm nanocyte-engine-queue-length-logger
+ExecStart=/bin/sh -c "/usr/bin/docker run \
+  --name nanocyte-engine-queue-length-logger \
+  --rm redis \
+  sh -c 'printf \"nanocyte-engine-queue-length:\"; \
+  exec redis-cli -h \"engine-simple.csy8op.0001.usw2.cache.amazonaws.com\" llen nanocyte-engine:request:queue' \
+"

@@ -1,0 +1,21 @@
+[Unit]
+Description=octoblu-meshblu-haproxy-sidekick
+Wants=vulcand.service
+After=vulcand.service
+
+[Service]
+TimeoutStartSec=30
+Restart=always
+ExecStart=/bin/sh -c "/usr/bin/etcdctl exec-watch \
+  --recursive /octoblu/meshblu-haproxy \
+  -- $(sleep $(shuf -i 1-30 -n 1) \
+    && docker stop \
+          --time=30 \
+          octoblu-meshblu-haproxy)"
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+Global=true
+MachineMetadata=Beta=true

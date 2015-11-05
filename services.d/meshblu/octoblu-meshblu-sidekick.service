@@ -11,10 +11,11 @@ ExecStart=/bin/sh -c "/usr/bin/etcdctl exec-watch \
   -- $(sleep $(shuf -i 1-30 -n 1) \
     && docker stop \
           --time=30 \
-          octoblu-meshblu-%i)"
+          octoblu-meshblu)"
 
 [Install]
 WantedBy=multi-user.target
 
 [X-Fleet]
-X-ConditionMachineOf=octoblu-meshblu@%i.service
+Global=true
+MachineMetadata=Beta=true

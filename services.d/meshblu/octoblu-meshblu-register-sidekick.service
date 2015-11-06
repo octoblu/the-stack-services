@@ -1,5 +1,5 @@
 [Unit]
-Description=octoblu-meshblu-haproxy-machine-sidekick
+Description=octoblu-meshblu-register-sidekick
 Wants=vulcand.service
 After=vulcand.service
 
@@ -7,11 +7,10 @@ After=vulcand.service
 TimeoutStartSec=30
 Restart=always
 ExecStart=/bin/sh -c "/usr/bin/etcdctl exec-watch \
-  --recursive /_coreos.com/fleet/machines \
-  -- $(sleep $(shuf -i 1-30 -n 1) \
-    && docker stop \
-          --time=30 \
-          octoblu-meshblu-haproxy)"
+  --recursive /octoblu/meshblu/backends \
+  -- $(docker stop \
+    --time=30 \
+    octoblu-meshblu-haproxy)"
 
 [Install]
 WantedBy=multi-user.target

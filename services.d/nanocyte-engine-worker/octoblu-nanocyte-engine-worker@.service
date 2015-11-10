@@ -33,4 +33,4 @@ ExecStop=/usr/bin/docker kill octoblu-nanocyte-engine-worker-%i
 WantedBy=multi-user.target
 
 [X-Fleet]
-MachineMetadata=Beta=true
+MachineMetadata=Services=true

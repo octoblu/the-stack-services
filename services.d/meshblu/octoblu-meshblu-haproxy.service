@@ -24,7 +24,7 @@ ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
 ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   --name octoblu-meshblu-haproxy \
   --memory 368m \
-  -e SERVERS=\"$(fleetctl list-machines | grep Beta | awk -v ORS=' ' '{ print $2 }')\" \
+  -e SERVERS=\"$(fleetctl list-machines | grep Services | awk -v ORS=' ' '{ print $2 }')\" \
   --env-file /tmp/octoblu-meshblu-haproxy.env \
   -p $(/usr/bin/etcdctl get /octoblu/meshblu-haproxy/port):80 \
   -p $(/usr/bin/etcdctl get /octoblu/meshblu-haproxy/port_mqtt):1883 \
@@ -37,4 +37,4 @@ WantedBy=multi-user.target
 
 [X-Fleet]
 Global=true
-MachineMetadata=Beta=true
+MachineMetadata=Services=true

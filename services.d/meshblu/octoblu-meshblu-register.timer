@@ -10,4 +10,4 @@ WantedBy=timers.target
 
 [X-Fleet]
 Global=true
-MachineMetadata=Beta=true
+MachineMetadata=Services=true

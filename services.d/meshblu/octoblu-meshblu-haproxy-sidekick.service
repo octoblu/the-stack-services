@@ -8,7 +8,7 @@ TimeoutStartSec=30
 Restart=always
 ExecStart=/bin/sh -c "/usr/bin/etcdctl exec-watch \
   --recursive /octoblu/meshblu-haproxy \
-  -- docker stop \
+  -- $(docker stop \
           --time=30 \
           octoblu-meshblu-haproxy)"
 

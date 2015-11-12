@@ -36,4 +36,4 @@ WantedBy=multi-user.target
 
 [X-Fleet]
 Conflicts=octoblu-nanocyte-interval-service-blue@*.service
-MachineMetadata=Beta=true
+MachineMetadata=Services=true

@@ -1,0 +1,40 @@
+[Unit]
+Description=octoblu-meshblu-haproxy
+Wants=vulcand.service
+After=vulcand.service
+
+[Service]
+TimeoutStartSec=300
+Restart=always
+ExecStartPre=/bin/sh -c '/usr/bin/docker login \
+  --username $(/usr/bin/etcdctl get /docker/quay.io/username) \
+  --password $(/usr/bin/etcdctl get /docker/quay.io/password) \
+  --email $(/usr/bin/etcdctl get /docker/quay.io/email) \
+  quay.io'
+ExecStartPre=/usr/bin/etcdctl get /octoblu/meshblu-haproxy/docker_url || /usr/bin/echo "etcd did not contain /octoblu/meshblu-haproxy/docker_url" && exit 1
+ExecStartPre=-/usr/bin/docker kill octoblu-meshblu-haproxy-env
+ExecStartPre=-/usr/bin/docker rm octoblu-meshblu-haproxy-env
+ExecStartPre=-/usr/bin/docker kill octoblu-meshblu-haproxy
+ExecStartPre=-/usr/bin/docker rm octoblu-meshblu-haproxy
+ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
+  --name octoblu-meshblu-haproxy-env \
+  -e ETCDCTL_PEERS=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
+  quay.io/octoblu/etcd-to-env /octoblu/meshblu-haproxy/env > /tmp/octoblu-meshblu-haproxy.env \
+"
+ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
+  --name octoblu-meshblu-haproxy \
+  --memory 368m \
+  -e SERVERS=\"$(fleetctl list-machines | grep Services | awk -v ORS=' ' '{ print $2 }')\" \
+  --env-file /tmp/octoblu-meshblu-haproxy.env \
+  -p $(/usr/bin/etcdctl get /octoblu/meshblu-haproxy/port):80 \
+  -p $(/usr/bin/etcdctl get /octoblu/meshblu-haproxy/port_mqtt):1883 \
+  $(/usr/bin/etcdctl get /octoblu/meshblu-haproxy/docker_url) \
+"
+ExecStop=/usr/bin/docker kill octoblu-meshblu-haproxy
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+Global=true
+MachineMetadata=Services=true

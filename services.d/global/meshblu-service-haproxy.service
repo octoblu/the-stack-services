@@ -11,6 +11,7 @@ ExecStart=/bin/sh -c "/usr/bin/docker run    \
   --rm \
   --name meshblu-service-haproxy \
   -p 8080:80 \
+  -p 59890:59890 \
   $(/usr/bin/etcdctl get /octoblu/meshblu-service-haproxy/docker_url) \
 "
 ExecStop=/usr/bin/docker kill meshblu-service-haproxy

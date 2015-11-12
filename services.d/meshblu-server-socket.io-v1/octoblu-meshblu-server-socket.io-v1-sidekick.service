@@ -1,0 +1,20 @@
+[Unit]
+Description=octoblu-meshblu-server-socket.io-v1-sidekick
+Wants=vulcand.service
+After=vulcand.service
+
+[Service]
+TimeoutStartSec=30
+Restart=always
+ExecStart=/bin/sh -c "/usr/bin/etcdctl exec-watch \
+  --recursive /octoblu/meshblu-server-socket.io-v1 \
+  -- docker stop \
+      --time=30 \
+      octoblu-meshblu-server-socket.io-v1-%i"
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+Global=true
+MachineMetadata=Services=true

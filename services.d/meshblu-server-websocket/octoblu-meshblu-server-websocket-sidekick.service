@@ -16,4 +16,5 @@ ExecStart=/bin/sh -c "/usr/bin/etcdctl exec-watch \
 WantedBy=multi-user.target
 
 [X-Fleet]
-X-ConditionMachineOf=octoblu-meshblu-server-websocket@%i.service
+Global=true
+MachineMetadata=Services=true

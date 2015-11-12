@@ -28,6 +28,7 @@ ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   --env-file /tmp/octoblu-meshblu-haproxy.env \
   -p $(/usr/bin/etcdctl get /octoblu/meshblu-haproxy/port):80 \
   -p $(/usr/bin/etcdctl get /octoblu/meshblu-haproxy/port_mqtt):1883 \
+  -p $(/usr/bin/etcdctl get /octoblu/meshblu-haproxy/port_peers):$(/usr/bin/etcdctl get /octoblu/meshblu-haproxy/port_peers) \
   $(/usr/bin/etcdctl get /octoblu/meshblu-haproxy/docker_url) \
 "
 ExecStop=/usr/bin/docker kill octoblu-meshblu-haproxy

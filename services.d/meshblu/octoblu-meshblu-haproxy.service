@@ -25,6 +25,7 @@ ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   --name octoblu-meshblu-haproxy \
   --memory 368m \
   -e SERVERS=\"$(fleetctl list-machines | grep Services | awk -v ORS=' ' '{ print $2 }')\" \
+  -e SERVER_NAME=$(curl http://instance-data/latest/meta-data/local-ipv4) \
   --env-file /tmp/octoblu-meshblu-haproxy.env \
   -p $(/usr/bin/etcdctl get /octoblu/meshblu-haproxy/port):80 \
   -p $(/usr/bin/etcdctl get /octoblu/meshblu-haproxy/port_mqtt):1883 \

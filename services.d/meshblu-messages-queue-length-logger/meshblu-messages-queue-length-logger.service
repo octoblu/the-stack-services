@@ -13,3 +13,6 @@ ExecStart=/bin/sh -c "/usr/bin/docker run \
   sh -c 'printf \"meshblu-messages-queue-length:\"; \
   exec redis-cli -h \"meshblu-redis.csy8op.0001.usw2.cache.amazonaws.com\" llen meshblu-messages' \
 "
+
+[X-Fleet]
+MachineMetadata=Services=true

@@ -12,23 +12,23 @@ ExecStartPre=/bin/sh -c '/usr/bin/docker login \
   --email $(/usr/bin/etcdctl get /docker/quay.io/email) \
   quay.io'
 ExecStartPre=/usr/bin/etcdctl get /octoblu/meshblu-server-socket.io-v1/docker_url || /usr/bin/echo "etcd did not contain /octoblu/meshblu-server-socket.io-v1/docker_url" && exit 1
-ExecStartPre=-/usr/bin/docker kill octoblu-meshblu-server-socket.io-v1-env-%i
-ExecStartPre=-/usr/bin/docker rm octoblu-meshblu-server-socket.io-v1-env-%i
-ExecStartPre=-/usr/bin/docker kill octoblu-meshblu-server-socket.io-v1-%i
-ExecStartPre=-/usr/bin/docker rm octoblu-meshblu-server-socket.io-v1-%i
+ExecStartPre=-/usr/bin/docker kill octoblu-meshblu-server-socket.io-v1-env
+ExecStartPre=-/usr/bin/docker rm octoblu-meshblu-server-socket.io-v1-env
+ExecStartPre=-/usr/bin/docker kill octoblu-meshblu-server-socket.io-v1
+ExecStartPre=-/usr/bin/docker rm octoblu-meshblu-server-socket.io-v1
 ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
-  --name octoblu-meshblu-server-socket.io-v1-env-%i \
+  --name octoblu-meshblu-server-socket.io-v1-env \
   -e ETCDCTL_PEERS=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
-  quay.io/octoblu/etcd-to-env /octoblu/meshblu-server-socket.io-v1/env > /tmp/octoblu-meshblu-server-socket.io-v1-%i.env \
+  quay.io/octoblu/etcd-to-env /octoblu/meshblu-server-socket.io-v1/env > /tmp/octoblu-meshblu-server-socket.io-v1.env \
 "
 ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
-  --name octoblu-meshblu-server-socket.io-v1-%i \
-  --env-file /tmp/octoblu-meshblu-server-socket.io-v1-%i.env \
+  --name octoblu-meshblu-server-socket.io-v1 \
+  --env-file /tmp/octoblu-meshblu-server-socket.io-v1.env \
   --publish $(/usr/bin/etcdctl get /octoblu/meshblu-server-socket.io-v1/port):80 \
   --memory 256m \
   $(/usr/bin/etcdctl get /octoblu/meshblu-server-socket.io-v1/docker_url) \
 "
-ExecStop=/usr/bin/docker kill octoblu-meshblu-server-socket.io-v1-%i
+ExecStop=/usr/bin/docker kill octoblu-meshblu-server-socket.io-v1
 
 [Install]
 WantedBy=multi-user.target

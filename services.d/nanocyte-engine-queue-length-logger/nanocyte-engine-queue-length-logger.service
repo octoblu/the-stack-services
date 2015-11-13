@@ -13,3 +13,6 @@ ExecStart=/bin/sh -c "/usr/bin/docker run \
   sh -c 'printf \"nanocyte-engine-queue-length:\"; \
   exec redis-cli -h \"engine-simple.csy8op.0001.usw2.cache.amazonaws.com\" llen nanocyte-engine:request:queue' \
 "
+
+[X-Fleet]
+MachineMetadata=Services=true

@@ -1,0 +1,18 @@
+[Unit]
+Description=Report meshblu-request length
+Requires=docker.service
+
+[Service]
+Type=simple
+TimeoutStartSec=50
+ExecStartPre=-/usr/bin/docker kill meshblu-request-queue-length-logger
+ExecStartPre=-/usr/bin/docker rm meshblu-request-queue-length-logger
+ExecStart=/bin/sh -c "/usr/bin/docker run \
+  --name meshblu-request-queue-length-logger \
+  --rm redis \
+  sh -c 'printf \"meshblu-request-queue-length:\"; \
+  exec redis-cli -h \"$(etcdctl get /octoblu/meshblu-request-queue-length-logger/REDIS_URI)\" llen $(etcdctl get /octoblu/meshblu-request-queue-length-logger/queue_name)' \
+"
+
+[X-Fleet]
+MachineMetadata=Services=true

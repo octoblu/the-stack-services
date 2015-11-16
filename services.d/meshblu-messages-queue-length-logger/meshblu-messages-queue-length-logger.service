@@ -11,7 +11,7 @@ ExecStart=/bin/sh -c "/usr/bin/docker run \
   --name meshblu-messages-queue-length-logger \
   --rm redis \
   sh -c 'printf \"meshblu-messages-queue-length:\"; \
-  exec redis-cli -h \"meshblu-new.csy8op.0001.usw2.cache.amazonaws.com\" llen meshblu-messages' \
+  exec redis-cli -h \"$(etcdctl get /octoblu/meshblu-messages-queue-length-logger/REDIS_URI)\" llen $(etcdctl get /octoblu/meshblu-messages-queue-length-logger/queue_name)' \
 "
 
 [X-Fleet]

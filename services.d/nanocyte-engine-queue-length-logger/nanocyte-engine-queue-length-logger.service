@@ -1,5 +1,5 @@
 [Unit]
-Description=Report nanocyte engine length
+Description=Report nanocyte-engine length
 Requires=docker.service
 
 [Service]
@@ -7,11 +7,15 @@ Type=simple
 TimeoutStartSec=50
 ExecStartPre=-/usr/bin/docker kill nanocyte-engine-queue-length-logger
 ExecStartPre=-/usr/bin/docker rm nanocyte-engine-queue-length-logger
+ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
+  --name nanocyte-engine-queue-length-logger \
+  -e ETCDCTL_PEERS=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
+  quay.io/octoblu/etcd-to-env /octoblu/nanocyte-engine-queue-length-logger/env > /tmp/octoblu-nanocyte-engine-queue-length-logger.env \
+"
 ExecStart=/bin/sh -c "/usr/bin/docker run \
   --name nanocyte-engine-queue-length-logger \
-  --rm redis \
-  sh -c 'printf \"nanocyte-engine-queue-length:\"; \
-  exec redis-cli -h \"engine-simple.csy8op.0001.usw2.cache.amazonaws.com\" llen nanocyte-engine:request:queue' \
+  --env-file /tmp/octoblu-nanocyte-engine-queue-length-logger.env \
+  --rm $(etcdctl get /octoblu/queue-length-logger/docker_url) \
 "
 
 [X-Fleet]

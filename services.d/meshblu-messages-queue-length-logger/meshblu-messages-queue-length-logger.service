@@ -7,11 +7,15 @@ Type=simple
 TimeoutStartSec=50
 ExecStartPre=-/usr/bin/docker kill meshblu-messages-queue-length-logger
 ExecStartPre=-/usr/bin/docker rm meshblu-messages-queue-length-logger
+ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
+  --name meshblu-messages-queue-length-logger \
+  -e ETCDCTL_PEERS=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
+  quay.io/octoblu/etcd-to-env /octoblu/meshblu-messages-queue-length-logger/env > /tmp/octoblu-meshblu-messages-queue-length-logger.env \
+"
 ExecStart=/bin/sh -c "/usr/bin/docker run \
   --name meshblu-messages-queue-length-logger \
-  --rm redis \
-  sh -c 'printf \"meshblu-messages-queue-length:\"; \
-  exec redis-cli -h \"$(etcdctl get /octoblu/meshblu-messages-queue-length-logger/REDIS_URI)\" llen $(etcdctl get /octoblu/meshblu-messages-queue-length-logger/queue_name)' \
+  --env-file /tmp/octoblu-meshblu-messages-queue-length-logger.env \
+  --rm $(etcdctl get /octoblu/queue-length-logger/docker_url) \
 "
 
 [X-Fleet]

@@ -1,0 +1,39 @@
+[Unit]
+Description=octoblu-cwc-integration-service-green
+Wants=vulcand.service
+After=vulcand.service
+
+[Service]
+TimeoutStartSec=300
+Restart=always
+ExecStartPre=/bin/sh -c '/usr/bin/docker login \
+  --username $(/usr/bin/etcdctl get /docker/quay.io/username) \
+  --password $(/usr/bin/etcdctl get /docker/quay.io/password) \
+  --email $(/usr/bin/etcdctl get /docker/quay.io/email) \
+  quay.io'
+ExecStartPre=/usr/bin/etcdctl get /octoblu/cwc-integration-service/green/port || /usr/bin/echo "etcd did not contain /octoblu/cwc-integration-service/green/port" && exit 1
+ExecStartPre=/usr/bin/etcdctl get /octoblu/cwc-integration-service/green/docker_url || /usr/bin/echo "etcd did not contain /octoblu/cwc-integration-service/green/docker_url" && exit 1
+ExecStartPre=-/usr/bin/docker kill octoblu-cwc-integration-service-green-env-%i
+ExecStartPre=-/usr/bin/docker rm octoblu-cwc-integration-service-green-env-%i
+ExecStartPre=-/usr/bin/docker kill octoblu-cwc-integration-service-green-%i
+ExecStartPre=-/usr/bin/docker rm octoblu-cwc-integration-service-green-%i
+ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
+  --name octoblu-cwc-integration-service-green-env-%i \
+  -e ETCDCTL_PEERS=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
+  quay.io/octoblu/etcd-to-env /octoblu/cwc-integration-service/env > /tmp/octoblu-cwc-integration-service-green.env \
+"
+ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
+  --name octoblu-cwc-integration-service-green-%i \
+  --env-file /tmp/octoblu-cwc-integration-service-green.env \
+  --memory 512m \
+  -p $(/usr/bin/etcdctl get /octoblu/cwc-integration-service/green/port):80 \
+  $(/usr/bin/etcdctl get /octoblu/cwc-integration-service/green/docker_url) \
+"
+ExecStop=/usr/bin/docker kill octoblu-cwc-integration-service-green-%i
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+Conflicts=octoblu-cwc-integration-service-green@*.service
+MachineMetadata=Services=true

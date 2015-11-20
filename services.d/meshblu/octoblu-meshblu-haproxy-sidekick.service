@@ -8,8 +8,8 @@ TimeoutStartSec=30
 Restart=always
 ExecStart=/bin/sh -c "/usr/bin/etcdctl exec-watch \
   --recursive /octoblu/meshblu-haproxy \
-  -- sh -c \"(docker inspect --format='{{.Id}}' --type=image $(etcdctl get /octoblu/meshblu-haproxy/docker_url) \
-               || docker pull $(etcdctl get /octoblu/meshblu-haproxy/docker_url)) \
+  -- sh -c \"(docker inspect --format='{{.Id}}' --type=image \$(etcdctl get /octoblu/meshblu-haproxy/docker_url) \
+               || docker pull \$(etcdctl get /octoblu/meshblu-haproxy/docker_url)) \
                && docker stop \
                     --time=1 \
                     octoblu-meshblu-haproxy\""

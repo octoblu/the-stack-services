@@ -16,8 +16,9 @@ ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
 ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   --name octoblu-meshblu-core-dispatcher-%i \
   --env-file /tmp/octoblu-meshblu-core-dispatcher-%i.env \
+  --memory 512mb \
   $(/usr/bin/etcdctl get /octoblu/meshblu-core-dispatcher/docker_url) \
-  node command-dispatch.js \
+  node --max_old_space_size=256 command-dispatch.js \
 "
 ExecStop=/usr/bin/docker kill octoblu-meshblu-core-dispatcher-%i
 

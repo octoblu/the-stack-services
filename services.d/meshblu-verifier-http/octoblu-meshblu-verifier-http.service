@@ -1,0 +1,28 @@
+[Unit]
+Description=octoblu-meshblu-verifier-http
+Wants=vulcand.service
+After=vulcand.service
+
+[Service]
+TimeoutStartSec=300
+Restart=always
+ExecStartPre=/usr/bin/etcdctl get /octoblu/meshblu-verifier-http/docker_url || /usr/bin/echo "etcd did not contain /octoblu/meshblu-verifier-http/docker_url" && exit 1
+ExecStartPre=-/usr/bin/docker rm --force octoblu-meshblu-verifier-http-env octoblu-meshblu-verifier-http
+ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
+  --name octoblu-meshblu-verifier-http-env \
+  -e ETCDCTL_PEERS=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
+  quay.io/octoblu/etcd-to-env /octoblu/meshblu-verifier-http/env > /tmp/octoblu-meshblu-verifier-http.env \
+"
+ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
+  --name octoblu-meshblu-verifier-http \
+  --env-file /tmp/octoblu-meshblu-verifier-http.env \
+  $(/usr/bin/etcdctl get /octoblu/meshblu-verifier-http/docker_url) \
+  node command-dispatch.js \
+"
+ExecStop=/usr/bin/docker kill octoblu-meshblu-verifier-http
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+MachineMetadata=Services=true

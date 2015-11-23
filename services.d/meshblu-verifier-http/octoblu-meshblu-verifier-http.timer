@@ -1,0 +1,12 @@
+[Unit]
+Description=meshblu-verifier-http timer
+
+[Timer]
+OnStartupSec=1 minute
+
+[Install]
+WantedBy=timers.target
+
+[X-Fleet]
+MachineMetadata=Services=true
+X-ConditionMachineOf=octoblu-meshblu-verifier-http.service

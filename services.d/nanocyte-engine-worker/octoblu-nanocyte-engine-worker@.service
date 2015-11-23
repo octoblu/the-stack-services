@@ -23,7 +23,7 @@ ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
 "
 ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   --name octoblu-nanocyte-engine-worker-%i \
-  --memory 368m \
+  --memory 512m \
   --env-file /tmp/octoblu-nanocyte-engine-worker-%i.env \
   $(/usr/bin/etcdctl get /octoblu/nanocyte-engine-worker/docker_url) \
 "

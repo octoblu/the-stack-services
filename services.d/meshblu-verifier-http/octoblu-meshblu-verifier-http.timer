@@ -2,7 +2,8 @@
 Description=meshblu-verifier-http timer
 
 [Timer]
-OnStartupSec=1 minute
+OnBootSec=3 minutes
+OnUnitActiveSec=1 minute
 
 [Install]
 WantedBy=timers.target

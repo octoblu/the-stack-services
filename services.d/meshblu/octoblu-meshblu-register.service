@@ -6,7 +6,7 @@ After=vulcand.service
 [Service]
 TimeoutStartSec=30
 Restart=always
-ExecStart=/bin/sh -c "/usr/bin/etcdctl set /octoblu/meshblu/backends/$(curl http://instance-data/latest/meta-data/local-ipv4) \"$(date)\""
+ExecStart=/bin/sh -c "/usr/bin/etcdctl set /octoblu/meshblu-haproxy/backends/$(curl http://instance-data/latest/meta-data/local-ipv4) \"$(date)\""
 
 [Install]
 WantedBy=multi-user.target

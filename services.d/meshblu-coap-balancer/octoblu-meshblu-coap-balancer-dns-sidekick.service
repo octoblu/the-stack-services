@@ -11,8 +11,8 @@ ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
 "
 ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   --name octoblu-meshblu-coap-balancer-register-single-dns \
-  -e RECORD=coap.octoblu.com \
-  -e DOMAIN=octoblu.com \
+  -e RECORD=$(etcdctl get /octoblu/meshblu-coap-balancer/dns_record) \
+  -e DOMAIN=$(etcdctl get /octoblu/meshblu-coap-balancer/dns_domain) \
   -e IP=${COREOS_PUBLIC_IPV4} \
   --env-file /tmp/register-service-elb.env \
   $(/usr/bin/etcdctl get /octoblu/register-single-dns/docker_url) \

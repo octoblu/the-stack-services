@@ -15,10 +15,10 @@ ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
 ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   --name octoblu-meshblu-coap-balancer \
   --memory 512m \
-  -e SERVERS=\"$(fleetctl list-machines | grep Services | awk -v ORS=' ' '{ print $2 }')\" \
+  -e SERVERS=\"$(fleetctl list-machines | grep Services | awk -v ORS=':51257 ' '{ print $2 }')\" \
   -e SERVER_NAME=${COREOS_PRIVATE_IPV4} \
   --env-file /tmp/octoblu-meshblu-coap-balancer.env \
-  -p $(/usr/bin/etcdctl get /octoblu/meshblu-coap-balancer/port):5683 \
+  -p $(/usr/bin/etcdctl get /octoblu/meshblu-coap-balancer/port):5683/udp \
   -p $(/usr/bin/etcdctl get /octoblu/meshblu-coap-balancer/port_control):9000 \
   $(/usr/bin/etcdctl get /octoblu/meshblu-coap-balancer/docker_url) \
 "

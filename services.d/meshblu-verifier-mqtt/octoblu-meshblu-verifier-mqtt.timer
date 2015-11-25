@@ -1,5 +1,5 @@
 [Unit]
-Description=meshblu-verifier-http timer
+Description=meshblu-verifier-mqtt timer
 
 [Timer]
 OnBootSec=3 minutes
@@ -10,4 +10,4 @@ WantedBy=timers.target
 
 [X-Fleet]
 MachineMetadata=Services=true
-X-ConditionMachineOf=octoblu-meshblu-verifier-http.service
+X-ConditionMachineOf=octoblu-meshblu-verifier-mqtt.service

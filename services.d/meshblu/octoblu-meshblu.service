@@ -27,6 +27,7 @@ ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   --env-file /tmp/octoblu-meshblu.env \
   -p $(/usr/bin/etcdctl get /octoblu/meshblu/port):80 \
   -p $(/usr/bin/etcdctl get /octoblu/meshblu/port_mqtt):1883 \
+  -p $(/usr/bin/etcdctl get /octoblu/meshblu/port_coap):5683/udp \
   $(/usr/bin/etcdctl get /octoblu/meshblu/docker_url) \
 "
 ExecStop=/usr/bin/docker kill octoblu-meshblu

@@ -1,5 +1,5 @@
 [Unit]
-Description=octoblu-meshblu-register-sidekick
+Description=octoblu-meshblu-coap-balancer-register-sidekick
 Wants=vulcand.service
 After=vulcand.service
 
@@ -7,14 +7,13 @@ After=vulcand.service
 TimeoutStartSec=30
 Restart=always
 ExecStart=/bin/sh -c "/usr/bin/etcdctl exec-watch \
-  --recursive /octoblu/meshblu/backends \
+  --recursive /octoblu/meshblu-haproxy/backends \
   -- $(docker stop \
     --time=30 \
-    octoblu-meshblu-haproxy)"
+    octoblu-meshblu-coap-balancer)"
 
 [Install]
 WantedBy=multi-user.target
 
 [X-Fleet]
-Global=true
-MachineMetadata=Services=true
+X-ConditionMachineOf=octoblu-meshblu-coap-balancer.service

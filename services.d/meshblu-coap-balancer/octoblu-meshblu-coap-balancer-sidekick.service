@@ -1,0 +1,21 @@
+[Unit]
+Description=octoblu-meshblu-coap-balancer-sidekick
+Wants=vulcand.service
+After=vulcand.service
+
+[Service]
+TimeoutStartSec=30
+Restart=always
+ExecStart=/bin/sh -c "/usr/bin/etcdctl exec-watch \
+  --recursive /octoblu/meshblu-coap-balancer \
+  -- sh -c \"(docker inspect --format='{{.Id}}' --type=image \$(etcdctl get /octoblu/meshblu-coap-balancer/docker_url) \
+               || docker pull \$(etcdctl get /octoblu/meshblu-coap-balancer/docker_url)) \
+               && docker stop \
+                    --time=1 \
+                    octoblu-meshblu-coap-balancer\""
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-meshblu-coap-balancer.service

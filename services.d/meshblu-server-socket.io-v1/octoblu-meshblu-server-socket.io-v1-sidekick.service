@@ -11,7 +11,7 @@ ExecStart=/bin/sh -c "/usr/bin/etcdctl exec-watch \
   -- sh -c \"(docker inspect --format='{{.Id}}' --type=image \$(etcdctl get /octoblu/meshblu-server-socket.io-v1/docker_url) \
                || docker pull \$(etcdctl get /octoblu/meshblu-server-socket.io-v1/docker_url)) \
                && docker stop \
-                    --time=30 \
+                    --time=1 \
                     octoblu-meshblu-server-socket.io-v1\""
 
 [Install]

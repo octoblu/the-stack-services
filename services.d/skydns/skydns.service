@@ -1,0 +1,21 @@
+[Unit]
+Description=skydns service
+
+[Service]
+TimeoutStartSec=300
+Restart=always
+ExecStartPre=-/usr/bin/docker rm --force skydns
+ExecStart=/bin/sh -c "/usr/bin/docker run \
+  --name skydns \
+  --env SKYDNS_MACHINES=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
+  --publish 53:53 \
+  webhippie/skydns \
+"
+
+ExecStop=/usr/bin/docker stop --time 10 skydns
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+MachineMetadata=Services=true

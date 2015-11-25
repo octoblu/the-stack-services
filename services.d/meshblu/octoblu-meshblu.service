@@ -6,16 +6,8 @@ After=vulcand.service
 [Service]
 TimeoutStartSec=300
 Restart=always
-ExecStartPre=/bin/sh -c '/usr/bin/docker login \
-  --username $(/usr/bin/etcdctl get /docker/quay.io/username) \
-  --password $(/usr/bin/etcdctl get /docker/quay.io/password) \
-  --email $(/usr/bin/etcdctl get /docker/quay.io/email) \
-  quay.io'
 ExecStartPre=/usr/bin/etcdctl get /octoblu/meshblu/docker_url || /usr/bin/echo "etcd did not contain /octoblu/meshblu/docker_url" && exit 1
-ExecStartPre=-/usr/bin/docker kill octoblu-meshblu-env
-ExecStartPre=-/usr/bin/docker rm octoblu-meshblu-env
-ExecStartPre=-/usr/bin/docker kill octoblu-meshblu
-ExecStartPre=-/usr/bin/docker rm octoblu-meshblu
+ExecStartPre=-/usr/bin/docker rm --force octoblu-meshblu-env octoblu-meshblu
 ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
   --name octoblu-meshblu-env \
   -e ETCDCTL_PEERS=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \

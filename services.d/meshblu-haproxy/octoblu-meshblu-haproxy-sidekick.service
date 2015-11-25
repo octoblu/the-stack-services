@@ -1,7 +1,5 @@
 [Unit]
 Description=octoblu-meshblu-haproxy-sidekick
-Wants=vulcand.service
-After=vulcand.service
 
 [Service]
 TimeoutStartSec=30

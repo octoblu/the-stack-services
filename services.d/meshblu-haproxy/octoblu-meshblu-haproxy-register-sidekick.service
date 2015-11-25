@@ -1,7 +1,5 @@
 [Unit]
-Description=octoblu-meshblu-register-sidekick
-Wants=vulcand.service
-After=vulcand.service
+Description=octoblu-meshblu-haproxy-register-sidekick
 
 [Service]
 TimeoutStartSec=30

@@ -20,11 +20,12 @@ ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
   quay.io/octoblu/etcd-to-env /octoblu/register-service-elb/env > /tmp/register-service-elb.env \
 "
 ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
-  --name octoblu-meshblu-coap-balancer-register-single-service \
-  -e ELB_NAME=meshblu-service-cluster \
-  -e INSTANCE_HOSTNAME=$(hostname) \
+  --name octoblu-meshblu-coap-balancer-register-single-dns \
+  -e RECORD=coap.octoblu.com \
+  -e DOMAIN=octoblu.com \
+  -e IP=$(curl http://instance-data/latest/meta-data/public-ipv4) \
   --env-file /tmp/register-service-elb.env \
-  $(/usr/bin/etcdctl get /octoblu/register-single-service-elb/docker_url) \
+  $(/usr/bin/etcdctl get /octoblu/register-single-dns/docker_url) \
 "
 ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   --name octoblu-meshblu-coap-balancer \
@@ -33,6 +34,7 @@ ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   -e SERVER_NAME=$(curl http://instance-data/latest/meta-data/local-ipv4) \
   --env-file /tmp/octoblu-meshblu-coap-balancer.env \
   -p $(/usr/bin/etcdctl get /octoblu/meshblu-coap-balancer/port):5683 \
+  -p $(/usr/bin/etcdctl get /octoblu/meshblu-coap-balancer/port_control):9000 \
   $(/usr/bin/etcdctl get /octoblu/meshblu-coap-balancer/docker_url) \
 "
 ExecStop=/usr/bin/docker kill octoblu-meshblu-coap-balancer

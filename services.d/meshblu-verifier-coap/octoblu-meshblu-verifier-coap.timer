@@ -1,0 +1,13 @@
+[Unit]
+Description=meshblu-verifier-coap timer
+
+[Timer]
+OnBootSec=3 minutes
+OnUnitActiveSec=1 minute
+
+[Install]
+WantedBy=timers.target
+
+[X-Fleet]
+MachineMetadata=Services=true
+X-ConditionMachineOf=octoblu-meshblu-verifier-coap.service

@@ -1,7 +1,5 @@
 [Unit]
 Description=octoblu-meshblu-coap-balancer-sidekick
-Wants=vulcand.service
-After=vulcand.service
 
 [Service]
 TimeoutStartSec=30

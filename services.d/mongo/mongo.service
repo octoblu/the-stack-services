@@ -1,0 +1,20 @@
+[Unit]
+Description=mongo service
+
+[Service]
+TimeoutStartSec=300
+Restart=always
+ExecStartPre=-/usr/bin/docker rm --force mongo
+ExecStart=/bin/sh -c "/usr/bin/docker run \
+  --name mongo \
+  --publish 27017:27017 \
+  mongo \
+"
+
+ExecStop=/usr/bin/docker stop --time 10 mongo
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+MachineMetadata=Services=true

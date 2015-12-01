@@ -1,0 +1,35 @@
+[Unit]
+Description=Register with vulcand for octoblu-flow-canary
+
+[Service]
+TimeoutStartSec=300
+EnvironmentFile=/etc/environment
+RemainAfterExit=yes
+Restart=always
+ExecStartPre=-/usr/bin/docker kill octoblu-flow-canary-register
+ExecStartPre=-/usr/bin/docker rm octoblu-flow-canary-register
+ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm octoblu/vctl frontend upsert \
+    --id octoblu-flow-canary \
+    --backend octoblu-flow-canary \
+    --route \"Host(\\\"$(/usr/bin/etcdctl get /octoblu/flow-canary/host)\\\")\" \
+    --trustForwardHeader \
+    --vulcan http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):8182 \
+"
+ExecStart=/bin/sh -c "/usr/bin/docker run \
+     --name octoblu-flow-canary-register \
+     --rm \
+     --net host \
+     --env URL=http://${COREOS_PRIVATE_IPV4}:$(/usr/bin/etcdctl get /octoblu/flow-canary/port) \
+     --env BACKEND_ID=octoblu-flow-canary \
+     --env SERVER_ID=octoblu-flow-canary \
+     --env VULCAN_URL=http://localhost:8182 \
+     --env TIMEOUT_SECS=5 \
+     --env FRONTEND_TTL_SECS=11 \
+     $(/usr/bin/etcdctl get /image-versions/octoblu/register-sidekick/docker_url) \
+"
+ExecStop=-/usr/bin/docker kill octoblu-flow-canary-register
+ExecStop=/bin/sh -c "/usr/bin/echo 'Removing server from vulcand' && \
+  /usr/bin/docker run --rm octoblu/vctl server rm --backend octoblu-flow-canary --id octoblu-flow-canary --vulcan http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):8182"
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-flow-canary.service

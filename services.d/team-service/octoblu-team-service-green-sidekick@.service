@@ -1,0 +1,19 @@
+[Unit]
+Description=octoblu-team-service-green-sidekick
+
+[Service]
+TimeoutStartSec=30
+Restart=always
+ExecStart=/bin/sh -c "/usr/bin/etcdctl exec-watch \
+  --recursive /octoblu/team-service \
+  -- sh -c \"(docker inspect --format='{{.Id}}' --type=image \$(etcdctl get /octoblu/team-service/green/docker_url) \
+               || docker pull \$(etcdctl get /octoblu/team-service/docker_url)) \
+               && docker stop \
+                    --time=1 \
+                    octoblu-team-service-green-%i\""
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-team-service-green@%i.service

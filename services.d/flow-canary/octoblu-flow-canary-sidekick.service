@@ -1,0 +1,21 @@
+[Unit]
+Description=octoblu-flow-canary-sidekick
+Wants=vulcand.service
+After=vulcand.service
+
+[Service]
+TimeoutStartSec=30
+Restart=always
+ExecStart=/bin/sh -c "/usr/bin/etcdctl exec-watch \
+  --recursive /octoblu/flow-canary \
+  -- sh -c \"(docker inspect --format='{{.Id}}' --type=image \$(etcdctl get /octoblu/flow-canary/docker_url) \
+               || docker pull \$(etcdctl get /octoblu/flow-canary/docker_url)) \
+               && docker stop \
+                    --time=30 \
+                    octoblu-flow-canary\""
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-flow-canary.service

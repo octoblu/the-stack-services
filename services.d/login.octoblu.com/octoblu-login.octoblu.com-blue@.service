@@ -1,0 +1,39 @@
+[Unit]
+Description=octoblu-login.octoblu.com-blue
+Wants=vulcand.service
+After=vulcand.service
+
+[Service]
+TimeoutStartSec=300
+Restart=always
+ExecStartPre=/bin/sh -c '/usr/bin/docker login \
+  --username $(/usr/bin/etcdctl get /docker/quay.io/username) \
+  --password $(/usr/bin/etcdctl get /docker/quay.io/password) \
+  --email $(/usr/bin/etcdctl get /docker/quay.io/email) \
+  quay.io'
+ExecStartPre=/usr/bin/etcdctl get /octoblu/login.octoblu.com/blue/port || /usr/bin/echo "etcd did not contain /octoblu/login.octoblu.com/blue/port" && exit 1
+ExecStartPre=/usr/bin/etcdctl get /octoblu/login.octoblu.com/blue/docker_url || /usr/bin/echo "etcd did not contain /octoblu/login.octoblu.com/blue/docker_url" && exit 1
+ExecStartPre=-/usr/bin/docker kill octoblu-login.octoblu.com-blue-env-%i
+ExecStartPre=-/usr/bin/docker rm octoblu-login.octoblu.com-blue-env-%i
+ExecStartPre=-/usr/bin/docker kill octoblu-login.octoblu.com-blue-%i
+ExecStartPre=-/usr/bin/docker rm octoblu-login.octoblu.com-blue-%i
+ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
+  --name octoblu-login.octoblu.com-blue-env-%i \
+  -e ETCDCTL_PEERS=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
+  quay.io/octoblu/etcd-to-env /octoblu/login.octoblu.com/env > /tmp/octoblu-login.octoblu.com-blue.env \
+"
+ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
+  --name octoblu-login.octoblu.com-blue-%i \
+  --env-file /tmp/octoblu-login.octoblu.com-blue.env \
+  --memory 512m \
+  -p $(/usr/bin/etcdctl get /octoblu/login.octoblu.com/blue/port):80 \
+  $(/usr/bin/etcdctl get /octoblu/login.octoblu.com/blue/docker_url) \
+"
+ExecStop=/usr/bin/docker kill octoblu-login.octoblu.com-blue-%i
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+Conflicts=octoblu-login.octoblu.com-blue@*.service
+MachineMetadata=Services=true

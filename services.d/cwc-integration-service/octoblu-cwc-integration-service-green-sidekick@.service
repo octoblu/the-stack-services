@@ -1,0 +1,19 @@
+[Unit]
+Description=octoblu-cwc-integration-service-green-sidekick
+
+[Service]
+TimeoutStartSec=30
+Restart=always
+ExecStart=/bin/sh -c "/usr/bin/etcdctl exec-watch \
+  --recursive /octoblu/cwc-integration-service \
+  -- sh -c \"(docker inspect --format='{{.Id}}' --type=image \$(etcdctl get /octoblu/cwc-integration-service/green/docker_url) \
+               || docker pull \$(etcdctl get /octoblu/cwc-integration-service/docker_url)) \
+               && docker stop \
+                    --time=1 \
+                    octoblu-cwc-integration-service-green-%i\""
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-cwc-integration-service-green@%i.service

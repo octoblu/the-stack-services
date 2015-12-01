@@ -1,0 +1,19 @@
+[Unit]
+Description=octoblu-tentacle-server-balancer-sidekick
+
+[Service]
+TimeoutStartSec=30
+Restart=always
+ExecStart=/bin/sh -c "/usr/bin/etcdctl exec-watch \
+  --recursive /octoblu/tentacle-server-balancer \
+  -- sh -c \"(docker inspect --format='{{.Id}}' --type=image \$(etcdctl get /octoblu/tentacle-server-balancer/docker_url) \
+               || docker pull \$(etcdctl get /octoblu/tentacle-server-balancer/docker_url)) \
+               && docker stop \
+                    --time=1 \
+                    octoblu-tentacle-server-balancer\""
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-tentacle-server-balancer.service

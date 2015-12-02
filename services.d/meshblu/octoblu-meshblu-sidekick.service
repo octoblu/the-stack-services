@@ -7,7 +7,7 @@ After=vulcand.service
 TimeoutStartSec=30
 Restart=always
 ExecStart=/bin/sh -c "/usr/bin/etcdctl exec-watch \
-  --recursive /octoblu/meshblu \
+  /octoblu/meshblu/restart \
   -- sh -c \"(docker inspect --format='{{.Id}}' --type=image \$(etcdctl get /octoblu/meshblu/docker_url) \
                || docker pull \$(etcdctl get /octoblu/meshblu/docker_url)) \
                && docker stop \

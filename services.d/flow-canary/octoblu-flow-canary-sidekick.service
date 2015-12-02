@@ -7,7 +7,7 @@ After=vulcand.service
 TimeoutStartSec=30
 Restart=always
 ExecStart=/bin/sh -c "/usr/bin/etcdctl exec-watch \
-  --recursive /octoblu/flow-canary \
+  /octoblu/flow-canary/restart \
   -- sh -c \"(docker inspect --format='{{.Id}}' --type=image \$(etcdctl get /octoblu/flow-canary/docker_url) \
                || docker pull \$(etcdctl get /octoblu/flow-canary/docker_url)) \
                && docker stop \

@@ -5,7 +5,7 @@ Description=octoblu-oauth-provider-green-sidekick
 TimeoutStartSec=30
 Restart=always
 ExecStart=/bin/sh -c "/usr/bin/etcdctl exec-watch \
-  --recursive /octoblu/oauth-provider \
+  /octoblu/oauth-provider/restart \
   -- sh -c \"(docker inspect --format='{{.Id}}' --type=image \$(etcdctl get /octoblu/oauth-provider/green/docker_url) \
                || docker pull \$(etcdctl get /octoblu/oauth-provider/docker_url)) \
                && docker stop \

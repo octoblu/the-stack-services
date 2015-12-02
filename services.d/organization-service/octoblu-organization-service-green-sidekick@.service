@@ -5,7 +5,7 @@ Description=octoblu-organization-service-green-sidekick
 TimeoutStartSec=30
 Restart=always
 ExecStart=/bin/sh -c "/usr/bin/etcdctl exec-watch \
-  --recursive /octoblu/organization-service \
+  /octoblu/organization-service/restart \
   -- sh -c \"(docker inspect --format='{{.Id}}' --type=image \$(etcdctl get /octoblu/organization-service/green/docker_url) \
                || docker pull \$(etcdctl get /octoblu/organization-service/docker_url)) \
                && docker stop \

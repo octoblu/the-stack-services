@@ -5,7 +5,7 @@ Description=octoblu-tentacle-server-balancer-register-sidekick
 TimeoutStartSec=30
 Restart=always
 ExecStart=/bin/sh -c "/usr/bin/etcdctl exec-watch \
-  --recursive /octoblu/meshblu-haproxy/backends \
+  /octoblu/meshblu-haproxy/backends/restart \
   -- $(docker stop \
     --time=30 \
     octoblu-tentacle-server-balancer)"

@@ -7,7 +7,7 @@ After=vulcand.service
 TimeoutStartSec=30
 Restart=always
 ExecStart=/bin/sh -c "/usr/bin/etcdctl exec-watch \
-  --recursive /octoblu/nanocyte-engine-worker \
+  /octoblu/nanocyte-engine-worker/restart \
   -- sh -c \"(docker inspect --format='{{.Id}}' --type=image \$(etcdctl get /octoblu/nanocyte-engine-worker/docker_url) \
                || docker pull \$(etcdctl get /octoblu/nanocyte-engine-worker/docker_url)) \
                && docker stop \

@@ -5,7 +5,7 @@ Description=octoblu-uuid-alias-service-blue-sidekick
 TimeoutStartSec=30
 Restart=always
 ExecStart=/bin/sh -c "/usr/bin/etcdctl exec-watch \
-  --recursive /octoblu/uuid-alias-service \
+  /octoblu/uuid-alias-service/restart \
   -- sh -c \"(docker inspect --format='{{.Id}}' --type=image \$(etcdctl get /octoblu/uuid-alias-service/green/docker_url) \
                || docker pull \$(etcdctl get /octoblu/uuid-alias-service/docker_url)) \
                && docker stop \

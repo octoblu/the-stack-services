@@ -1,0 +1,19 @@
+[Unit]
+Description=octoblu-uuid-alias-lookup-service-green-sidekick
+
+[Service]
+TimeoutStartSec=30
+Restart=always
+ExecStart=/bin/sh -c "/usr/bin/etcdctl exec-watch \
+  --recursive /octoblu/uuid-alias-lookup-service \
+  -- sh -c \"(docker inspect --format='{{.Id}}' --type=image \$(etcdctl get /octoblu/uuid-alias-lookup-service/green/docker_url) \
+               || docker pull \$(etcdctl get /octoblu/uuid-alias-lookup-service/docker_url)) \
+               && docker stop \
+                    --time=5 \
+                    octoblu-uuid-alias-lookup-service-green-%i\""
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-uuid-alias-lookup-service-green@%i.service

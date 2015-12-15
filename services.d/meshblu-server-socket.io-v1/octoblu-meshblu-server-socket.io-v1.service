@@ -16,6 +16,7 @@ ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
 ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   --name octoblu-meshblu-server-socket.io-v1 \
   --env-file /tmp/octoblu-meshblu-server-socket.io-v1.env \
+  -e MESHBLU_SERVER=$(ifconfig docker0 | grep 'inet ' | awk '{print $2}') \
   --publish $(/usr/bin/etcdctl get /octoblu/meshblu-server-socket.io-v1/port):80 \
   --memory 512m \
   $(/usr/bin/etcdctl get /octoblu/meshblu-server-socket.io-v1/docker_url) \

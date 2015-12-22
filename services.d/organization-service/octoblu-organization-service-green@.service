@@ -6,11 +6,13 @@ After=vulcand.service
 [Service]
 TimeoutStartSec=300
 Restart=always
+
 ExecStartPre=/bin/sh -c '/usr/bin/docker login \
   --username $(/usr/bin/etcdctl get /docker/quay.io/username) \
   --password $(/usr/bin/etcdctl get /docker/quay.io/password) \
   --email $(/usr/bin/etcdctl get /docker/quay.io/email) \
   quay.io'
+
 ExecStartPre=/usr/bin/etcdctl get /octoblu/organization-service/green/port || /usr/bin/echo "etcd did not contain /octoblu/organization-service/green/port" && exit 1
 ExecStartPre=/usr/bin/etcdctl get /octoblu/organization-service/green/docker_url || /usr/bin/echo "etcd did not contain /octoblu/organization-service/green/docker_url" && exit 1
 ExecStartPre=-/usr/bin/docker rm --force octoblu-organization-service-green-env-%i octoblu-organization-service-green-%i
@@ -26,7 +28,7 @@ ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   -p $(/usr/bin/etcdctl get /octoblu/organization-service/green/port):80 \
   $(/usr/bin/etcdctl get /octoblu/organization-service/green/docker_url) \
 "
-ExecStop=/usr/bin/docker kill octoblu-organization-service-green-%i
+ExecStop=/usr/bin/docker stop --time=5 octoblu-organization-service-green-%i
 
 [Install]
 WantedBy=multi-user.target

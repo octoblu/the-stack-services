@@ -1,0 +1,27 @@
+[Unit]
+Description=octoblu-job-log-to-elasticsearch
+
+[Service]
+TimeoutStartSec=300
+Restart=always
+
+ExecStartPre=/usr/bin/etcdctl get /octoblu/job-log-to-elasticsearch/docker_url || /usr/bin/echo "etcd did not contain /octoblu/job-log-to-elasticsearch/docker_url" && exit 1
+ExecStartPre=-/usr/bin/docker rm --force octoblu-job-log-to-elasticsearch-env-%i octoblu-job-log-to-elasticsearch-%i
+ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
+  --name octoblu-job-log-to-elasticsearch-env-%i \
+  -e ETCDCTL_PEERS=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
+  quay.io/octoblu/etcd-to-env /octoblu/job-log-to-elasticsearch/env > /tmp/octoblu-job-log-to-elasticsearch.env \
+"
+ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
+  --name octoblu-job-log-to-elasticsearch-%i \
+  --env-file /tmp/octoblu-job-log-to-elasticsearch.env \
+  --memory 512m \
+  $(/usr/bin/etcdctl get /octoblu/job-log-to-elasticsearch/docker_url) \
+"
+ExecStop=/usr/bin/docker stop --time=5 octoblu-job-log-to-elasticsearch-%i
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+MachineMetadata=Services=true

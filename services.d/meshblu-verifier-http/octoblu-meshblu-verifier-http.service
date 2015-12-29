@@ -18,7 +18,7 @@ ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   --env-file /tmp/octoblu-meshblu-verifier-http.env \
   $(/usr/bin/etcdctl get /octoblu/meshblu-verifier-http/docker_url) \
 "
-ExecStop=/usr/bin/docker kill octoblu-meshblu-verifier-http
+# ExecStop=/usr/bin/docker kill octoblu-meshblu-verifier-http
 
 [Install]
 WantedBy=multi-user.target

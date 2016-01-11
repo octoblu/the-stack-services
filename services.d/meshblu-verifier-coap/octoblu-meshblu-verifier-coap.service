@@ -18,7 +18,7 @@ ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   --env-file /tmp/octoblu-meshblu-verifier-coap.env \
   $(/usr/bin/etcdctl get /octoblu/meshblu-verifier-coap/docker_url) \
 "
-ExecStop=/usr/bin/docker kill octoblu-meshblu-verifier-coap
+# ExecStop=/usr/bin/docker kill octoblu-meshblu-verifier-coap
 
 [Install]
 WantedBy=multi-user.target

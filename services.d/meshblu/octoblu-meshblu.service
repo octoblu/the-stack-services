@@ -15,7 +15,7 @@ ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
 "
 ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   --name octoblu-meshblu \
-  --memory 512m \
+  --memory 1024m \
   --env-file /tmp/octoblu-meshblu.env \
   -p $(/usr/bin/etcdctl get /octoblu/meshblu/port):80 \
   -p $(/usr/bin/etcdctl get /octoblu/meshblu/port_mqtt):1883 \

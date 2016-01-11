@@ -18,7 +18,7 @@ ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   --env-file /tmp/octoblu-meshblu-verifier-mqtt.env \
   $(/usr/bin/etcdctl get /octoblu/meshblu-verifier-mqtt/docker_url) \
 "
-ExecStop=/usr/bin/docker kill octoblu-meshblu-verifier-mqtt
+# ExecStop=/usr/bin/docker kill octoblu-meshblu-verifier-mqtt
 
 [Install]
 WantedBy=multi-user.target

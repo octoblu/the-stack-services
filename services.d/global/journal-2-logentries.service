@@ -5,13 +5,13 @@ Description=Forward Systemd Journal to logentries.com
 TimeoutStartSec=0
 ExecStartPre=-/usr/bin/docker kill journal-2-logentries
 ExecStartPre=-/usr/bin/docker rm journal-2-logentries
-ExecStartPre=/usr/bin/docker pull quay.io/kelseyhightower/journal-2-logentries
+ExecStartPre=/usr/bin/docker pull quay.io/octoblu/journal-2-logentries
 ExecStart=/bin/bash -c \
 "/usr/bin/docker run --rm --name journal-2-logentries \
 --net host \
 -v /run/journald.sock:/run/journald.sock \
 -e LOGENTRIES_TOKEN=$(etcdctl get /logentries.com/token) \
-quay.io/kelseyhightower/journal-2-logentries"
+quay.io/octoblu/journal-2-logentries"
 
 [X-Fleet]
 Global=true

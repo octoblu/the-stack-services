@@ -1,0 +1,21 @@
+[Unit]
+Description=octoblu-meshblu-core-dispatcher-v2-sidekick
+Wants=vulcand.service
+After=vulcand.service
+
+[Service]
+TimeoutStartSec=30
+Restart=always
+ExecStart=/bin/sh -c "/usr/bin/etcdctl exec-watch \
+  /octoblu/meshblu-core-dispatcher-v2/restart \
+  -- sh -c \"(docker inspect --format='{{.Id}}' --type=image \$(etcdctl get /octoblu/meshblu-core-dispatcher-v2/docker_url) \
+               || docker pull \$(etcdctl get /octoblu/meshblu-core-dispatcher-v2/docker_url)) \
+               && docker stop \
+                    --time=30 \
+                    octoblu-meshblu-core-dispatcher-v2-%i\""
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-meshblu-core-dispatcher-v2@%i.service

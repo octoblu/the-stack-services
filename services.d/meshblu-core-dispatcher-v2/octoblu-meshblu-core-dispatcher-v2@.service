@@ -1,0 +1,29 @@
+[Unit]
+Description=octoblu-meshblu-core-dispatcher-v2
+Wants=vulcand.service
+After=vulcand.service
+
+[Service]
+TimeoutStartSec=300
+Restart=always
+ExecStartPre=/usr/bin/etcdctl get /octoblu/meshblu-core-dispatcher-v2/docker_url || /usr/bin/echo "etcd did not contain /octoblu/meshblu-core-dispatcher-v2/docker_url" && exit 1
+ExecStartPre=-/usr/bin/docker rm --force octoblu-meshblu-core-dispatcher-v2-env-%i octoblu-meshblu-core-dispatcher-v2-%i
+ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
+  --name octoblu-meshblu-core-dispatcher-v2-env-%i \
+  -e ETCDCTL_PEERS=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
+  quay.io/octoblu/etcd-to-env /octoblu/meshblu-core-dispatcher/env > /tmp/octoblu-meshblu-core-dispatcher-v2-%i.env \
+"
+ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
+  --name octoblu-meshblu-core-dispatcher-v2-%i \
+  --env-file /tmp/octoblu-meshblu-core-dispatcher-v2-%i.env \
+  --memory 512mb \
+  $(/usr/bin/etcdctl get /octoblu/meshblu-core-dispatcher-v2/docker_url) \
+  node --max_old_space_size=256 command-dispatch.js --namespace meshblu:v2 --internal-namespace meshblu:v2:internal \
+"
+ExecStop=/usr/bin/docker kill octoblu-meshblu-core-dispatcher-v2-%i
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+MachineMetadata=Services=true

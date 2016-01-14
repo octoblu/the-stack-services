@@ -1,0 +1,19 @@
+[Unit]
+Description=octoblu-job-log-to-elasticsearch-v2-sidekick
+
+[Service]
+TimeoutStartSec=30
+Restart=always
+ExecStart=/bin/sh -c "/usr/bin/etcdctl exec-watch \
+  /octoblu/job-log-to-elasticsearch-v2/restart \
+  -- sh -c \"(docker inspect --format='{{.Id}}' --type=image \$(etcdctl get /octoblu/job-log-to-elasticsearch-v2/docker_url) \
+               || docker pull \$(etcdctl get /octoblu/job-log-to-elasticsearch-v2/docker_url)) \
+               && docker stop \
+                    --time=5 \
+                    octoblu-job-log-to-elasticsearch-v2-%i\""
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-job-log-to-elasticsearch-v2@%i.service

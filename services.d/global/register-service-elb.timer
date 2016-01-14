@@ -3,7 +3,7 @@ Description=Run register-service-elb 60 seconds after boot
 After=docker.service
 
 [Timer]
-OnStartupSec=1 minute
+OnStartupSec=15 minute
 
 [Install]
 WantedBy=timers.target

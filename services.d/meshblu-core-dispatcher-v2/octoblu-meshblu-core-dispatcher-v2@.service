@@ -15,6 +15,7 @@ ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
 "
 ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   --name octoblu-meshblu-core-dispatcher-v2-%i \
+  -e WORKER_NAME=%i \
   --env-file /tmp/octoblu-meshblu-core-dispatcher-v2-%i.env \
   --memory 512mb \
   $(/usr/bin/etcdctl get /octoblu/meshblu-core-dispatcher-v2/docker_url) \

@@ -11,7 +11,7 @@ ExecStartPre=-/usr/bin/docker rm --force octoblu-meshblu-core-dispatcher-v2-env-
 ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
   --name octoblu-meshblu-core-dispatcher-v2-env-%i \
   -e ETCDCTL_PEERS=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
-  quay.io/octoblu/etcd-to-env /octoblu/meshblu-core-dispatcher/env > /tmp/octoblu-meshblu-core-dispatcher-v2-%i.env \
+  quay.io/octoblu/etcd-to-env /octoblu/meshblu-core-dispatcher-v2/env > /tmp/octoblu-meshblu-core-dispatcher-v2-%i.env \
 "
 ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   --name octoblu-meshblu-core-dispatcher-v2-%i \

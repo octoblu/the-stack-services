@@ -7,8 +7,7 @@ After=vulcand.service
 TimeoutStartSec=300
 Restart=always
 
-ExecStartPre=/usr/bin/etcdctl get /octoblu/request-queue-siphon/blue/port || /usr/bin/echo "etcd did not contain /octoblu/request-queue-siphon/blue/port" && exit 1
-ExecStartPre=/usr/bin/etcdctl get /octoblu/request-queue-siphon/blue/docker_url || /usr/bin/echo "etcd did not contain /octoblu/request-queue-siphon/blue/docker_url" && exit 1
+ExecStartPre=/usr/bin/etcdctl get /octoblu/request-queue-siphon/docker_url || /usr/bin/echo "etcd did not contain /octoblu/request-queue-siphon/docker_url" && exit 1
 ExecStartPre=-/usr/bin/docker rm --force octoblu-request-queue-siphon-env-%i octoblu-request-queue-siphon-%i
 ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
   --name octoblu-request-queue-siphon-env-%i \
@@ -19,8 +18,7 @@ ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   --name octoblu-request-queue-siphon-%i \
   --env-file /tmp/octoblu-request-queue-siphon.env \
   --memory 512m \
-  -p $(/usr/bin/etcdctl get /octoblu/request-queue-siphon/blue/port):80 \
-  $(/usr/bin/etcdctl get /octoblu/request-queue-siphon/blue/docker_url) \
+  $(/usr/bin/etcdctl get /octoblu/request-queue-siphon/docker_url) \
 "
 ExecStop=/usr/bin/docker stop --time=5 octoblu-request-queue-siphon-%i
 

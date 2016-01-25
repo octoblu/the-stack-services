@@ -1,0 +1,33 @@
+[Unit]
+Description=Register with vulcand for octoblu-weather-service
+
+[Service]
+TimeoutStartSec=300
+EnvironmentFile=/etc/environment
+RemainAfterExit=yes
+Restart=always
+ExecStartPre=-/usr/bin/docker kill octoblu-weather-service-register-%i
+ExecStartPre=-/usr/bin/docker rm octoblu-weather-service-register-%i
+ExecStart=/bin/sh -c "/usr/bin/docker run \
+     --name octoblu-weather-service-register-%i \
+     --rm \
+     --net host \
+     --env URL=http://${COREOS_PRIVATE_IPV4}:$(/usr/bin/etcdctl get /octoblu/weather-service/port) \
+     --env BACKEND_ID=octoblu-weather-service \
+     --env SERVER_ID=octoblu-weather-service-$(/usr/bin/etcdctl get /cluster/name)-%i \
+     --env VULCAN_URL=$(/usr/bin/etcdctl get /cluster/vulcan-url) \
+     --env TIMEOUT_SECS=5 \
+     --env FRONTEND_TTL_SECS=11 \
+     $(/usr/bin/etcdctl get /image-versions/octoblu/register-sidekick/docker_url) \
+"
+
+ExecStop=-/usr/bin/docker kill octoblu-weather-service-register-%i
+ExecStop=/bin/sh -c "/usr/bin/echo 'Removing server from vulcand' && \
+  /usr/bin/docker run \
+    --rm octoblu/vctl server rm \
+      --backend octoblu-weather-service \
+      --id octoblu-weather-service-$(/usr/bin/etcdctl get /cluster/name)-%i \
+      --vulcan $(/cluster/vulcan-url)"
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-weather-service@%i.service

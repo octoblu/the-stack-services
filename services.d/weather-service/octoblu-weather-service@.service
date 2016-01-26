@@ -2,6 +2,7 @@
 Description=octoblu-weather-service
 Wants=vulcand.service
 After=vulcand.service
+Requires=octoblu-weather-service-register@%i.service
 
 [Service]
 TimeoutStartSec=300
@@ -11,8 +12,7 @@ Restart=always
 
 ExecStartPre=/usr/bin/etcdctl get /octoblu/weather-service/port || /usr/bin/echo "etcd did not contain /octoblu/weather-service/port" && exit 1
 ExecStartPre=/usr/bin/etcdctl get /octoblu/weather-service/docker_url || /usr/bin/echo "etcd did not contain /octoblu/weather-service/docker_url" && exit 1
-ExecStartPre=-/usr/bin/docker rm --force octoblu-weather-service-env-%i octoblu-weather-service-%i
-ExecStartPre=-/usr/bin/docker rm --force octoblu-weather-service-port-%i
+ExecStartPre=-/usr/bin/docker rm --force octoblu-weather-service-env-%i octoblu-weather-service-%i octoblu-weather-service-port-%i octoblu-weather-service-governator-%i octoblu-weather-service-governator-env-%i
 ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
   --name octoblu-weather-service-port-%i \
   --env ETCDCTL_PEERS=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
@@ -26,18 +26,31 @@ ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
   --env ETCDCTL_PEERS=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
   quay.io/octoblu/etcd-to-env /octoblu/weather-service/env > /tmp/octoblu-weather-service-%i.env \
 "
+ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
+  --name octoblu-weather-service-governator-env-%i \
+  --env ETCDCTL_PEERS=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
+  quay.io/octoblu/etcd-to-env /octoblu/governator/env > /tmp/octoblu-weather-governator-service-%i.env \
+"
 ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   --name octoblu-weather-service-%i \
   --env-file /tmp/octoblu-weather-service-%i.env \
   --memory 512m \
   --publish $(/usr/bin/etcdctl get /octoblu/weather-service/instances/%i/port):80 \
   $(/usr/bin/etcdctl get /octoblu/weather-service/docker_url) \
+  || \
+  /usr/bin/docker run --rm \
+    --name octoblu-weather-service-governator-%i \
+    --env GOVERNATOR_EXIT_CODE=$? \
+    --env GOVERNATOR_SERVICE=octoblu-weather-service-%i \
+    --env GOVERNATOR_APPLICATION=octoblu-weather-service \
+    --env-file /tmp/octoblu-weather-governator-service-%i.env \
+    $(/usr/bin/etcdctl get /octoblu/governator/docker_url) \
 "
-ExecStop=/usr/bin/docker stop --time=5 octoblu-weather-service-%i
+ExecStop=-/usr/bin/docker stop --time=5 octoblu-weather-service-%i
+ExecStopPost=-/usr/bin/echo "Uh oh, bad things afoot"
 
 [Install]
 WantedBy=multi-user.target
 
 [X-Fleet]
-Conflicts=octoblu-weather-service@*.service
 MachineMetadata=Services=true

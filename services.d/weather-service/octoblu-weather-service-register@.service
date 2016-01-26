@@ -1,7 +1,7 @@
 [Unit]
 Description=Register with vulcand for octoblu-weather-service
 After=octoblu-weather-service@%i.service
-Requires=octoblu-weather-service@%i.service
+BindsTo=octoblu-weather-service@%i.service
 
 [Service]
 TimeoutStartSec=300

@@ -21,7 +21,7 @@ ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   $(/usr/bin/etcdctl get /octoblu/meshblu-core-dispatcher/docker_url) \
   node --max_old_space_size=256 command-dispatch.js \
 "
-ExecStop=/usr/bin/docker kill octoblu-meshblu-core-dispatcher-%i
+ExecStop=/usr/bin/docker stop --time=30 octoblu-meshblu-core-dispatcher-%i
 
 [Install]
 WantedBy=multi-user.target

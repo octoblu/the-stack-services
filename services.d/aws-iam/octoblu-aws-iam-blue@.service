@@ -1,0 +1,32 @@
+[Unit]
+Description=octoblu-aws-iam-blue
+Wants=vulcand.service
+After=vulcand.service
+
+[Service]
+TimeoutStartSec=300
+Restart=always
+
+ExecStartPre=/usr/bin/etcdctl get /octoblu/aws-iam/blue/port || /usr/bin/echo "etcd did not contain /octoblu/aws-iam/blue/port" && exit 1
+ExecStartPre=/usr/bin/etcdctl get /octoblu/aws-iam/blue/docker_url || /usr/bin/echo "etcd did not contain /octoblu/aws-iam/blue/docker_url" && exit 1
+ExecStartPre=-/usr/bin/docker rm --force octoblu-aws-iam-blue-env-%i octoblu-aws-iam-blue-%i
+ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
+  --name octoblu-aws-iam-blue-env-%i \
+  -e ETCDCTL_PEERS=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
+  quay.io/octoblu/etcd-to-env /octoblu/aws-iam/env > /tmp/octoblu-aws-iam-blue.env \
+"
+ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
+  --name octoblu-aws-iam-blue-%i \
+  --env-file /tmp/octoblu-aws-iam-blue.env \
+  --memory 512m \
+  -p $(/usr/bin/etcdctl get /octoblu/aws-iam/blue/port):80 \
+  $(/usr/bin/etcdctl get /octoblu/aws-iam/blue/docker_url) \
+"
+ExecStop=/usr/bin/docker stop --time=5 octoblu-aws-iam-blue-%i
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+Conflicts=octoblu-aws-iam-blue@*.service
+MachineMetadata=Services=true

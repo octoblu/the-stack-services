@@ -10,13 +10,12 @@ StartLimitInterval=30
 StartLimitBurst=30
 Restart=always
 
-ExecStartPre=/usr/bin/etcdctl get /octoblu/weather-service/port || /usr/bin/echo "etcd did not contain /octoblu/weather-service/port" && exit 1
 ExecStartPre=/usr/bin/etcdctl get /octoblu/weather-service/docker_url || /usr/bin/echo "etcd did not contain /octoblu/weather-service/docker_url" && exit 1
 ExecStartPre=-/usr/bin/docker rm --force octoblu-weather-service-env-%i octoblu-weather-service-%i octoblu-weather-service-port-%i octoblu-weather-service-governator-%i octoblu-weather-service-governator-env-%i
 ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
   --name octoblu-weather-service-port-%i \
   --env ETCDCTL_PEERS=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
-  $(/usr/bin/etcdctl get /image-versions/octoblu/etcd-lock-port/docker_url) \
+  $(/usr/bin/etcdctl get /octoblu/etcd-lock-port/docker_url) \
     --etcd-uri=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
     --registry /cluster/ports \
     --key /octoblu/weather-service/instances/%i/port \

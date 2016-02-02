@@ -1,0 +1,31 @@
+[Unit]
+Description=Traefik
+Wants=docker.service
+
+[Service]
+TimeoutStartSec=300
+Restart=always
+ExecStartPre=-/usr/bin/docker rm -f octoblu-traefik octoblu-traefik-env
+ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
+  --name octoblu-traefik-env \
+  --env ETCDCTL_PEERS=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
+  quay.io/octoblu/etcd-to-env /octoblu/traefik/env > /tmp/octoblu-traefik.env \
+"
+ExecStart=/usr/bin/sh -c "/usr/bin/docker run    \
+  --rm \
+  --name octoblu-traefik \
+  --env-file /tmp/octoblu-traefik.env \
+  --publish 81:80 \
+  --publish 8080:8080 \
+  $(etcdctl get /octoblu/traefik/docker_url) \
+    --etcd=true \
+    --etcd.endpoint=$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
+    --etcd.watch=true \
+    --web=true \
+    --configFile=/dev/null \
+"
+ExecStop=/usr/bin/docker stop octoblu-traefik
+
+[X-Fleet]
+Global=true
+MachineMetadata=Services=true

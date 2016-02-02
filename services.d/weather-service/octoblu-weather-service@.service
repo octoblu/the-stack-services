@@ -1,8 +1,7 @@
 [Unit]
 Description=octoblu-weather-service
-Wants=vulcand.service
-After=vulcand.service
 Requires=octoblu-weather-service-register@%i.service
+Requires=octoblu-weather-service-sidekick@%i.service
 
 [Service]
 TimeoutStartSec=300

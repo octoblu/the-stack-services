@@ -9,6 +9,11 @@ EnvironmentFile=/etc/environment
 RemainAfterExit=yes
 Restart=on-failure
 ExecStartPre=/usr/bin/etcdctl get /octoblu/weather-service/instances/%i/port
+ExecStartPre=/bin/sh -c " \
+  etcdctl set \
+    /traefik/backends/octoblu-weather-service/servers/octoblu-weather-service-$(etcdctl get /cluster/name)-%i/weight \
+    10 \
+"
 ExecStart=/bin/sh -c " \
   etcdctl set \
     /traefik/backends/octoblu-weather-service/servers/octoblu-weather-service-$(etcdctl get /cluster/name)-%i/url \

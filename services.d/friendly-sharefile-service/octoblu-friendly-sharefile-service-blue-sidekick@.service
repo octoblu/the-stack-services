@@ -1,0 +1,19 @@
+[Unit]
+Description=octoblu-friendly-sharefile-service-blue-sidekick
+
+[Service]
+TimeoutStartSec=30
+Restart=always
+ExecStart=/bin/sh -c "/usr/bin/etcdctl exec-watch \
+  /octoblu/friendly-sharefile-service/restart \
+  -- sh -c \"(docker inspect --format='{{.Id}}' --type=image \$(etcdctl get /octoblu/friendly-sharefile-service/blue/docker_url) \
+               || docker pull \$(etcdctl get /octoblu/friendly-sharefile-service/docker_url)) \
+               && docker stop \
+                    --time=5 \
+                    octoblu-friendly-sharefile-service-blue-%i\""
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-friendly-sharefile-service-blue@%i.service

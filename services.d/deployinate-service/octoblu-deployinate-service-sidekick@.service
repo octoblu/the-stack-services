@@ -1,0 +1,22 @@
+[Unit]
+Description=octoblu-deployinate-service-sidekick
+After=octoblu-deployinate-service@%i.service
+BindsTo=octoblu-deployinate-service@%i.service
+
+[Service]
+TimeoutStartSec=30
+Restart=always
+
+ExecStart=/bin/sh -c "/usr/bin/etcdctl exec-watch \
+  /octoblu/deployinate-service/restart \
+  -- sh -c \"(docker inspect --format='{{.Id}}' --type=image \$(etcdctl get /octoblu/deployinate-service/docker_url) \
+               || docker pull \$(etcdctl get /octoblu/deployinate-service/docker_url)) \
+               && docker stop \
+                    --time=5 \
+                    octoblu-deployinate-service-%i\""
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-deployinate-service@%i.service

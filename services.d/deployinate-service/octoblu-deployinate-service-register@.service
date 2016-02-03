@@ -1,0 +1,38 @@
+[Unit]
+Description=Register with vulcand for octoblu-deployinate-service
+After=octoblu-deployinate-service@%i.service
+BindsTo=octoblu-deployinate-service@%i.service
+
+[Service]
+TimeoutStartSec=300
+EnvironmentFile=/etc/environment
+RemainAfterExit=yes
+Restart=on-failure
+ExecStartPre=/usr/bin/etcdctl get /octoblu/deployinate-service/instances/%i/port
+ExecStartPre=/bin/sh -c " \
+  etcdctl \
+    --no-sync \
+    --endpoint=$(/usr/bin/etcdctl get /octoblu/etcd-major/endpoint) \
+    set \
+    /traefik/backends/octoblu-deployinate-service/servers/octoblu-deployinate-service-$(etcdctl get /cluster/name)-%i/weight \
+    10 \
+"
+ExecStart=/bin/sh -c " \
+  etcdctl \
+    --no-sync \
+    --endpoint=$(/usr/bin/etcdctl get /octoblu/etcd-major/endpoint) \
+    set \
+    /traefik/backends/octoblu-deployinate-service/servers/octoblu-deployinate-service-$(etcdctl get /cluster/name)-%i/url \
+    http://${COREOS_PRIVATE_IPV4}:$(/usr/bin/etcdctl get /octoblu/deployinate-service/instances/%i/port) \
+"
+ExecStop=/bin/sh -c " \
+  etcdctl \
+    --no-sync \
+    --endpoint=$(/usr/bin/etcdctl get /octoblu/etcd-major/endpoint) \
+    rm \
+    --recursive \
+    /traefik/backends/octoblu-deployinate-service/servers/octoblu-deployinate-service-$(etcdctl get /cluster/name)-%i \
+"
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-deployinate-service@%i.service

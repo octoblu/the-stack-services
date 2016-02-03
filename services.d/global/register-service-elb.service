@@ -14,7 +14,7 @@ ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   --env ELB_NAME=service-cluster,traefik-major,etcd-major-internal \
   --env INSTANCE_HOSTNAME=$(hostname) \
   --env-file /tmp/octoblu-register-service-elb.env \
-  $(/usr/bin/etcdctl get /octoblu/register-serivce-elb/docker_url) \
+  $(/usr/bin/etcdctl get /octoblu/register-service-elb/docker_url) \
 "
 
 [X-Fleet]

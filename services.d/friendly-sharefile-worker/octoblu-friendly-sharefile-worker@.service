@@ -18,7 +18,6 @@ ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   --name octoblu-friendly-sharefile-worker-%i \
   --env-file /tmp/octoblu-friendly-sharefile-worker.env \
   --memory 512m \
-  -p $(/usr/bin/etcdctl get /octoblu/friendly-sharefile-worker/port):80 \
   $(/usr/bin/etcdctl get /octoblu/friendly-sharefile-worker/docker_url) \
 "
 ExecStop=/usr/bin/docker stop --time=5 octoblu-friendly-sharefile-worker-%i

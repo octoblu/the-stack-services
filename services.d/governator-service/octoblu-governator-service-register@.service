@@ -1,0 +1,22 @@
+[Unit]
+Description=Register with vulcand for octoblu-governator-service
+After=octoblu-governator-service@%i.service
+BindsTo=octoblu-governator-service@%i.service
+
+[Service]
+TimeoutStartSec=300
+EnvironmentFile=/etc/environment
+RemainAfterExit=yes
+Restart=on-failure
+ExecStartPre=/usr/bin/etcdctl get /octoblu/governator-service/instances/%i/port
+ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
+  --name octoblu-governator-service-register-%i \
+  $(/usr/bin/etcdctl get /octoblu/register-traefik/docker_url) \
+    --etcd-uri $(/usr/bin/etcdctl get /octoblu/etcd-major/endpoint) \
+    --server-key /traefik/backends/octoblu-governator-service-$(etcdctl get /cluster/name)/servers/octoblu-governator-service-$(etcdctl get /cluster/name)-%i \
+    --uri http://${COREOS_PRIVATE_IPV4}:$(/usr/bin/etcdctl get /octoblu/governator-service/instances/%i/port) \
+"
+ExecStop=/usr/bin/docker stop octoblu-governator-service-register-%i
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-governator-service@%i.service

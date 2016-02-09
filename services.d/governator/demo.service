@@ -1,0 +1,12 @@
+[Unit]
+Description=demo
+
+[Service]
+Restart=always
+ExecStart=/bin/sh -c " \
+  sleep 10 \
+  && echo `etcdctl ls` \
+"
+
+[Install]
+WantedBy=multi-user.target

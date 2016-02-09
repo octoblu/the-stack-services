@@ -1,0 +1,21 @@
+[Unit]
+Description=octoblu-governator-service-sidekick
+After=octoblu-governator-service@%i.service
+
+[Service]
+TimeoutStartSec=30
+Restart=always
+
+ExecStartPre=/bin/bash -c " \
+  /usr/bin/etcdctl get /octoblu/kronk/exec > /tmp/octoblu-governator-service-%i-kronk \
+    && chmod +x /tmp/octoblu-governator-service-%i-kronk \
+"
+ExecStart=/usr/bin/etcdctl exec-watch \
+  /octoblu/governator-service/restart \
+  -- /tmp/octoblu-governator-service-%i-kronk 10 /octoblu/governator-service/docker_url octoblu-governator-service-%i
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-governator-service@%i.service

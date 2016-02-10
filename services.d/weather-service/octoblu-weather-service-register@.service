@@ -8,31 +8,20 @@ TimeoutStartSec=300
 EnvironmentFile=/etc/environment
 RemainAfterExit=yes
 Restart=on-failure
-ExecStartPre=/usr/bin/etcdctl get /octoblu/weather-service/instances/%i/port
-ExecStartPre=/bin/sh -c " \
-  etcdctl \
-    --no-sync \
-    --endpoint=$(/usr/bin/etcdctl get /octoblu/etcd-major/endpoint) \
-    set \
-    /traefik/backends/octoblu-weather-service/servers/octoblu-weather-service-$(etcdctl get /cluster/name)-%i/weight \
-    10 \
+ExecStartPre=/usr/bin/
+ExecStartPre=/bin/sh -c "\
+  docker inspect octoblu-weather-service-%i \
+    | docker run --rm --interactive realguess/jq \
+      jq --raw-output '.[].NetworkSettings.Ports["80/tcp"][].HostPort' \
+    | xargs echo -n > /tmp/octoblu-weather-service-%i-port \
 "
-ExecStart=/bin/sh -c " \
-  etcdctl \
-    --no-sync \
-    --endpoint=$(/usr/bin/etcdctl get /octoblu/etcd-major/endpoint) \
-    set \
-    /traefik/backends/octoblu-weather-service/servers/octoblu-weather-service-$(etcdctl get /cluster/name)-%i/url \
-    http://${COREOS_PRIVATE_IPV4}:$(/usr/bin/etcdctl get /octoblu/weather-service/instances/%i/port) \
+ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
+  --name octoblu-weather-service-register-%i \
+  $(/usr/bin/etcdctl get /octoblu/register-traefik/docker_url) \
+    --etcd-uri $(/usr/bin/etcdctl get /octoblu/etcd-major/endpoint) \
+    --server-key /traefik/backends/octoblu-weather-service/servers/octoblu-weather-service-$(etcdctl get /cluster/name)-%i \
+    --uri http://${COREOS_PRIVATE_IPV4}:$(cat /tmp/octoblu-weather-service-%i-port) \
 "
-ExecStop=/bin/sh -c " \
-  etcdctl \
-    --no-sync \
-    --endpoint=$(/usr/bin/etcdctl get /octoblu/etcd-major/endpoint) \
-    rm \
-    --recursive \
-    /traefik/backends/octoblu-weather-service/servers/octoblu-weather-service-$(etcdctl get /cluster/name)-%i \
-"
-
+ExecStop=/usr/bin/docker stop octoblu-weather-service-register-%i
 [X-Fleet]
 X-ConditionMachineOf=octoblu-weather-service@%i.service

@@ -1,18 +1,19 @@
 [Unit]
 Description=octoblu-weather-service-sidekick
 After=octoblu-weather-service@%i.service
-BindsTo=octoblu-weather-service@%i.service
 
 [Service]
 TimeoutStartSec=30
 Restart=always
-ExecStart=/bin/sh -c "/usr/bin/etcdctl exec-watch \
+
+
+ExecStartPre=/bin/bash -c " \
+  /usr/bin/etcdctl get /octoblu/kronk/exec > /tmp/octoblu-weather-service-%i-kronk \
+    && chmod +x /tmp/octoblu-weather-service-%i-kronk \
+"
+ExecStart=/usr/bin/etcdctl exec-watch \
   /octoblu/weather-service/restart \
-  -- sh -c \"(docker inspect --format='{{.Id}}' --type=image \$(etcdctl get /octoblu/weather-service/docker_url) \
-               || docker pull \$(etcdctl get /octoblu/weather-service/docker_url)) \
-               && docker stop \
-                    --time=5 \
-                    octoblu-weather-service-%i\""
+  -- /tmp/octoblu-weather-service-%i-kronk 10 /octoblu/weather-service/docker_url octoblu-weather-service-%i
 
 [Install]
 WantedBy=multi-user.target

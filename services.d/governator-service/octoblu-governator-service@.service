@@ -1,7 +1,7 @@
 [Unit]
 Description=octoblu-governator-service
-Requires=octoblu-governator-service-register@%i.service
-Requires=octoblu-governator-service-sidekick@%i.service
+Wants=octoblu-governator-service-register@%i.service
+Wants=octoblu-governator-service-sidekick@%i.service
 
 [Service]
 TimeoutStartSec=300

@@ -6,27 +6,29 @@ After=octoblu-weather-service@%i.service
 TimeoutStartSec=300
 EnvironmentFile=/etc/environment
 Restart=always
-ExecStartPre=-/usr/bin/docker rm --force octoblu-weather-service-register-env-%i octoblu-weather-service-register-%i
-ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
-  --name octoblu-weather-service-env-%i \
-  --env ETCDCTL_PEERS=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
-  quay.io/octoblu/etcd-to-env /octoblu/weather-service/register-env > /tmp/octoblu-weather-service-register-%i.env \
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk to /tmp' \
+  && /usr/bin/etcdctl get /octoblu/kronk/register/start-pre > /tmp/octoblu-weather-service-register-%i-kronk-start-pre \
+  && /usr/bin/etcdctl get /octoblu/kronk/register/start > /tmp/octoblu-weather-service-register-%i-kronk-start \
+  && /usr/bin/etcdctl get /octoblu/kronk/register/stop > /tmp/octoblu-weather-service-register-%i-kronk-stop \
+  && chmod +x /tmp/octoblu-weather-service-register-%i-kronk-* \
 "
-ExecStartPre=/bin/sh -c "\
-  docker inspect octoblu-weather-service-%i \
-    | docker run --rm --interactive realguess/jq \
-      jq --raw-output '.[].NetworkSettings.Ports[\"80/tcp\"][].HostPort' \
-    | xargs echo -n > /tmp/octoblu-weather-service-%i-port \
+ExecStartPre=/bin/bash -c " \
+  /tmp/octoblu-weather-service-register-%i-kronk-start-pre \
+    octoblu-weather-service \
+    %i \
+    /octoblu/weather-service/register-env \
 "
-ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
-  --name octoblu-weather-service-register-%i \
-  --env-file /tmp/octoblu-weather-service-register-%i.env \
-  $(/usr/bin/etcdctl get /octoblu/register-traefik/docker_url) \
-    --etcd-uri $(/usr/bin/etcdctl get /octoblu/etcd-major/endpoint) \
-    --server-key /traefik/backends/octoblu-weather-service/servers/octoblu-weather-service-$(etcdctl get /cluster/name)-%i \
-    --uri http://${COREOS_PRIVATE_IPV4}:$(cat /tmp/octoblu-weather-service-%i-port) \
+ExecStart=/bin/sh -c " \
+  /tmp/octoblu-weather-service-register-%i-kronk-start \
+    octoblu-weather-service \
+    %i \
 "
-ExecStop=/usr/bin/docker stop octoblu-weather-service-register-%i
+ExecStop=/bin/sh -c " \
+  /tmp/octoblu-weather-service-register-%i-kronk-stop \
+    octoblu-weather-service \
+    %i \
+"
 
 [X-Fleet]
 X-ConditionMachineOf=octoblu-weather-service@%i.service

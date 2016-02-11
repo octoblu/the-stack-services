@@ -1,5 +1,5 @@
 [Unit]
-Description=Register octoblu-weather-service
+Description=octoblu-weather-service-register
 After=octoblu-weather-service@%i.service
 
 [Service]

@@ -8,12 +8,13 @@ Restart=always
 
 
 ExecStartPre=/bin/bash -c " \
-  /usr/bin/etcdctl get /octoblu/kronk/exec > /tmp/octoblu-weather-service-%i-kronk \
-    && chmod +x /tmp/octoblu-weather-service-%i-kronk \
+  echo 'Writing kronk to /tmp' \
+  && /usr/bin/etcdctl get /octoblu/kronk/sidekick/start > /tmp/octoblu-weather-service-sidekick-%i-kronk-start \
+  && chmod +x /tmp/octoblu-weather-service-sidekick-%i-kronk-* \
 "
 ExecStart=/usr/bin/etcdctl exec-watch \
   /octoblu/weather-service/restart \
-  -- /tmp/octoblu-weather-service-%i-kronk 10 /octoblu/weather-service/docker_url octoblu-weather-service-%i octoblu-weather-service-register-%i
+  -- /tmp/octoblu-weather-service-sidekick-%i-kronk-start 10 /octoblu/weather-service/docker_url octoblu-weather-service-%i octoblu-weather-service-register-%i
 
 [Install]
 WantedBy=multi-user.target

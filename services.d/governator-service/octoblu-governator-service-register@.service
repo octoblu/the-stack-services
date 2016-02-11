@@ -1,22 +1,35 @@
 [Unit]
-Description=Register with vulcand for octoblu-governator-service
+Description=Register octoblu-governator-service
 After=octoblu-governator-service@%i.service
-BindsTo=octoblu-governator-service@%i.service
 
 [Service]
 TimeoutStartSec=300
 EnvironmentFile=/etc/environment
-RemainAfterExit=yes
-Restart=on-failure
-ExecStartPre=/usr/bin/etcdctl get /octoblu/governator-service/instances/%i/port
-ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
-  --name octoblu-governator-service-register-%i \
-  $(/usr/bin/etcdctl get /octoblu/register-traefik/docker_url) \
-    --etcd-uri $(/usr/bin/etcdctl get /octoblu/etcd-major/endpoint) \
-    --server-key /traefik/backends/octoblu-governator-service-$(etcdctl get /cluster/name)/servers/octoblu-governator-service-$(etcdctl get /cluster/name)-%i \
-    --uri http://${COREOS_PRIVATE_IPV4}:$(/usr/bin/etcdctl get /octoblu/governator-service/instances/%i/port) \
+Restart=always
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk to /tmp' \
+  && /usr/bin/etcdctl get /octoblu/kronk/register/start-pre > /tmp/octoblu-governator-service-register-%i-kronk-start-pre \
+  && /usr/bin/etcdctl get /octoblu/kronk/register/start > /tmp/octoblu-governator-service-register-%i-kronk-start \
+  && /usr/bin/etcdctl get /octoblu/kronk/register/stop > /tmp/octoblu-governator-service-register-%i-kronk-stop \
+  && chmod +x /tmp/octoblu-governator-service-register-%i-kronk-* \
 "
-ExecStop=/usr/bin/docker stop octoblu-governator-service-register-%i
+ExecStartPre=/bin/bash -c " \
+  /tmp/octoblu-governator-service-register-%i-kronk-start-pre \
+    octoblu-governator-service \
+    %i \
+    /octoblu/governator-service/register-env \
+"
+ExecStart=/bin/sh -c " \
+  /tmp/octoblu-governator-service-register-%i-kronk-start \
+    octoblu-governator-service \
+    %i \
+    octoblu-governator-service-$(/usr/bin/etcdctl get /cluster/name) \
+"
+ExecStop=/bin/sh -c " \
+  /tmp/octoblu-governator-service-register-%i-kronk-stop \
+    octoblu-governator-service \
+    %i \
+"
 
 [X-Fleet]
 X-ConditionMachineOf=octoblu-governator-service@%i.service

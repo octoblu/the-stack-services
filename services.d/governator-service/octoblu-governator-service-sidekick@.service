@@ -6,13 +6,15 @@ After=octoblu-governator-service@%i.service
 TimeoutStartSec=30
 Restart=always
 
+
 ExecStartPre=/bin/bash -c " \
-  /usr/bin/etcdctl get /octoblu/kronk/exec > /tmp/octoblu-governator-service-%i-kronk \
-    && chmod +x /tmp/octoblu-governator-service-%i-kronk \
+  echo 'Writing kronk to /tmp' \
+  && /usr/bin/etcdctl get /octoblu/kronk/sidekick/start > /tmp/octoblu-governator-service-sidekick-%i-kronk-start \
+  && chmod +x /tmp/octoblu-governator-service-sidekick-%i-kronk-* \
 "
 ExecStart=/usr/bin/etcdctl exec-watch \
   /octoblu/governator-service/restart \
-  -- /tmp/octoblu-governator-service-%i-kronk 10 /octoblu/governator-service/docker_url octoblu-governator-service-%i
+  -- /tmp/octoblu-governator-service-sidekick-%i-kronk-start 10 /octoblu/governator-service/docker_url octoblu-governator-service-%i octoblu-governator-service-register-%i
 
 [Install]
 WantedBy=multi-user.target

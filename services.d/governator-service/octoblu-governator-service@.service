@@ -10,42 +10,32 @@ StartLimitBurst=30
 Restart=always
 
 
-ExecStartPre=/usr/bin/etcdctl get /octoblu/governator-service/docker_url || /usr/bin/echo "etcd did not contain /octoblu/governator-service/docker_url" && exit 1
-ExecStartPre=-/usr/bin/docker rm --force octoblu-governator-service-env-%i octoblu-governator-service-%i octoblu-governator-service-port-%i octoblu-governator-service-tattle-%i octoblu-governator-service-tattle-env-%i
-ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
-  --name octoblu-governator-service-port-%i \
-  --env ETCDCTL_PEERS=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
-  $(/usr/bin/etcdctl get /octoblu/etcd-lock-port/docker_url) \
-    --etcd-uri=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
-    --registry /cluster/ports \
-    --key /octoblu/governator-service/instances/%i/port \
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk to /tmp' \
+  && /usr/bin/etcdctl get /octoblu/kronk/service/start-pre > /tmp/octoblu-governator-service-%i-kronk-start-pre \
+  && /usr/bin/etcdctl get /octoblu/kronk/service/start > /tmp/octoblu-governator-service-%i-kronk-start \
+  && /usr/bin/etcdctl get /octoblu/kronk/service/stop > /tmp/octoblu-governator-service-%i-kronk-stop \
+  && chmod +x /tmp/octoblu-governator-service-%i-kronk-* \
 "
-ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
-  --name octoblu-governator-service-env-%i \
-  --env ETCDCTL_PEERS=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
-  quay.io/octoblu/etcd-to-env /octoblu/governator-service/env > /tmp/octoblu-governator-service-%i.env \
+ExecStartPre=/bin/bash -c " \
+  /tmp/octoblu-governator-service-%i-kronk-start-pre \
+    octoblu-governator-service \
+    %i \
+    /octoblu/governator-service/env \
+    /octoblu/governator-service/docker_url \
 "
-ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
-  --name octoblu-governator-service-tattle-env-%i \
-  --env ETCDCTL_PEERS=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
-  quay.io/octoblu/etcd-to-env /octoblu/tattle/env > /tmp/octoblu-governator-service-tattle-%i.env \
+ExecStart=/bin/bash -c " \
+  /tmp/octoblu-governator-service-%i-kronk-start \
+    octoblu-governator-service \
+    %i \
+    512m \
+    /octoblu/governator-service/docker_url \
 "
-ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
-  --name octoblu-governator-service-%i \
-  --env-file /tmp/octoblu-governator-service-%i.env \
-  --memory 512m \
-  --publish $(/usr/bin/etcdctl get /octoblu/governator-service/instances/%i/port):80 \
-  $(/usr/bin/etcdctl get /octoblu/governator-service/docker_url) \
-  || \
-  /usr/bin/docker run --rm \
-    --name octoblu-governator-service-tattle-%i \
-    --env TATTLE_EXIT_CODE=$? \
-    --env TATTLE_SERVICE=octoblu-governator-service-%i \
-    --env TATTLE_APPLICATION=octoblu-governator-service \
-    --env-file /tmp/octoblu-governator-service-tattle-%i.env \
-    $(/usr/bin/etcdctl get /octoblu/tattle/docker_url) \
+ExecStop=/bin/bash -c " \
+  /tmp/octoblu-governator-service-%i-kronk-stop \
+    octoblu-governator-service \
+    %i \
 "
-ExecStop=-/usr/bin/docker stop --time=5 octoblu-governator-service-%i
 
 [Install]
 WantedBy=multi-user.target

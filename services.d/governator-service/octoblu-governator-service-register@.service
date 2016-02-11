@@ -1,5 +1,5 @@
 [Unit]
-Description=Register octoblu-governator-service
+Description=octoblu-governator-service-register
 After=octoblu-governator-service@%i.service
 
 [Service]

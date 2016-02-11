@@ -1,5 +1,5 @@
 [Unit]
-Description=Register with vulcand for octoblu-weather-service
+Description=Register octoblu-weather-service
 After=octoblu-weather-service@%i.service
 
 [Service]

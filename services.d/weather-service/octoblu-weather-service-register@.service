@@ -8,15 +8,15 @@ TimeoutStartSec=300
 EnvironmentFile=/etc/environment
 RemainAfterExit=yes
 Restart=on-failure
-ExecStartPre=/usr/bin/
 ExecStartPre=/bin/sh -c "\
   docker inspect octoblu-weather-service-%i \
     | docker run --rm --interactive realguess/jq \
-      jq --raw-output '.[].NetworkSettings.Ports["80/tcp"][].HostPort' \
+      jq --raw-output '.[].NetworkSettings.Ports[\"80/tcp\"][].HostPort' \
     | xargs echo -n > /tmp/octoblu-weather-service-%i-port \
 "
 ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   --name octoblu-weather-service-register-%i \
+  --env DEBUG='nothing' \
   $(/usr/bin/etcdctl get /octoblu/register-traefik/docker_url) \
     --etcd-uri $(/usr/bin/etcdctl get /octoblu/etcd-major/endpoint) \
     --server-key /traefik/backends/octoblu-weather-service/servers/octoblu-weather-service-$(etcdctl get /cluster/name)-%i \

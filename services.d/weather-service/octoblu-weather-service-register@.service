@@ -1,13 +1,11 @@
 [Unit]
 Description=Register with vulcand for octoblu-weather-service
 After=octoblu-weather-service@%i.service
-BindsTo=octoblu-weather-service@%i.service
 
 [Service]
 TimeoutStartSec=300
 EnvironmentFile=/etc/environment
-RemainAfterExit=yes
-Restart=on-failure
+Restart=always
 ExecStartPre=-/usr/bin/docker rm --force octoblu-weather-service-register-env-%i octoblu-weather-service-register-%i
 ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
   --name octoblu-weather-service-env-%i \

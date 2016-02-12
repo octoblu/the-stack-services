@@ -8,9 +8,9 @@ EnvironmentFile=/etc/environment
 Restart=always
 ExecStartPre=/bin/bash -c " \
   echo 'Writing kronk to /tmp' \
-  && /usr/bin/etcdctl get /octoblu/kronk/register/start-pre > /tmp/octoblu-governator-service-register-%i-kronk-start-pre \
-  && /usr/bin/etcdctl get /octoblu/kronk/register/start > /tmp/octoblu-governator-service-register-%i-kronk-start \
-  && /usr/bin/etcdctl get /octoblu/kronk/register/stop > /tmp/octoblu-governator-service-register-%i-kronk-stop \
+  && /usr/bin/etcdctl get /kronk/register/start-pre > /tmp/octoblu-governator-service-register-%i-kronk-start-pre \
+  && /usr/bin/etcdctl get /kronk/register/start > /tmp/octoblu-governator-service-register-%i-kronk-start \
+  && /usr/bin/etcdctl get /kronk/register/stop > /tmp/octoblu-governator-service-register-%i-kronk-stop \
   && chmod +x /tmp/octoblu-governator-service-register-%i-kronk-* \
 "
 ExecStartPre=/bin/bash -c " \

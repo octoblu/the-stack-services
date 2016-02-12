@@ -12,9 +12,9 @@ Restart=always
 
 ExecStartPre=/bin/bash -c " \
   echo 'Writing kronk to /tmp' \
-  && /usr/bin/etcdctl get /octoblu/kronk/service/start-pre > /tmp/octoblu-governator-service-%i-kronk-start-pre \
-  && /usr/bin/etcdctl get /octoblu/kronk/service/start > /tmp/octoblu-governator-service-%i-kronk-start \
-  && /usr/bin/etcdctl get /octoblu/kronk/service/stop > /tmp/octoblu-governator-service-%i-kronk-stop \
+  && /usr/bin/etcdctl get /kronk/service/start-pre > /tmp/octoblu-governator-service-%i-kronk-start-pre \
+  && /usr/bin/etcdctl get /kronk/service/start > /tmp/octoblu-governator-service-%i-kronk-start \
+  && /usr/bin/etcdctl get /kronk/service/stop > /tmp/octoblu-governator-service-%i-kronk-stop \
   && chmod +x /tmp/octoblu-governator-service-%i-kronk-* \
 "
 ExecStartPre=/bin/bash -c " \

@@ -30,6 +30,7 @@ ExecStart=/bin/bash -c " \
     %i \
     512m \
     /octoblu/governator-service/docker_url \
+    /octoblu/governator-service \
 "
 ExecStop=/bin/bash -c " \
   /tmp/octoblu-governator-service-%i-kronk-stop \

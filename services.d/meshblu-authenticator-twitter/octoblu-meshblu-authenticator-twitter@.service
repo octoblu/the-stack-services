@@ -1,0 +1,45 @@
+[Unit]
+Description=octoblu-meshblu-authenticator-twitter
+Wants=octoblu-meshblu-authenticator-twitter-register@%i.service
+Wants=octoblu-meshblu-authenticator-twitter-sidekick@%i.service
+
+[Service]
+TimeoutStartSec=300
+StartLimitInterval=30
+StartLimitBurst=30
+Restart=always
+
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk to /tmp' \
+  && /usr/bin/etcdctl get /kronk/service/start-pre > /tmp/octoblu-meshblu-authenticator-twitter-%i-kronk-start-pre \
+  && /usr/bin/etcdctl get /kronk/service/start > /tmp/octoblu-meshblu-authenticator-twitter-%i-kronk-start \
+  && /usr/bin/etcdctl get /kronk/service/stop > /tmp/octoblu-meshblu-authenticator-twitter-%i-kronk-stop \
+  && chmod +x /tmp/octoblu-meshblu-authenticator-twitter-%i-kronk-* \
+"
+ExecStartPre=/bin/bash -c " \
+  /tmp/octoblu-meshblu-authenticator-twitter-%i-kronk-start-pre \
+    octoblu-meshblu-authenticator-twitter \
+    %i \
+    /octoblu/meshblu-authenticator-twitter/env \
+    /octoblu/meshblu-authenticator-twitter/docker_url \
+"
+ExecStart=/bin/bash -c " \
+  /tmp/octoblu-meshblu-authenticator-twitter-%i-kronk-start \
+    octoblu-meshblu-authenticator-twitter \
+    %i \
+    512m \
+    /octoblu/meshblu-authenticator-twitter/docker_url \
+    /octoblu/meshblu-authenticator-twitter \
+"
+ExecStop=/bin/bash -c " \
+  /tmp/octoblu-meshblu-authenticator-twitter-%i-kronk-stop \
+    octoblu-meshblu-authenticator-twitter \
+    %i \
+"
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+MachineMetadata=Services=true

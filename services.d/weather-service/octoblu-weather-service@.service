@@ -30,6 +30,7 @@ ExecStart=/bin/bash -c " \
     %i \
     512m \
     /octoblu/weather-service/docker_url \
+    /octoblu/weather-service \
 "
 ExecStop=/bin/bash -c " \
   /tmp/octoblu-weather-service-%i-kronk-stop \

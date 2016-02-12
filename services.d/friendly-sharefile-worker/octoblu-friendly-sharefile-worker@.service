@@ -1,0 +1,30 @@
+[Unit]
+Description=octoblu-friendly-sharefile-worker
+Wants=vulcand.service
+After=vulcand.service
+
+[Service]
+TimeoutStartSec=300
+Restart=always
+
+ExecStartPre=/usr/bin/etcdctl get /octoblu/friendly-sharefile-worker/docker_url || /usr/bin/echo "etcd did not contain /octoblu/friendly-sharefile-worker/docker_url" && exit 1
+ExecStartPre=-/usr/bin/docker rm --force octoblu-friendly-sharefile-worker-env-%i octoblu-friendly-sharefile-worker-%i
+ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
+  --name octoblu-friendly-sharefile-worker-env-%i \
+  -e ETCDCTL_PEERS=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
+  quay.io/octoblu/etcd-to-env /octoblu/friendly-sharefile-worker/env > /tmp/octoblu-friendly-sharefile-worker.env \
+"
+ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
+  --name octoblu-friendly-sharefile-worker-%i \
+  --env-file /tmp/octoblu-friendly-sharefile-worker.env \
+  --memory 512m \
+  $(/usr/bin/etcdctl get /octoblu/friendly-sharefile-worker/docker_url) \
+"
+ExecStop=/usr/bin/docker stop --time=5 octoblu-friendly-sharefile-worker-%i
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+Conflicts=octoblu-friendly-sharefile-worker@*.service
+MachineMetadata=Services=true

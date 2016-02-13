@@ -13,7 +13,7 @@ ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   --name octoblu-meshblu-haproxy-register-single-service \
   -e ELB_NAME=meshblu-service-cluster \
   -e INSTANCE_HOSTNAME=$(hostname) \
-  --env-file /tmp/register-service-elb.env \
+  --env-file /tmp/octoblu-meshblu-haproxy-sidekick-elb.env \
   $(/usr/bin/etcdctl get /octoblu/register-single-service-elb/docker_url) \
 "
 

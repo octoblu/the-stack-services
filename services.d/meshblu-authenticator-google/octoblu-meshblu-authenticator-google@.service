@@ -1,0 +1,45 @@
+[Unit]
+Description=octoblu-meshblu-authenticator-google
+Wants=octoblu-meshblu-authenticator-google-register@%i.service
+Wants=octoblu-meshblu-authenticator-google-sidekick@%i.service
+
+[Service]
+TimeoutStartSec=300
+StartLimitInterval=30
+StartLimitBurst=30
+Restart=always
+
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk to /tmp' \
+  && /usr/bin/etcdctl get /kronk/service/start-pre > /tmp/octoblu-meshblu-authenticator-google-%i-kronk-start-pre \
+  && /usr/bin/etcdctl get /kronk/service/start > /tmp/octoblu-meshblu-authenticator-google-%i-kronk-start \
+  && /usr/bin/etcdctl get /kronk/service/stop > /tmp/octoblu-meshblu-authenticator-google-%i-kronk-stop \
+  && chmod +x /tmp/octoblu-meshblu-authenticator-google-%i-kronk-* \
+"
+ExecStartPre=/bin/bash -c " \
+  /tmp/octoblu-meshblu-authenticator-google-%i-kronk-start-pre \
+    octoblu-meshblu-authenticator-google \
+    %i \
+    /octoblu/meshblu-authenticator-google/env \
+    /octoblu/meshblu-authenticator-google/docker_url \
+"
+ExecStart=/bin/bash -c " \
+  /tmp/octoblu-meshblu-authenticator-google-%i-kronk-start \
+    octoblu-meshblu-authenticator-google \
+    %i \
+    512m \
+    /octoblu/meshblu-authenticator-google/docker_url \
+    /octoblu/meshblu-authenticator-google \
+"
+ExecStop=/bin/bash -c " \
+  /tmp/octoblu-meshblu-authenticator-google-%i-kronk-stop \
+    octoblu-meshblu-authenticator-google \
+    %i \
+"
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+MachineMetadata=Services=true

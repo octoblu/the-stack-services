@@ -1,0 +1,23 @@
+[Unit]
+Description=octoblu-meshblu-authenticator-google-sidekick
+After=octoblu-meshblu-authenticator-google@%i.service
+
+[Service]
+TimeoutStartSec=30
+Restart=always
+
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk to /tmp' \
+  && /usr/bin/etcdctl get /kronk/sidekick/start > /tmp/octoblu-meshblu-authenticator-google-sidekick-%i-kronk-start \
+  && chmod +x /tmp/octoblu-meshblu-authenticator-google-sidekick-%i-kronk-* \
+"
+ExecStart=/usr/bin/etcdctl exec-watch \
+  /octoblu/meshblu-authenticator-google/restart \
+  -- /tmp/octoblu-meshblu-authenticator-google-sidekick-%i-kronk-start 10 /octoblu/meshblu-authenticator-google/docker_url octoblu-meshblu-authenticator-google-%i octoblu-meshblu-authenticator-google-register-%i
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-meshblu-authenticator-google@%i.service

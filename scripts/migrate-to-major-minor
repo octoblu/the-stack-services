@@ -1,0 +1,100 @@
+#!/bin/bash
+
+add_quay_hook() {
+  local project_name="$1"
+
+  quayhook "${project_name}"
+}
+
+generate_service_files() {
+  local project_name="$1"
+  local directory="$2"
+
+  deployinate-configurator traefik \
+    --dir "${directory}" \
+    "${project_name}"
+}
+
+remove_old_service_files() {
+  local project_name="$1"
+  local directory="$2"
+
+  git -C "${directory}" rm -f \
+    "octoblu-${project_name}-blue*.service" \
+    "octoblu-${project_name}-green*.service"
+}
+
+update_service_files() {
+  local project_name="$1"
+  local directory="${HOME}/Projects/Octoblu/the-stack-services/services.d/${project_name}"
+
+  generate_service_files "${project_name}" "${directory}" \
+    && remove_old_service_files "${project_name}" "${directory}"
+}
+
+update_minord(){
+  local project_name="$1"
+  local git_directory="${HOME}/Projects/Octoblu/the-stack-services/services.d/${project_name}"
+  local minor_directory="${HOME}/Projects/Octoblu/the-stack-env-production/minor.d/octoblu/${project_name}"
+  local major_directory="${HOME}/Projects/Octoblu/the-stack-env-production/major.d/octoblu/${project_name}"
+
+  cp -r "${major_directory}" "${minor_directory}"
+  rm -r \
+    "${minor_directory}/blue" \
+    "${minor_directory}/green" \
+    "${minor_directory}/host" \
+    "${minor_directory}/target" \
+    "${minor_directory}/active" \
+    "${minor_directory}/current_step" \
+    "${minor_directory}/count"
+
+  minorsync load "${project_name}"
+}
+
+update_traefik(){
+  local project_name="$1"
+  local host="$2"
+  local traefik_dir="${HOME}/Projects/Octoblu/the-stack-env-production/major.d/traefik/"
+  local backend_dir="${traefik_dir}/backends/octoblu-${project_name}"
+  local frontend_dir="${traefik_dir}/frontends/octoblu-${project_name}"
+
+  mkdir -p \
+    "${backend_dir}/circuitbreaker" \
+    "${backend_dir}/loadbalancer" \
+    "${frontend_dir}/routes/host_rule"
+
+  # Backend
+  echo "NetworkErrorRatio() > 0.5" > "${backend_dir}/circuitbreaker/expression"
+  echo "drr" > "${backend_dir}/loadbalancer/method"
+
+  # Frontend
+  echo "octoblu-${project_name}" > "${frontend_dir}/backend"
+  echo "true" > "${frontend_dir}/passHostHeader"
+  echo "Host" > "${frontend_dir}/routes/host_rule/rule"
+  echo "${host}" > "${frontend_dir}/routes/host_rule/value"
+
+  env NAMESPACE=traefik majorsync load "backends/octoblu-${project_name}"
+  env NAMESPACE=traefik majorsync load "frontends/octoblu-${project_name}"
+}
+
+
+main(){
+  local project_name="$1"
+  local host="$2"
+
+  echo "Migrating ${project_name} with host ${host}, you've got 5 seconds to cancel (ctrl+c)"
+  sleep 5
+
+  echo "Too late" \
+    && update_service_files "${project_name}" \
+    && update_minord "${project_name}" \
+    && update_traefik "${project_name}" "${host}" \
+    && add_quay_hook "${project_name}"
+
+  echo ""
+  echo "Things you still need to do:"
+  echo "  * remove Quay's old webhook"
+  echo "  * deploy a version"
+  echo "  * submit, load, and start the services"
+}
+main $@

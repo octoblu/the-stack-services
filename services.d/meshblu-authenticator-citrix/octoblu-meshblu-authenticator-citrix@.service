@@ -1,0 +1,45 @@
+[Unit]
+Description=octoblu-meshblu-authenticator-citrix
+Wants=octoblu-meshblu-authenticator-citrix-register@%i.service
+Wants=octoblu-meshblu-authenticator-citrix-sidekick@%i.service
+
+[Service]
+TimeoutStartSec=300
+StartLimitInterval=30
+StartLimitBurst=30
+Restart=always
+
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk to /tmp' \
+  && /usr/bin/etcdctl get /kronk/service/start-pre > /tmp/octoblu-meshblu-authenticator-citrix-%i-kronk-start-pre \
+  && /usr/bin/etcdctl get /kronk/service/start > /tmp/octoblu-meshblu-authenticator-citrix-%i-kronk-start \
+  && /usr/bin/etcdctl get /kronk/service/stop > /tmp/octoblu-meshblu-authenticator-citrix-%i-kronk-stop \
+  && chmod +x /tmp/octoblu-meshblu-authenticator-citrix-%i-kronk-* \
+"
+ExecStartPre=/bin/bash -c " \
+  /tmp/octoblu-meshblu-authenticator-citrix-%i-kronk-start-pre \
+    octoblu-meshblu-authenticator-citrix \
+    %i \
+    /octoblu/meshblu-authenticator-citrix/env \
+    /octoblu/meshblu-authenticator-citrix/docker_url \
+"
+ExecStart=/bin/bash -c " \
+  /tmp/octoblu-meshblu-authenticator-citrix-%i-kronk-start \
+    octoblu-meshblu-authenticator-citrix \
+    %i \
+    512m \
+    /octoblu/meshblu-authenticator-citrix/docker_url \
+    /octoblu/meshblu-authenticator-citrix \
+"
+ExecStop=/bin/bash -c " \
+  /tmp/octoblu-meshblu-authenticator-citrix-%i-kronk-stop \
+    octoblu-meshblu-authenticator-citrix \
+    %i \
+"
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+MachineMetadata=Services=true

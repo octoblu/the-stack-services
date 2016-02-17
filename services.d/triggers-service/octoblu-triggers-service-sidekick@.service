@@ -1,0 +1,23 @@
+[Unit]
+Description=octoblu-triggers-service-sidekick
+After=octoblu-triggers-service@%i.service
+
+[Service]
+TimeoutStartSec=30
+Restart=always
+
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk to /tmp' \
+  && /usr/bin/etcdctl get /kronk/sidekick/start > /tmp/octoblu-triggers-service-sidekick-%i-kronk-start \
+  && chmod +x /tmp/octoblu-triggers-service-sidekick-%i-kronk-* \
+"
+ExecStart=/usr/bin/etcdctl exec-watch \
+  /octoblu/triggers-service/restart \
+  -- /tmp/octoblu-triggers-service-sidekick-%i-kronk-start 10 /octoblu/triggers-service/docker_url octoblu-triggers-service-%i octoblu-triggers-service-register-%i
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-triggers-service@%i.service

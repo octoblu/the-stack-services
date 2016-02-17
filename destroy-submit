@@ -12,6 +12,8 @@ unit_blue=octoblu-$unit-blue@.service
 unit_green=octoblu-$unit-green@.service
 unit_green_healthcheck=octoblu-$unit-green-healthcheck.service
 unit_blue_healthcheck=octoblu-$unit-blue-healthcheck.service
+unit_green_sidekick=octoblu-$unit-green-sidekick@.service
+unit_blue_sidekick=octoblu-$unit-blue-sidekick@.service
 unit_green_register=octoblu-$unit-green-register@.service
 unit_blue_register=octoblu-$unit-blue-register@.service
 
@@ -28,6 +30,12 @@ fleetctl destroy $unit_blue_healthcheck
 
 printf "destroying:> %s\n" $unit_green_healthcheck
 fleetctl destroy $unit_green_healthcheck
+
+printf "destroying:> %s\n" $unit_blue_sidekick
+fleetctl destroy $unit_blue_sidekick
+
+printf "destroying:> %s\n" $unit_green_sidekick
+fleetctl destroy $unit_green_sidekick
 
 printf "destroying:> %s\n" $unit_blue_register
 fleetctl destroy $unit_blue_register
@@ -46,6 +54,12 @@ fleetctl submit $INSTALL_DIR/services.d/$unit/$unit_blue_healthcheck
 
 printf "submitting:> %s \n" $unit_green_healthcheck
 fleetctl submit $INSTALL_DIR/services.d/$unit/$unit_green_healthcheck
+
+printf "submitting:> %s \n" $unit_blue_sidekick
+fleetctl submit $INSTALL_DIR/services.d/$unit/$unit_blue_sidekick
+
+printf "submitting:> %s \n" $unit_green_sidekick
+fleetctl submit $INSTALL_DIR/services.d/$unit/$unit_green_sidekick
 
 printf "submitting:> %s \n" $unit_blue_register
 fleetctl submit $INSTALL_DIR/services.d/$unit/$unit_blue_register

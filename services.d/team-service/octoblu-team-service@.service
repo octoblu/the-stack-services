@@ -1,0 +1,51 @@
+[Unit]
+Description=octoblu-team-service
+Wants=octoblu-team-service-register@%i.service
+Wants=octoblu-team-service-sidekick@%i.service
+
+[Service]
+TimeoutStartSec=300
+StartLimitInterval=30
+StartLimitBurst=30
+Restart=always
+
+
+ExecStartPre=/bin/sh -c '/usr/bin/docker login \
+  --username $(/usr/bin/etcdctl get /docker/quay.io/username) \
+  --password $(/usr/bin/etcdctl get /docker/quay.io/password) \
+  --email $(/usr/bin/etcdctl get /docker/quay.io/email) \
+  quay.io'
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk to /tmp' \
+  && /usr/bin/etcdctl get /kronk/service/start-pre > /tmp/octoblu-team-service-%i-kronk-start-pre \
+  && /usr/bin/etcdctl get /kronk/service/start > /tmp/octoblu-team-service-%i-kronk-start \
+  && /usr/bin/etcdctl get /kronk/service/stop > /tmp/octoblu-team-service-%i-kronk-stop \
+  && chmod +x /tmp/octoblu-team-service-%i-kronk-* \
+"
+ExecStartPre=/bin/bash -c " \
+  /tmp/octoblu-team-service-%i-kronk-start-pre \
+    octoblu-team-service \
+    %i \
+    /octoblu/team-service/env \
+    /octoblu/team-service/docker_url \
+"
+ExecStart=/bin/bash -c " \
+  /tmp/octoblu-team-service-%i-kronk-start \
+    octoblu-team-service \
+    %i \
+    512m \
+    /octoblu/team-service/docker_url \
+    /octoblu/team-service \
+"
+ExecStop=/bin/bash -c " \
+  /tmp/octoblu-team-service-%i-kronk-stop \
+    octoblu-team-service \
+    %i \
+"
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+MachineMetadata=Services=true

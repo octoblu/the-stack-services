@@ -1,0 +1,34 @@
+[Unit]
+Description=octoblu-team-service-register
+After=octoblu-team-service@%i.service
+
+[Service]
+TimeoutStartSec=300
+EnvironmentFile=/etc/environment
+Restart=always
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk to /tmp' \
+  && /usr/bin/etcdctl get /kronk/register/start-pre > /tmp/octoblu-team-service-register-%i-kronk-start-pre \
+  && /usr/bin/etcdctl get /kronk/register/start > /tmp/octoblu-team-service-register-%i-kronk-start \
+  && /usr/bin/etcdctl get /kronk/register/stop > /tmp/octoblu-team-service-register-%i-kronk-stop \
+  && chmod +x /tmp/octoblu-team-service-register-%i-kronk-* \
+"
+ExecStartPre=/bin/bash -c " \
+  /tmp/octoblu-team-service-register-%i-kronk-start-pre \
+    octoblu-team-service \
+    %i \
+    /octoblu/team-service/register-env \
+"
+ExecStart=/bin/sh -c " \
+  /tmp/octoblu-team-service-register-%i-kronk-start \
+    octoblu-team-service \
+    %i \
+"
+ExecStop=/bin/sh -c " \
+  /tmp/octoblu-team-service-register-%i-kronk-stop \
+    octoblu-team-service \
+    %i \
+"
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-team-service@%i.service

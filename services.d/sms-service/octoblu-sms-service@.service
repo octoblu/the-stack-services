@@ -1,0 +1,45 @@
+[Unit]
+Description=octoblu-sms-service
+Wants=octoblu-sms-service-register@%i.service
+Wants=octoblu-sms-service-sidekick@%i.service
+
+[Service]
+TimeoutStartSec=300
+StartLimitInterval=30
+StartLimitBurst=30
+Restart=always
+
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk to /tmp' \
+  && /usr/bin/etcdctl get /kronk/service/start-pre > /tmp/octoblu-sms-service-%i-kronk-start-pre \
+  && /usr/bin/etcdctl get /kronk/service/start > /tmp/octoblu-sms-service-%i-kronk-start \
+  && /usr/bin/etcdctl get /kronk/service/stop > /tmp/octoblu-sms-service-%i-kronk-stop \
+  && chmod +x /tmp/octoblu-sms-service-%i-kronk-* \
+"
+ExecStartPre=/bin/bash -c " \
+  /tmp/octoblu-sms-service-%i-kronk-start-pre \
+    octoblu-sms-service \
+    %i \
+    /octoblu/sms-service/env \
+    /octoblu/sms-service/docker_url \
+"
+ExecStart=/bin/bash -c " \
+  /tmp/octoblu-sms-service-%i-kronk-start \
+    octoblu-sms-service \
+    %i \
+    512m \
+    /octoblu/sms-service/docker_url \
+    /octoblu/sms-service \
+"
+ExecStop=/bin/bash -c " \
+  /tmp/octoblu-sms-service-%i-kronk-stop \
+    octoblu-sms-service \
+    %i \
+"
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+MachineMetadata=Services=true

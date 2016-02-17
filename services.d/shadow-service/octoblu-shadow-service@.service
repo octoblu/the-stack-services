@@ -1,0 +1,51 @@
+[Unit]
+Description=octoblu-shadow-service
+Wants=octoblu-shadow-service-register@%i.service
+Wants=octoblu-shadow-service-sidekick@%i.service
+
+[Service]
+TimeoutStartSec=300
+StartLimitInterval=30
+StartLimitBurst=30
+Restart=always
+
+
+ExecStartPre=/bin/sh -c '/usr/bin/docker login \
+  --username $(/usr/bin/etcdctl get /docker/quay.io/username) \
+  --password $(/usr/bin/etcdctl get /docker/quay.io/password) \
+  --email $(/usr/bin/etcdctl get /docker/quay.io/email) \
+  quay.io'
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk to /tmp' \
+  && /usr/bin/etcdctl get /kronk/service/start-pre > /tmp/octoblu-shadow-service-%i-kronk-start-pre \
+  && /usr/bin/etcdctl get /kronk/service/start > /tmp/octoblu-shadow-service-%i-kronk-start \
+  && /usr/bin/etcdctl get /kronk/service/stop > /tmp/octoblu-shadow-service-%i-kronk-stop \
+  && chmod +x /tmp/octoblu-shadow-service-%i-kronk-* \
+"
+ExecStartPre=/bin/bash -c " \
+  /tmp/octoblu-shadow-service-%i-kronk-start-pre \
+    octoblu-shadow-service \
+    %i \
+    /octoblu/shadow-service/env \
+    /octoblu/shadow-service/docker_url \
+"
+ExecStart=/bin/bash -c " \
+  /tmp/octoblu-shadow-service-%i-kronk-start \
+    octoblu-shadow-service \
+    %i \
+    512m \
+    /octoblu/shadow-service/docker_url \
+    /octoblu/shadow-service \
+"
+ExecStop=/bin/bash -c " \
+  /tmp/octoblu-shadow-service-%i-kronk-stop \
+    octoblu-shadow-service \
+    %i \
+"
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+MachineMetadata=Services=true

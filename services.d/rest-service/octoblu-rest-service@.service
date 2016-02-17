@@ -1,0 +1,45 @@
+[Unit]
+Description=octoblu-rest-service
+Wants=octoblu-rest-service-register@%i.service
+Wants=octoblu-rest-service-sidekick@%i.service
+
+[Service]
+TimeoutStartSec=300
+StartLimitInterval=30
+StartLimitBurst=30
+Restart=always
+
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk to /tmp' \
+  && /usr/bin/etcdctl get /kronk/service/start-pre > /tmp/octoblu-rest-service-%i-kronk-start-pre \
+  && /usr/bin/etcdctl get /kronk/service/start > /tmp/octoblu-rest-service-%i-kronk-start \
+  && /usr/bin/etcdctl get /kronk/service/stop > /tmp/octoblu-rest-service-%i-kronk-stop \
+  && chmod +x /tmp/octoblu-rest-service-%i-kronk-* \
+"
+ExecStartPre=/bin/bash -c " \
+  /tmp/octoblu-rest-service-%i-kronk-start-pre \
+    octoblu-rest-service \
+    %i \
+    /octoblu/rest-service/env \
+    /octoblu/rest-service/docker_url \
+"
+ExecStart=/bin/bash -c " \
+  /tmp/octoblu-rest-service-%i-kronk-start \
+    octoblu-rest-service \
+    %i \
+    512m \
+    /octoblu/rest-service/docker_url \
+    /octoblu/rest-service \
+"
+ExecStop=/bin/bash -c " \
+  /tmp/octoblu-rest-service-%i-kronk-stop \
+    octoblu-rest-service \
+    %i \
+"
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+MachineMetadata=Services=true

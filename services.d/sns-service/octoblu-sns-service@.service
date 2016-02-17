@@ -1,0 +1,45 @@
+[Unit]
+Description=octoblu-sns-service
+Wants=octoblu-sns-service-register@%i.service
+Wants=octoblu-sns-service-sidekick@%i.service
+
+[Service]
+TimeoutStartSec=300
+StartLimitInterval=30
+StartLimitBurst=30
+Restart=always
+
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk to /tmp' \
+  && /usr/bin/etcdctl get /kronk/service/start-pre > /tmp/octoblu-sns-service-%i-kronk-start-pre \
+  && /usr/bin/etcdctl get /kronk/service/start > /tmp/octoblu-sns-service-%i-kronk-start \
+  && /usr/bin/etcdctl get /kronk/service/stop > /tmp/octoblu-sns-service-%i-kronk-stop \
+  && chmod +x /tmp/octoblu-sns-service-%i-kronk-* \
+"
+ExecStartPre=/bin/bash -c " \
+  /tmp/octoblu-sns-service-%i-kronk-start-pre \
+    octoblu-sns-service \
+    %i \
+    /octoblu/sns-service/env \
+    /octoblu/sns-service/docker_url \
+"
+ExecStart=/bin/bash -c " \
+  /tmp/octoblu-sns-service-%i-kronk-start \
+    octoblu-sns-service \
+    %i \
+    512m \
+    /octoblu/sns-service/docker_url \
+    /octoblu/sns-service \
+"
+ExecStop=/bin/bash -c " \
+  /tmp/octoblu-sns-service-%i-kronk-stop \
+    octoblu-sns-service \
+    %i \
+"
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+MachineMetadata=Services=true

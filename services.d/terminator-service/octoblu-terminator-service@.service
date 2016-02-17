@@ -1,0 +1,45 @@
+[Unit]
+Description=octoblu-terminator-service
+Wants=octoblu-terminator-service-register@%i.service
+Wants=octoblu-terminator-service-sidekick@%i.service
+
+[Service]
+TimeoutStartSec=300
+StartLimitInterval=30
+StartLimitBurst=30
+Restart=always
+
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk to /tmp' \
+  && /usr/bin/etcdctl get /kronk/service/start-pre > /tmp/octoblu-terminator-service-%i-kronk-start-pre \
+  && /usr/bin/etcdctl get /kronk/service/start > /tmp/octoblu-terminator-service-%i-kronk-start \
+  && /usr/bin/etcdctl get /kronk/service/stop > /tmp/octoblu-terminator-service-%i-kronk-stop \
+  && chmod +x /tmp/octoblu-terminator-service-%i-kronk-* \
+"
+ExecStartPre=/bin/bash -c " \
+  /tmp/octoblu-terminator-service-%i-kronk-start-pre \
+    octoblu-terminator-service \
+    %i \
+    /octoblu/terminator-service/env \
+    /octoblu/terminator-service/docker_url \
+"
+ExecStart=/bin/bash -c " \
+  /tmp/octoblu-terminator-service-%i-kronk-start \
+    octoblu-terminator-service \
+    %i \
+    512m \
+    /octoblu/terminator-service/docker_url \
+    /octoblu/terminator-service \
+"
+ExecStop=/bin/bash -c " \
+  /tmp/octoblu-terminator-service-%i-kronk-stop \
+    octoblu-terminator-service \
+    %i \
+"
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+MachineMetadata=Services=true

@@ -1,0 +1,34 @@
+[Unit]
+Description=octoblu-alexa-service-register
+After=octoblu-alexa-service@%i.service
+
+[Service]
+TimeoutStartSec=300
+EnvironmentFile=/etc/environment
+Restart=always
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk to /tmp' \
+  && /usr/bin/etcdctl get /kronk/register/start-pre > /tmp/octoblu-alexa-service-register-%i-kronk-start-pre \
+  && /usr/bin/etcdctl get /kronk/register/start > /tmp/octoblu-alexa-service-register-%i-kronk-start \
+  && /usr/bin/etcdctl get /kronk/register/stop > /tmp/octoblu-alexa-service-register-%i-kronk-stop \
+  && chmod +x /tmp/octoblu-alexa-service-register-%i-kronk-* \
+"
+ExecStartPre=/bin/bash -c " \
+  /tmp/octoblu-alexa-service-register-%i-kronk-start-pre \
+    octoblu-alexa-service \
+    %i \
+    /octoblu/alexa-service/register-env \
+"
+ExecStart=/bin/sh -c " \
+  /tmp/octoblu-alexa-service-register-%i-kronk-start \
+    octoblu-alexa-service \
+    %i \
+"
+ExecStop=/bin/sh -c " \
+  /tmp/octoblu-alexa-service-register-%i-kronk-stop \
+    octoblu-alexa-service \
+    %i \
+"
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-alexa-service@%i.service

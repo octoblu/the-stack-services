@@ -1,0 +1,45 @@
+[Unit]
+Description=octoblu-alexa-service
+Wants=octoblu-alexa-service-register@%i.service
+Wants=octoblu-alexa-service-sidekick@%i.service
+
+[Service]
+TimeoutStartSec=300
+StartLimitInterval=30
+StartLimitBurst=30
+Restart=always
+
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk to /tmp' \
+  && /usr/bin/etcdctl get /kronk/service/start-pre > /tmp/octoblu-alexa-service-%i-kronk-start-pre \
+  && /usr/bin/etcdctl get /kronk/service/start > /tmp/octoblu-alexa-service-%i-kronk-start \
+  && /usr/bin/etcdctl get /kronk/service/stop > /tmp/octoblu-alexa-service-%i-kronk-stop \
+  && chmod +x /tmp/octoblu-alexa-service-%i-kronk-* \
+"
+ExecStartPre=/bin/bash -c " \
+  /tmp/octoblu-alexa-service-%i-kronk-start-pre \
+    octoblu-alexa-service \
+    %i \
+    /octoblu/alexa-service/env \
+    /octoblu/alexa-service/docker_url \
+"
+ExecStart=/bin/bash -c " \
+  /tmp/octoblu-alexa-service-%i-kronk-start \
+    octoblu-alexa-service \
+    %i \
+    512m \
+    /octoblu/alexa-service/docker_url \
+    /octoblu/alexa-service \
+"
+ExecStop=/bin/bash -c " \
+  /tmp/octoblu-alexa-service-%i-kronk-stop \
+    octoblu-alexa-service \
+    %i \
+"
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+MachineMetadata=Services=true

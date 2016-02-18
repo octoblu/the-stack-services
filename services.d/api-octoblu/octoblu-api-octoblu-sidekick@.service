@@ -7,6 +7,12 @@ TimeoutStartSec=30
 Restart=always
 
 
+ExecStartPre=/bin/sh -c '/usr/bin/docker login \
+  --username $(/usr/bin/etcdctl get /docker/quay.io/username) \
+  --password $(/usr/bin/etcdctl get /docker/quay.io/password) \
+  --email $(/usr/bin/etcdctl get /docker/quay.io/email) \
+  quay.io'
+
 ExecStartPre=/bin/bash -c " \
   echo 'Writing kronk to /tmp' \
   && /usr/bin/etcdctl get /kronk/sidekick/start > /tmp/octoblu-api-octoblu-sidekick-%i-kronk-start \

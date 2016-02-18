@@ -1,0 +1,45 @@
+[Unit]
+Description=octoblu-meshblu-authenticator-pin
+Wants=octoblu-meshblu-authenticator-pin-register@%i.service
+Wants=octoblu-meshblu-authenticator-pin-sidekick@%i.service
+
+[Service]
+TimeoutStartSec=300
+StartLimitInterval=30
+StartLimitBurst=30
+Restart=always
+
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk to /tmp' \
+  && /usr/bin/etcdctl get /kronk/service/start-pre > /tmp/octoblu-meshblu-authenticator-pin-%i-kronk-start-pre \
+  && /usr/bin/etcdctl get /kronk/service/start > /tmp/octoblu-meshblu-authenticator-pin-%i-kronk-start \
+  && /usr/bin/etcdctl get /kronk/service/stop > /tmp/octoblu-meshblu-authenticator-pin-%i-kronk-stop \
+  && chmod +x /tmp/octoblu-meshblu-authenticator-pin-%i-kronk-* \
+"
+ExecStartPre=/bin/bash -c " \
+  /tmp/octoblu-meshblu-authenticator-pin-%i-kronk-start-pre \
+    octoblu-meshblu-authenticator-pin \
+    %i \
+    /octoblu/meshblu-authenticator-pin/env \
+    /octoblu/meshblu-authenticator-pin/docker_url \
+"
+ExecStart=/bin/bash -c " \
+  /tmp/octoblu-meshblu-authenticator-pin-%i-kronk-start \
+    octoblu-meshblu-authenticator-pin \
+    %i \
+    512m \
+    /octoblu/meshblu-authenticator-pin/docker_url \
+    /octoblu/meshblu-authenticator-pin \
+"
+ExecStop=/bin/bash -c " \
+  /tmp/octoblu-meshblu-authenticator-pin-%i-kronk-stop \
+    octoblu-meshblu-authenticator-pin \
+    %i \
+"
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+MachineMetadata=Services=true

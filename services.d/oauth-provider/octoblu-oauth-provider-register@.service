@@ -1,0 +1,34 @@
+[Unit]
+Description=octoblu-oauth-provider-register
+After=octoblu-oauth-provider@%i.service
+
+[Service]
+TimeoutStartSec=300
+EnvironmentFile=/etc/environment
+Restart=always
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk to /tmp' \
+  && /usr/bin/etcdctl get /kronk/register/start-pre > /tmp/octoblu-oauth-provider-register-%i-kronk-start-pre \
+  && /usr/bin/etcdctl get /kronk/register/start > /tmp/octoblu-oauth-provider-register-%i-kronk-start \
+  && /usr/bin/etcdctl get /kronk/register/stop > /tmp/octoblu-oauth-provider-register-%i-kronk-stop \
+  && chmod +x /tmp/octoblu-oauth-provider-register-%i-kronk-* \
+"
+ExecStartPre=/bin/bash -c " \
+  /tmp/octoblu-oauth-provider-register-%i-kronk-start-pre \
+    octoblu-oauth-provider \
+    %i \
+    /octoblu/oauth-provider/register-env \
+"
+ExecStart=/bin/sh -c " \
+  /tmp/octoblu-oauth-provider-register-%i-kronk-start \
+    octoblu-oauth-provider \
+    %i \
+"
+ExecStop=/bin/sh -c " \
+  /tmp/octoblu-oauth-provider-register-%i-kronk-stop \
+    octoblu-oauth-provider \
+    %i \
+"
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-oauth-provider@%i.service

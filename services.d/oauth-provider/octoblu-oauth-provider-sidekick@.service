@@ -1,0 +1,23 @@
+[Unit]
+Description=octoblu-oauth-provider-sidekick
+After=octoblu-oauth-provider@%i.service
+
+[Service]
+TimeoutStartSec=30
+Restart=always
+
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk to /tmp' \
+  && /usr/bin/etcdctl get /kronk/sidekick/start > /tmp/octoblu-oauth-provider-sidekick-%i-kronk-start \
+  && chmod +x /tmp/octoblu-oauth-provider-sidekick-%i-kronk-* \
+"
+ExecStart=/usr/bin/etcdctl exec-watch \
+  /octoblu/oauth-provider/restart \
+  -- /tmp/octoblu-oauth-provider-sidekick-%i-kronk-start 10 /octoblu/oauth-provider/docker_url octoblu-oauth-provider-%i octoblu-oauth-provider-register-%i
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-oauth-provider@%i.service

@@ -1,0 +1,34 @@
+[Unit]
+Description=octoblu-nanocyte-flow-deploy-service-register
+After=octoblu-nanocyte-flow-deploy-service@%i.service
+
+[Service]
+TimeoutStartSec=300
+EnvironmentFile=/etc/environment
+Restart=always
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk to /tmp' \
+  && /usr/bin/etcdctl get /kronk/register/start-pre > /tmp/octoblu-nanocyte-flow-deploy-service-register-%i-kronk-start-pre \
+  && /usr/bin/etcdctl get /kronk/register/start > /tmp/octoblu-nanocyte-flow-deploy-service-register-%i-kronk-start \
+  && /usr/bin/etcdctl get /kronk/register/stop > /tmp/octoblu-nanocyte-flow-deploy-service-register-%i-kronk-stop \
+  && chmod +x /tmp/octoblu-nanocyte-flow-deploy-service-register-%i-kronk-* \
+"
+ExecStartPre=/bin/bash -c " \
+  /tmp/octoblu-nanocyte-flow-deploy-service-register-%i-kronk-start-pre \
+    octoblu-nanocyte-flow-deploy-service \
+    %i \
+    /octoblu/nanocyte-flow-deploy-service/register-env \
+"
+ExecStart=/bin/sh -c " \
+  /tmp/octoblu-nanocyte-flow-deploy-service-register-%i-kronk-start \
+    octoblu-nanocyte-flow-deploy-service \
+    %i \
+"
+ExecStop=/bin/sh -c " \
+  /tmp/octoblu-nanocyte-flow-deploy-service-register-%i-kronk-stop \
+    octoblu-nanocyte-flow-deploy-service \
+    %i \
+"
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-nanocyte-flow-deploy-service@%i.service

@@ -61,6 +61,7 @@ update_traefik(){
   mkdir -p \
     "${backend_dir}/circuitbreaker" \
     "${backend_dir}/loadbalancer" \
+    "${backend_dir}/servers" \
     "${frontend_dir}/routes/host_rule"
 
   # Backend

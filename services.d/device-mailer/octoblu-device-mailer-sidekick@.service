@@ -1,0 +1,23 @@
+[Unit]
+Description=octoblu-device-mailer-sidekick
+After=octoblu-device-mailer@%i.service
+
+[Service]
+TimeoutStartSec=30
+Restart=always
+
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk to /tmp' \
+  && /usr/bin/etcdctl get /kronk/sidekick/start > /tmp/octoblu-device-mailer-sidekick-%i-kronk-start \
+  && chmod +x /tmp/octoblu-device-mailer-sidekick-%i-kronk-* \
+"
+ExecStart=/usr/bin/etcdctl exec-watch \
+  /octoblu/device-mailer/restart \
+  -- /tmp/octoblu-device-mailer-sidekick-%i-kronk-start 10 /octoblu/device-mailer/docker_url octoblu-device-mailer-%i octoblu-device-mailer-register-%i
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-device-mailer@%i.service

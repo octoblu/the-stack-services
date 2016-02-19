@@ -1,0 +1,34 @@
+[Unit]
+Description=octoblu-device-mailer-register
+After=octoblu-device-mailer@%i.service
+
+[Service]
+TimeoutStartSec=300
+EnvironmentFile=/etc/environment
+Restart=always
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk to /tmp' \
+  && /usr/bin/etcdctl get /kronk/register/start-pre > /tmp/octoblu-device-mailer-register-%i-kronk-start-pre \
+  && /usr/bin/etcdctl get /kronk/register/start > /tmp/octoblu-device-mailer-register-%i-kronk-start \
+  && /usr/bin/etcdctl get /kronk/register/stop > /tmp/octoblu-device-mailer-register-%i-kronk-stop \
+  && chmod +x /tmp/octoblu-device-mailer-register-%i-kronk-* \
+"
+ExecStartPre=/bin/bash -c " \
+  /tmp/octoblu-device-mailer-register-%i-kronk-start-pre \
+    octoblu-device-mailer \
+    %i \
+    /octoblu/device-mailer/register-env \
+"
+ExecStart=/bin/sh -c " \
+  /tmp/octoblu-device-mailer-register-%i-kronk-start \
+    octoblu-device-mailer \
+    %i \
+"
+ExecStop=/bin/sh -c " \
+  /tmp/octoblu-device-mailer-register-%i-kronk-stop \
+    octoblu-device-mailer \
+    %i \
+"
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-device-mailer@%i.service

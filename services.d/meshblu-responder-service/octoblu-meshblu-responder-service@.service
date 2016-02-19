@@ -1,0 +1,45 @@
+[Unit]
+Description=octoblu-meshblu-responder-service
+Wants=octoblu-meshblu-responder-service-register@%i.service
+Wants=octoblu-meshblu-responder-service-sidekick@%i.service
+
+[Service]
+TimeoutStartSec=300
+StartLimitInterval=30
+StartLimitBurst=30
+Restart=always
+
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk to /tmp' \
+  && /usr/bin/etcdctl get /kronk/service/start-pre > /tmp/octoblu-meshblu-responder-service-%i-kronk-start-pre \
+  && /usr/bin/etcdctl get /kronk/service/start > /tmp/octoblu-meshblu-responder-service-%i-kronk-start \
+  && /usr/bin/etcdctl get /kronk/service/stop > /tmp/octoblu-meshblu-responder-service-%i-kronk-stop \
+  && chmod +x /tmp/octoblu-meshblu-responder-service-%i-kronk-* \
+"
+ExecStartPre=/bin/bash -c " \
+  /tmp/octoblu-meshblu-responder-service-%i-kronk-start-pre \
+    octoblu-meshblu-responder-service \
+    %i \
+    /octoblu/meshblu-responder-service/env \
+    /octoblu/meshblu-responder-service/docker_url \
+"
+ExecStart=/bin/bash -c " \
+  /tmp/octoblu-meshblu-responder-service-%i-kronk-start \
+    octoblu-meshblu-responder-service \
+    %i \
+    512m \
+    /octoblu/meshblu-responder-service/docker_url \
+    /octoblu/meshblu-responder-service \
+"
+ExecStop=/bin/bash -c " \
+  /tmp/octoblu-meshblu-responder-service-%i-kronk-stop \
+    octoblu-meshblu-responder-service \
+    %i \
+"
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+MachineMetadata=Services=true

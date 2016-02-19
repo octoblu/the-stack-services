@@ -1,0 +1,34 @@
+[Unit]
+Description=octoblu-meshblu-responder-service-register
+After=octoblu-meshblu-responder-service@%i.service
+
+[Service]
+TimeoutStartSec=300
+EnvironmentFile=/etc/environment
+Restart=always
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk to /tmp' \
+  && /usr/bin/etcdctl get /kronk/register/start-pre > /tmp/octoblu-meshblu-responder-service-register-%i-kronk-start-pre \
+  && /usr/bin/etcdctl get /kronk/register/start > /tmp/octoblu-meshblu-responder-service-register-%i-kronk-start \
+  && /usr/bin/etcdctl get /kronk/register/stop > /tmp/octoblu-meshblu-responder-service-register-%i-kronk-stop \
+  && chmod +x /tmp/octoblu-meshblu-responder-service-register-%i-kronk-* \
+"
+ExecStartPre=/bin/bash -c " \
+  /tmp/octoblu-meshblu-responder-service-register-%i-kronk-start-pre \
+    octoblu-meshblu-responder-service \
+    %i \
+    /octoblu/meshblu-responder-service/register-env \
+"
+ExecStart=/bin/sh -c " \
+  /tmp/octoblu-meshblu-responder-service-register-%i-kronk-start \
+    octoblu-meshblu-responder-service \
+    %i \
+"
+ExecStop=/bin/sh -c " \
+  /tmp/octoblu-meshblu-responder-service-register-%i-kronk-stop \
+    octoblu-meshblu-responder-service \
+    %i \
+"
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-meshblu-responder-service@%i.service

@@ -22,7 +22,8 @@ ExecStart=/usr/bin/sh -c "/usr/bin/docker run    \
     --etcd.endpoint=$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
     --etcd.watch=true \
     --web=true \
-    --providersThrottleDuration=10s \
+    --providersThrottleDuration=5s \
+    --logLevel=INFO \
     --configFile=/dev/null \
 "
 ExecStop=/usr/bin/docker stop octoblu-traefik

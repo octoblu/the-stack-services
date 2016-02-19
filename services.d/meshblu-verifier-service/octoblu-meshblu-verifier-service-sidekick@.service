@@ -1,0 +1,23 @@
+[Unit]
+Description=octoblu-meshblu-verifier-service-sidekick
+After=octoblu-meshblu-verifier-service@%i.service
+
+[Service]
+TimeoutStartSec=30
+Restart=always
+
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk to /tmp' \
+  && /usr/bin/etcdctl get /kronk/sidekick/start > /tmp/octoblu-meshblu-verifier-service-sidekick-%i-kronk-start \
+  && chmod +x /tmp/octoblu-meshblu-verifier-service-sidekick-%i-kronk-* \
+"
+ExecStart=/usr/bin/etcdctl exec-watch \
+  /octoblu/meshblu-verifier-service/restart \
+  -- /tmp/octoblu-meshblu-verifier-service-sidekick-%i-kronk-start 10 /octoblu/meshblu-verifier-service/docker_url octoblu-meshblu-verifier-service-%i octoblu-meshblu-verifier-service-register-%i
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-meshblu-verifier-service@%i.service

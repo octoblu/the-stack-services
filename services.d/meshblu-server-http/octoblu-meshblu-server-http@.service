@@ -1,0 +1,45 @@
+[Unit]
+Description=octoblu-meshblu-server-http
+Wants=octoblu-meshblu-server-http-register@%i.service
+Wants=octoblu-meshblu-server-http-sidekick@%i.service
+
+[Service]
+TimeoutStartSec=300
+StartLimitInterval=30
+StartLimitBurst=30
+Restart=always
+
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk to /tmp' \
+  && /usr/bin/etcdctl get /kronk/service/start-pre > /tmp/octoblu-meshblu-server-http-%i-kronk-start-pre \
+  && /usr/bin/etcdctl get /kronk/service/start > /tmp/octoblu-meshblu-server-http-%i-kronk-start \
+  && /usr/bin/etcdctl get /kronk/service/stop > /tmp/octoblu-meshblu-server-http-%i-kronk-stop \
+  && chmod +x /tmp/octoblu-meshblu-server-http-%i-kronk-* \
+"
+ExecStartPre=/bin/bash -c " \
+  /tmp/octoblu-meshblu-server-http-%i-kronk-start-pre \
+    octoblu-meshblu-server-http \
+    %i \
+    /octoblu/meshblu-server-http/env \
+    /octoblu/meshblu-server-http/docker_url \
+"
+ExecStart=/bin/bash -c " \
+  /tmp/octoblu-meshblu-server-http-%i-kronk-start \
+    octoblu-meshblu-server-http \
+    %i \
+    512m \
+    /octoblu/meshblu-server-http/docker_url \
+    /octoblu/meshblu-server-http \
+"
+ExecStop=/bin/bash -c " \
+  /tmp/octoblu-meshblu-server-http-%i-kronk-stop \
+    octoblu-meshblu-server-http \
+    %i \
+"
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+MachineMetadata=Services=true

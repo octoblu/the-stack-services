@@ -1,0 +1,23 @@
+[Unit]
+Description=octoblu-nanocyte-engine-http-sidekick
+After=octoblu-nanocyte-engine-http@%i.service
+
+[Service]
+TimeoutStartSec=30
+Restart=always
+
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk to /tmp' \
+  && /usr/bin/etcdctl get /kronk/sidekick/start > /tmp/octoblu-nanocyte-engine-http-sidekick-%i-kronk-start \
+  && chmod +x /tmp/octoblu-nanocyte-engine-http-sidekick-%i-kronk-* \
+"
+ExecStart=/usr/bin/etcdctl exec-watch \
+  /octoblu/nanocyte-engine-http/restart \
+  -- /tmp/octoblu-nanocyte-engine-http-sidekick-%i-kronk-start 10 /octoblu/nanocyte-engine-http/docker_url octoblu-nanocyte-engine-http-%i octoblu-nanocyte-engine-http-register-%i
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-nanocyte-engine-http@%i.service

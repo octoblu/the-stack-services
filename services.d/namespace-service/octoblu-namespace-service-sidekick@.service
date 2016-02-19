@@ -1,0 +1,23 @@
+[Unit]
+Description=octoblu-namespace-service-sidekick
+After=octoblu-namespace-service@%i.service
+
+[Service]
+TimeoutStartSec=30
+Restart=always
+
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk to /tmp' \
+  && /usr/bin/etcdctl get /kronk/sidekick/start > /tmp/octoblu-namespace-service-sidekick-%i-kronk-start \
+  && chmod +x /tmp/octoblu-namespace-service-sidekick-%i-kronk-* \
+"
+ExecStart=/usr/bin/etcdctl exec-watch \
+  /octoblu/namespace-service/restart \
+  -- /tmp/octoblu-namespace-service-sidekick-%i-kronk-start 10 /octoblu/namespace-service/docker_url octoblu-namespace-service-%i octoblu-namespace-service-register-%i
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-namespace-service@%i.service

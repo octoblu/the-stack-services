@@ -1,0 +1,45 @@
+[Unit]
+Description=octoblu-namespace-service
+Wants=octoblu-namespace-service-register@%i.service
+Wants=octoblu-namespace-service-sidekick@%i.service
+
+[Service]
+TimeoutStartSec=300
+StartLimitInterval=30
+StartLimitBurst=30
+Restart=always
+
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk to /tmp' \
+  && /usr/bin/etcdctl get /kronk/service/start-pre > /tmp/octoblu-namespace-service-%i-kronk-start-pre \
+  && /usr/bin/etcdctl get /kronk/service/start > /tmp/octoblu-namespace-service-%i-kronk-start \
+  && /usr/bin/etcdctl get /kronk/service/stop > /tmp/octoblu-namespace-service-%i-kronk-stop \
+  && chmod +x /tmp/octoblu-namespace-service-%i-kronk-* \
+"
+ExecStartPre=/bin/bash -c " \
+  /tmp/octoblu-namespace-service-%i-kronk-start-pre \
+    octoblu-namespace-service \
+    %i \
+    /octoblu/namespace-service/env \
+    /octoblu/namespace-service/docker_url \
+"
+ExecStart=/bin/bash -c " \
+  /tmp/octoblu-namespace-service-%i-kronk-start \
+    octoblu-namespace-service \
+    %i \
+    512m \
+    /octoblu/namespace-service/docker_url \
+    /octoblu/namespace-service \
+"
+ExecStop=/bin/bash -c " \
+  /tmp/octoblu-namespace-service-%i-kronk-stop \
+    octoblu-namespace-service \
+    %i \
+"
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+MachineMetadata=Services=true

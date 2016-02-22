@@ -1,0 +1,23 @@
+[Unit]
+Description=octoblu-nanocyte-interval-redis-sidekick
+After=octoblu-nanocyte-interval-redis@%i.service
+
+[Service]
+TimeoutStartSec=30
+Restart=always
+
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk to /tmp' \
+  && /usr/bin/etcdctl get /kronk/sidekick/start > /tmp/octoblu-nanocyte-interval-redis-sidekick-%i-kronk-start \
+  && chmod +x /tmp/octoblu-nanocyte-interval-redis-sidekick-%i-kronk-* \
+"
+ExecStart=/usr/bin/etcdctl exec-watch \
+  /octoblu/nanocyte-interval-redis/restart \
+  -- /tmp/octoblu-nanocyte-interval-redis-sidekick-%i-kronk-start 10 /octoblu/nanocyte-interval-redis/docker_url octoblu-nanocyte-interval-redis-%i octoblu-nanocyte-interval-redis-register-%i
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-nanocyte-interval-redis@%i.service

@@ -7,27 +7,29 @@ TimeoutStartSec=300
 EnvironmentFile=/etc/environment
 Restart=always
 ExecStartPre=/bin/bash -c " \
-  echo 'Writing kronk to /tmp' \
-  && /usr/bin/etcdctl get /kronk/register/start-pre > /tmp/octoblu-sms-service-register-%i-kronk-start-pre \
-  && /usr/bin/etcdctl get /kronk/register/start > /tmp/octoblu-sms-service-register-%i-kronk-start \
-  && /usr/bin/etcdctl get /kronk/register/stop > /tmp/octoblu-sms-service-register-%i-kronk-stop \
-  && chmod +x /tmp/octoblu-sms-service-register-%i-kronk-* \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-sms-service-register-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-sms-service-register-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-sms-service-register-%i/kronk-run \
 "
 ExecStartPre=/bin/bash -c " \
-  /tmp/octoblu-sms-service-register-%i-kronk-start-pre \
-    octoblu-sms-service \
-    %i \
-    /octoblu/sms-service/register-env \
+  /run/kronk/octoblu-sms-service-register-%i/kronk-run \
+    /kronk/register/start-pre octoblu-sms-service-%i \
+      octoblu-sms-service \
+      %i \
+      /octoblu/sms-service/register-env \
 "
 ExecStart=/bin/sh -c " \
-  /tmp/octoblu-sms-service-register-%i-kronk-start \
-    octoblu-sms-service \
-    %i \
+  /run/kronk/octoblu-sms-service-register-%i/kronk-run \
+    /kronk/register/start octoblu-sms-service-%i \
+      octoblu-sms-service \
+      %i \
 "
 ExecStop=/bin/sh -c " \
-  /tmp/octoblu-sms-service-register-%i-kronk-stop \
-    octoblu-sms-service \
-    %i \
+  /run/kronk/octoblu-sms-service-register-%i/kronk-run \
+    /kronk/register/stop octoblu-sms-service-%i \
+      octoblu-sms-service \
+      %i \
 "
 
 [X-Fleet]

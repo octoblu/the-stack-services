@@ -11,31 +11,33 @@ Restart=always
 
 
 ExecStartPre=/bin/bash -c " \
-  echo 'Writing kronk to /tmp' \
-  && /usr/bin/etcdctl get /kronk/service/start-pre > /tmp/octoblu-sms-service-%i-kronk-start-pre \
-  && /usr/bin/etcdctl get /kronk/service/start > /tmp/octoblu-sms-service-%i-kronk-start \
-  && /usr/bin/etcdctl get /kronk/service/stop > /tmp/octoblu-sms-service-%i-kronk-stop \
-  && chmod +x /tmp/octoblu-sms-service-%i-kronk-* \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-sms-service-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-sms-service-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-sms-service-%i/kronk-run \
 "
 ExecStartPre=/bin/bash -c " \
-  /tmp/octoblu-sms-service-%i-kronk-start-pre \
-    octoblu-sms-service \
-    %i \
-    /octoblu/sms-service/env \
-    /octoblu/sms-service/docker_url \
+  /run/kronk/octoblu-sms-service-%i/kronk-run \
+    /kronk/service/start-pre octoblu-sms-service-%i \
+      octoblu-sms-service \
+      %i \
+      /octoblu/sms-service/env \
+      /octoblu/sms-service/docker_url \
 "
 ExecStart=/bin/bash -c " \
-  /tmp/octoblu-sms-service-%i-kronk-start \
-    octoblu-sms-service \
-    %i \
-    512m \
-    /octoblu/sms-service/docker_url \
-    /octoblu/sms-service \
+  /run/kronk/octoblu-sms-service-%i/kronk-run \
+    /kronk/service/start octoblu-sms-service-%i \
+      octoblu-sms-service \
+      %i \
+      512m \
+      /octoblu/sms-service/docker_url \
+      /octoblu/sms-service \
 "
 ExecStop=/bin/bash -c " \
-  /tmp/octoblu-sms-service-%i-kronk-stop \
-    octoblu-sms-service \
-    %i \
+  /run/kronk/octoblu-sms-service-%i/kronk-run \
+    /kronk/service/stop octoblu-sms-service-%i \
+      octoblu-sms-service \
+      %i \
 "
 
 [Install]

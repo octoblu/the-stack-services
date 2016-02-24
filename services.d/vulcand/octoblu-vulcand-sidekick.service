@@ -1,0 +1,27 @@
+[Unit]
+Description=octoblu-vulcand-sidekick
+After=octoblu-vulcand.service
+
+[Service]
+TimeoutStartSec=30
+Restart=always
+
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-vulcand-sidekick \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-vulcand-sidekick/kronk-run \
+  && chmod +x /run/kronk/octoblu-vulcand-sidekick/kronk-run \
+"
+ExecStart=/usr/bin/etcdctl exec-watch \
+  /octoblu/vulcand/restart \
+  -- /run/kronk/octoblu-vulcand-sidekick/kronk-run \
+    /kronk/sidekick/start octoblu-vulcand-sidekick \
+    10 /octoblu/vulcand/docker_url octoblu-vulcand octoblu-vulcand-register
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+Global=true
+MachineMetadata=Services=true

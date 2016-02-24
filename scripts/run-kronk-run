@@ -1,0 +1,99 @@
+#!/bin/bash
+
+
+generate_service_files(){
+  echo "generate_service_files"
+  local project_name="$1"
+  local directory_name="${HOME}/Projects/Octoblu/the-stack-services/services.d/${project_name}"
+
+  deployinate-configurator traefik \
+    --dir "${directory_name}" \
+    "${project_name}"
+}
+
+major_fleetctl(){
+  env \
+    FLEETCTL_TUNNEL=52.32.210.244 \
+    fleetctl --strict-host-key-checking=false $@
+}
+
+major_units(){
+  local project_name="$1"
+
+  major_fleetctl list-units --no-legend \
+  | grep "${project_name}" \
+  | awk '{print $1}'
+}
+
+minor_fleetctl(){
+  env \
+    FLEETCTL_TUNNEL=52.89.122.251 \
+    fleetctl --strict-host-key-checking=false $@
+}
+
+minor_units(){
+  local project_name="$1"
+
+  minor_fleetctl list-units --no-legend \
+  | grep "${project_name}" \
+  | awk '{print $1}'
+}
+
+push_to_major(){
+  echo "push_to_major"
+  local project_name="$1"
+  local directory_name="${HOME}/Projects/Octoblu/the-stack-services/services.d/${project_name}"
+
+  pushd "${directory_name}"
+  major_fleetctl destroy *
+  major_fleetctl submit *
+  popd
+}
+
+push_to_minor(){
+  echo "push_to_minor"
+  local project_name="$1"
+  local directory_name="${HOME}/Projects/Octoblu/the-stack-services/services.d/${project_name}"
+
+  pushd "${directory_name}"
+  minor_fleetctl destroy *
+  minor_fleetctl submit *
+  popd
+}
+
+restart_majors(){
+  echo "restart_majors"
+  local project_name="$1"
+  local units=( $(major_units "${project_name}") )
+
+  for unit in "${units[@]}"; do
+    echo "restart '${unit}'"
+    major_fleetctl destroy "${unit}"
+    major_fleetctl start "${unit}"
+    major_fleetctl start "${unit}"
+  done
+}
+
+restart_minors(){
+  echo "restart_minors"
+  local project_name="$1"
+  local units=( $(minor_units "${project_name}") )
+
+  for unit in "${units[@]}"; do
+    echo "restart '${unit}'"
+    minor_fleetctl destroy "${unit}"
+    minor_fleetctl start "${unit}"
+    minor_fleetctl start "${unit}"
+  done
+}
+
+main(){
+  local project_name="$1"
+
+  generate_service_files "${project_name}" \
+  && push_to_minor "${project_name}" \
+  && restart_minors "${project_name}" \
+  && push_to_major "${project_name}" \
+  && restart_majors "${project_name}"
+}
+main $@

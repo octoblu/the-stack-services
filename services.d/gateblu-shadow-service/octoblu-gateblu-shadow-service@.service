@@ -1,0 +1,47 @@
+[Unit]
+Description=octoblu-gateblu-shadow-service
+Wants=octoblu-gateblu-shadow-service-register@%i.service
+Wants=octoblu-gateblu-shadow-service-sidekick@%i.service
+
+[Service]
+TimeoutStartSec=300
+StartLimitInterval=30
+StartLimitBurst=30
+Restart=always
+
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-gateblu-shadow-service-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-gateblu-shadow-service-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-gateblu-shadow-service-%i/kronk-run \
+"
+ExecStartPre=/bin/bash -c " \
+  /run/kronk/octoblu-gateblu-shadow-service-%i/kronk-run \
+    /kronk/service/start-pre octoblu-gateblu-shadow-service-%i \
+      octoblu-gateblu-shadow-service \
+      %i \
+      /octoblu/gateblu-shadow-service/env \
+      /octoblu/gateblu-shadow-service/docker_url \
+"
+ExecStart=/bin/bash -c " \
+  /run/kronk/octoblu-gateblu-shadow-service-%i/kronk-run \
+    /kronk/service/start octoblu-gateblu-shadow-service-%i \
+      octoblu-gateblu-shadow-service \
+      %i \
+      512m \
+      /octoblu/gateblu-shadow-service/docker_url \
+      /octoblu/gateblu-shadow-service \
+"
+ExecStop=/bin/bash -c " \
+  /run/kronk/octoblu-gateblu-shadow-service-%i/kronk-run \
+    /kronk/service/stop octoblu-gateblu-shadow-service-%i \
+      octoblu-gateblu-shadow-service \
+      %i \
+"
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+MachineMetadata=Services=true

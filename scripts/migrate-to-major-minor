@@ -51,31 +51,13 @@ update_minord(){
   minorsync load "${project_name}"
 }
 
-update_traefik(){
+update_vulcand(){
   local project_name="$1"
   local host="$2"
-  local traefik_dir="${HOME}/Projects/Octoblu/the-stack-env-production/major.d/traefik/"
-  local backend_dir="${traefik_dir}/backends/octoblu-${project_name}"
-  local frontend_dir="${traefik_dir}/frontends/octoblu-${project_name}"
+  local vulcand_dir="${HOME}/Projects/Octoblu/the-stack-env-production/vulcan.d/"
 
-  mkdir -p \
-    "${backend_dir}/circuitbreaker" \
-    "${backend_dir}/loadbalancer" \
-    "${backend_dir}/servers" \
-    "${frontend_dir}/routes/host_rule"
-
-  # Backend
-  echo "NetworkErrorRatio() > 0.5" > "${backend_dir}/circuitbreaker/expression"
-  echo "drr" > "${backend_dir}/loadbalancer/method"
-
-  # Frontend
-  echo "octoblu-${project_name}" > "${frontend_dir}/backend"
-  echo "true" > "${frontend_dir}/passHostHeader"
-  echo "Host" > "${frontend_dir}/routes/host_rule/rule"
-  echo "${host}" > "${frontend_dir}/routes/host_rule/value"
-
-  env NAMESPACE=traefik majorsync load "backends/octoblu-${project_name}"
-  env NAMESPACE=traefik majorsync load "frontends/octoblu-${project_name}"
+  local script_dir=$(dirname "${BASH_SOURCE[0]}")
+  bash -c "${script_dir}/build-vulcand \"${vulcand_dir}\" \"octoblu-${project_name}\" \"${host}\""
 }
 
 
@@ -83,13 +65,17 @@ main(){
   local project_name="$1"
   local host="$2"
 
+  if [ -z "${project_name}" -o -z "${host}" ]; then
+    echo "Requires project_name, host. Got: '${project_name}', '${host}'"
+  fi
+
   echo "Migrating ${project_name} with host ${host}, you've got 5 seconds to cancel (ctrl+c)"
   sleep 5
 
   echo "Too late" \
     && update_service_files "${project_name}" \
     && update_minord "${project_name}" \
-    && update_traefik "${project_name}" "${host}" \
+    && update_vulcand "${project_name}" "${host}" \
     && add_quay_hook "${project_name}"
 
   echo ""
@@ -97,5 +83,6 @@ main(){
   echo "  * remove Quay's old webhook"
   echo "  * deploy a version"
   echo "  * submit, load, and start the services"
+  echo "  * run 'vulcansync ${project_name}'"
 }
 main $@

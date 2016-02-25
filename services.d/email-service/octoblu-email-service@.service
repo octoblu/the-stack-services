@@ -1,0 +1,47 @@
+[Unit]
+Description=octoblu-email-service
+Wants=octoblu-email-service-register@%i.service
+Wants=octoblu-email-service-sidekick@%i.service
+
+[Service]
+TimeoutStartSec=300
+StartLimitInterval=30
+StartLimitBurst=30
+Restart=always
+
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-email-service-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-email-service-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-email-service-%i/kronk-run \
+"
+ExecStartPre=/bin/bash -c " \
+  /run/kronk/octoblu-email-service-%i/kronk-run \
+    /kronk/service/start-pre octoblu-email-service-%i \
+      octoblu-email-service \
+      %i \
+      /octoblu/email-service/env \
+      /octoblu/email-service/docker_url \
+"
+ExecStart=/bin/bash -c " \
+  /run/kronk/octoblu-email-service-%i/kronk-run \
+    /kronk/service/start octoblu-email-service-%i \
+      octoblu-email-service \
+      %i \
+      512m \
+      /octoblu/email-service/docker_url \
+      /octoblu/email-service \
+"
+ExecStop=/bin/bash -c " \
+  /run/kronk/octoblu-email-service-%i/kronk-run \
+    /kronk/service/stop octoblu-email-service-%i \
+      octoblu-email-service \
+      %i \
+"
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+MachineMetadata=Services=true

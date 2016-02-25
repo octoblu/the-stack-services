@@ -1,0 +1,36 @@
+[Unit]
+Description=octoblu-friendly-sharefile-service-register
+After=octoblu-friendly-sharefile-service@%i.service
+
+[Service]
+TimeoutStartSec=300
+EnvironmentFile=/etc/environment
+Restart=always
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-friendly-sharefile-service-register-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-friendly-sharefile-service-register-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-friendly-sharefile-service-register-%i/kronk-run \
+"
+ExecStartPre=/bin/bash -c " \
+  /run/kronk/octoblu-friendly-sharefile-service-register-%i/kronk-run \
+    /kronk/register/start-pre octoblu-friendly-sharefile-service-%i \
+      octoblu-friendly-sharefile-service \
+      %i \
+      /octoblu/friendly-sharefile-service/register-env \
+"
+ExecStart=/bin/sh -c " \
+  /run/kronk/octoblu-friendly-sharefile-service-register-%i/kronk-run \
+    /kronk/register/start octoblu-friendly-sharefile-service-%i \
+      octoblu-friendly-sharefile-service \
+      %i \
+"
+ExecStop=/bin/sh -c " \
+  /run/kronk/octoblu-friendly-sharefile-service-register-%i/kronk-run \
+    /kronk/register/stop octoblu-friendly-sharefile-service-%i \
+      octoblu-friendly-sharefile-service \
+      %i \
+"
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-friendly-sharefile-service@%i.service

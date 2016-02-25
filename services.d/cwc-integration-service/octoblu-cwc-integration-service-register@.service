@@ -1,0 +1,36 @@
+[Unit]
+Description=octoblu-cwc-integration-service-register
+After=octoblu-cwc-integration-service@%i.service
+
+[Service]
+TimeoutStartSec=300
+EnvironmentFile=/etc/environment
+Restart=always
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-cwc-integration-service-register-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-cwc-integration-service-register-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-cwc-integration-service-register-%i/kronk-run \
+"
+ExecStartPre=/bin/bash -c " \
+  /run/kronk/octoblu-cwc-integration-service-register-%i/kronk-run \
+    /kronk/register/start-pre octoblu-cwc-integration-service-%i \
+      octoblu-cwc-integration-service \
+      %i \
+      /octoblu/cwc-integration-service/register-env \
+"
+ExecStart=/bin/sh -c " \
+  /run/kronk/octoblu-cwc-integration-service-register-%i/kronk-run \
+    /kronk/register/start octoblu-cwc-integration-service-%i \
+      octoblu-cwc-integration-service \
+      %i \
+"
+ExecStop=/bin/sh -c " \
+  /run/kronk/octoblu-cwc-integration-service-register-%i/kronk-run \
+    /kronk/register/stop octoblu-cwc-integration-service-%i \
+      octoblu-cwc-integration-service \
+      %i \
+"
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-cwc-integration-service@%i.service

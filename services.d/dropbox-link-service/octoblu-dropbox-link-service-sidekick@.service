@@ -1,0 +1,26 @@
+[Unit]
+Description=octoblu-dropbox-link-service-sidekick
+After=octoblu-dropbox-link-service@%i.service
+
+[Service]
+TimeoutStartSec=30
+Restart=always
+
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-dropbox-link-service-sidekick-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-dropbox-link-service-sidekick-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-dropbox-link-service-sidekick-%i/kronk-run \
+"
+ExecStart=/usr/bin/etcdctl exec-watch \
+  /octoblu/dropbox-link-service/restart \
+  -- /run/kronk/octoblu-dropbox-link-service-sidekick-%i/kronk-run \
+    /kronk/sidekick/start octoblu-dropbox-link-service-sidekick-%i \
+    10 /octoblu/dropbox-link-service/docker_url octoblu-dropbox-link-service-%i octoblu-dropbox-link-service-register-%i
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-dropbox-link-service@%i.service

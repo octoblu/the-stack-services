@@ -1,0 +1,26 @@
+[Unit]
+Description=octoblu-cwc-integration-service-sidekick
+After=octoblu-cwc-integration-service@%i.service
+
+[Service]
+TimeoutStartSec=30
+Restart=always
+
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-cwc-integration-service-sidekick-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-cwc-integration-service-sidekick-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-cwc-integration-service-sidekick-%i/kronk-run \
+"
+ExecStart=/usr/bin/etcdctl exec-watch \
+  /octoblu/cwc-integration-service/restart \
+  -- /run/kronk/octoblu-cwc-integration-service-sidekick-%i/kronk-run \
+    /kronk/sidekick/start octoblu-cwc-integration-service-sidekick-%i \
+    10 /octoblu/cwc-integration-service/docker_url octoblu-cwc-integration-service-%i octoblu-cwc-integration-service-register-%i
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-cwc-integration-service@%i.service

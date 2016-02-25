@@ -1,0 +1,44 @@
+#!/bin/bash
+
+write_backend(){
+  local service_name="$1"
+  echo -n "" > backend
+  echo "--id ${service_name}" >> backend
+}
+
+write_frontend(){
+  local service_name="$1"
+  local host="$2"
+  echo -n "" > frontend
+  echo "--id ${service_name}" >> frontend
+  echo "--backend ${service_name}" >> frontend
+  echo "--route Host(\"${host}\")" >> frontend
+  echo "--trustForwardHeader" >> frontend
+}
+
+write_middleware(){
+  local service_name="$1"
+  mkdir -p middlewares
+  echo -n "" > middlewares/job-logger
+  echo "--id ${service_name}-job-logger" >> middlewares/job-logger
+  echo "--frontend ${service_name}" >> middlewares/job-logger
+  echo "--backend ${service_name}" >> middlewares/job-logger
+  echo "--redis-uri redis://job-logger.csy8op.0001.usw2.cache.amazonaws.com:6379" >> middlewares/job-logger
+  echo "--redis-queue-name sample-rate:1.00" >> middlewares/job-logger
+}
+
+main() {
+  local directory="$1"
+  local service_name="$2"
+  local host="$3"
+
+  pushd "${directory}"
+  mkdir -p "${service_name}"
+  pushd "${service_name}"
+  write_backend "${service_name}"
+  write_middleware "${service_name}"
+  write_frontend "${service_name}" "${host}"
+  popd
+  popd
+}
+main $@

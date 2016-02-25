@@ -1,0 +1,26 @@
+[Unit]
+Description=octoblu-email-service-sidekick
+After=octoblu-email-service@%i.service
+
+[Service]
+TimeoutStartSec=30
+Restart=always
+
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-email-service-sidekick-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-email-service-sidekick-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-email-service-sidekick-%i/kronk-run \
+"
+ExecStart=/usr/bin/etcdctl exec-watch \
+  /octoblu/email-service/restart \
+  -- /run/kronk/octoblu-email-service-sidekick-%i/kronk-run \
+    /kronk/sidekick/start octoblu-email-service-sidekick-%i \
+    10 /octoblu/email-service/docker_url octoblu-email-service-%i octoblu-email-service-register-%i
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-email-service@%i.service

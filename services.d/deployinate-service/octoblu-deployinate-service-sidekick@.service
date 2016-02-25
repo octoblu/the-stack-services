@@ -1,19 +1,23 @@
 [Unit]
 Description=octoblu-deployinate-service-sidekick
 After=octoblu-deployinate-service@%i.service
-BindsTo=octoblu-deployinate-service@%i.service
 
 [Service]
 TimeoutStartSec=30
 Restart=always
 
-ExecStart=/bin/sh -c "/usr/bin/etcdctl exec-watch \
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-deployinate-service-sidekick-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-deployinate-service-sidekick-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-deployinate-service-sidekick-%i/kronk-run \
+"
+ExecStart=/usr/bin/etcdctl exec-watch \
   /octoblu/deployinate-service/restart \
-  -- sh -c \"(docker inspect --format='{{.Id}}' --type=image \$(etcdctl get /octoblu/deployinate-service/docker_url) \
-               || docker pull \$(etcdctl get /octoblu/deployinate-service/docker_url)) \
-               && docker stop \
-                    --time=5 \
-                    octoblu-deployinate-service-%i\""
+  -- /run/kronk/octoblu-deployinate-service-sidekick-%i/kronk-run \
+    /kronk/sidekick/start octoblu-deployinate-service-sidekick-%i \
+    10 /octoblu/deployinate-service/docker_url octoblu-deployinate-service-%i octoblu-deployinate-service-register-%i
 
 [Install]
 WantedBy=multi-user.target

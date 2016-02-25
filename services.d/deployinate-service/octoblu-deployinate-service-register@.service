@@ -1,37 +1,35 @@
 [Unit]
-Description=Register with vulcand for octoblu-deployinate-service
+Description=octoblu-deployinate-service-register
 After=octoblu-deployinate-service@%i.service
-BindsTo=octoblu-deployinate-service@%i.service
 
 [Service]
 TimeoutStartSec=300
 EnvironmentFile=/etc/environment
-RemainAfterExit=yes
-Restart=on-failure
-ExecStartPre=/usr/bin/etcdctl get /octoblu/deployinate-service/instances/%i/port
-ExecStartPre=/bin/sh -c " \
-  etcdctl \
-    --no-sync \
-    --endpoint=$(/usr/bin/etcdctl get /octoblu/etcd-major/endpoint) \
-    set \
-    /traefik/backends/octoblu-deployinate-service/servers/octoblu-deployinate-service-$(etcdctl get /cluster/name)-%i/weight \
-    10 \
+Restart=always
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-deployinate-service-register-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-deployinate-service-register-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-deployinate-service-register-%i/kronk-run \
+"
+ExecStartPre=/bin/bash -c " \
+  /run/kronk/octoblu-deployinate-service-register-%i/kronk-run \
+    /kronk/register/start-pre octoblu-deployinate-service-%i \
+      octoblu-deployinate-service \
+      %i \
+      /octoblu/deployinate-service/register-env \
 "
 ExecStart=/bin/sh -c " \
-  etcdctl \
-    --no-sync \
-    --endpoint=$(/usr/bin/etcdctl get /octoblu/etcd-major/endpoint) \
-    set \
-    /traefik/backends/octoblu-deployinate-service/servers/octoblu-deployinate-service-$(etcdctl get /cluster/name)-%i/url \
-    http://${COREOS_PRIVATE_IPV4}:$(/usr/bin/etcdctl get /octoblu/deployinate-service/instances/%i/port) \
+  /run/kronk/octoblu-deployinate-service-register-%i/kronk-run \
+    /kronk/register/start octoblu-deployinate-service-%i \
+      octoblu-deployinate-service \
+      %i \
 "
 ExecStop=/bin/sh -c " \
-  etcdctl \
-    --no-sync \
-    --endpoint=$(/usr/bin/etcdctl get /octoblu/etcd-major/endpoint) \
-    rm \
-    --recursive \
-    /traefik/backends/octoblu-deployinate-service/servers/octoblu-deployinate-service-$(etcdctl get /cluster/name)-%i \
+  /run/kronk/octoblu-deployinate-service-register-%i/kronk-run \
+    /kronk/register/stop octoblu-deployinate-service-%i \
+      octoblu-deployinate-service \
+      %i \
 "
 
 [X-Fleet]

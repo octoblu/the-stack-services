@@ -1,27 +1,44 @@
 [Unit]
 Description=octoblu-meshblu-core-dispatcher
-Wants=vulcand.service
-After=vulcand.service
+Wants=octoblu-meshblu-core-dispatcher-register@%i.service
+Wants=octoblu-meshblu-core-dispatcher-sidekick@%i.service
 
 [Service]
 TimeoutStartSec=300
+StartLimitInterval=30
+StartLimitBurst=30
 Restart=always
-ExecStartPre=/usr/bin/etcdctl get /octoblu/meshblu-core-dispatcher/docker_url || /usr/bin/echo "etcd did not contain /octoblu/meshblu-core-dispatcher/docker_url" && exit 1
-ExecStartPre=-/usr/bin/docker rm --force octoblu-meshblu-core-dispatcher-env-%i octoblu-meshblu-core-dispatcher-%i
-ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
-  --name octoblu-meshblu-core-dispatcher-env-%i \
-  -e ETCDCTL_PEERS=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
-  quay.io/octoblu/etcd-to-env /octoblu/meshblu-core-dispatcher/env > /tmp/octoblu-meshblu-core-dispatcher-%i.env \
+
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-meshblu-core-dispatcher-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-meshblu-core-dispatcher-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-meshblu-core-dispatcher-%i/kronk-run \
 "
-ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
-  --name octoblu-meshblu-core-dispatcher-%i \
-  -e WORKER_NAME=%i \
-  --env-file /tmp/octoblu-meshblu-core-dispatcher-%i.env \
-  --memory 512mb \
-  $(/usr/bin/etcdctl get /octoblu/meshblu-core-dispatcher/docker_url) \
-  node --max_old_space_size=256 command-dispatch.js \
+ExecStartPre=/bin/bash -c " \
+  /run/kronk/octoblu-meshblu-core-dispatcher-%i/kronk-run \
+    /kronk/service/start-pre octoblu-meshblu-core-dispatcher-%i \
+      octoblu-meshblu-core-dispatcher \
+      %i \
+      /octoblu/meshblu-core-dispatcher/env \
+      /octoblu/meshblu-core-dispatcher/docker_url \
 "
-ExecStop=/usr/bin/docker stop --time=30 octoblu-meshblu-core-dispatcher-%i
+ExecStart=/bin/bash -c " \
+  /run/kronk/octoblu-meshblu-core-dispatcher-%i/kronk-run \
+    /kronk/service/start octoblu-meshblu-core-dispatcher-%i \
+      octoblu-meshblu-core-dispatcher \
+      %i \
+      512m \
+      /octoblu/meshblu-core-dispatcher/docker_url \
+      /octoblu/meshblu-core-dispatcher \
+"
+ExecStop=/bin/bash -c " \
+  /run/kronk/octoblu-meshblu-core-dispatcher-%i/kronk-run \
+    /kronk/service/stop octoblu-meshblu-core-dispatcher-%i \
+      octoblu-meshblu-core-dispatcher \
+      %i \
+"
 
 [Install]
 WantedBy=multi-user.target

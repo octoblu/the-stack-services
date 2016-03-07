@@ -10,12 +10,10 @@ ExecStart=/usr/bin/sh -c "/usr/bin/docker run    \
   --rm \
   --name octoblu-vulcand \
   -p 80:8181 \
-  -p 8182:8182 \
   $(/usr/bin/etcdctl get /octoblu/vulcand/docker_url) \
-    /go/bin/vulcand \
       -apiInterface=0.0.0.0 \
       -interface=0.0.0.0 \
-      --etcd=http://$(/usr/bin/ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
+      -etcd=http://$(/usr/bin/ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
 "
 #      --etcd=http://$(/usr/bin/ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
 #      --etcd=$(/usr/bin/etcdctl get /octoblu/etcd-major/endpoint) \

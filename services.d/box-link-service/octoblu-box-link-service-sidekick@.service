@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-box-link-service-sidekick
-After=octoblu-box-link-service@%i.service
+
 
 [Service]
 TimeoutStartSec=30

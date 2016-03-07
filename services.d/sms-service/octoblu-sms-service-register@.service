@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-sms-service-register
-After=octoblu-sms-service@%i.service
+
 
 [Service]
 TimeoutStartSec=300

@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-meshblu-verifier-service-register
-After=octoblu-meshblu-verifier-service@%i.service
+
 
 [Service]
 TimeoutStartSec=300

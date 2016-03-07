@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-namespace-service-sidekick
-After=octoblu-namespace-service@%i.service
+
 
 [Service]
 TimeoutStartSec=30

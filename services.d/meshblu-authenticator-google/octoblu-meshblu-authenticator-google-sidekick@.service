@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-meshblu-authenticator-google-sidekick
-After=octoblu-meshblu-authenticator-google@%i.service
+
 
 [Service]
 TimeoutStartSec=30

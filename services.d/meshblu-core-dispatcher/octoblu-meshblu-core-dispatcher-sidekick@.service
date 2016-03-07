@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-meshblu-core-dispatcher-sidekick
-After=octoblu-meshblu-core-dispatcher@%i.service
+
 
 [Service]
 TimeoutStartSec=30

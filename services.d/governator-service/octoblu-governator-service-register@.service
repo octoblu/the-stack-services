@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-governator-service-register
-After=octoblu-governator-service@%i.service
+
 
 [Service]
 TimeoutStartSec=300

@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-triggers-service-sidekick
-After=octoblu-triggers-service@%i.service
+
 
 [Service]
 TimeoutStartSec=30

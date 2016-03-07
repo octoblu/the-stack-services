@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-oauth-provider-register
-After=octoblu-oauth-provider@%i.service
+
 
 [Service]
 TimeoutStartSec=300

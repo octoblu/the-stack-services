@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-shadow-service-sidekick
-After=octoblu-shadow-service@%i.service
+
 
 [Service]
 TimeoutStartSec=30

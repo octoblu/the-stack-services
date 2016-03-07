@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-namespace-service-register
-After=octoblu-namespace-service@%i.service
+
 
 [Service]
 TimeoutStartSec=300

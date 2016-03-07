@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-meshblu-authenticator-github-sidekick
-After=octoblu-meshblu-authenticator-github@%i.service
+
 
 [Service]
 TimeoutStartSec=30

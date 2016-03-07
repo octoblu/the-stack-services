@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-alexa-service-sidekick
-After=octoblu-alexa-service@%i.service
+
 
 [Service]
 TimeoutStartSec=30

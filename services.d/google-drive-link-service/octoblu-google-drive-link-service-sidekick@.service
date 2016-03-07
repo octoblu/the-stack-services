@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-google-drive-link-service-sidekick
-After=octoblu-google-drive-link-service@%i.service
+
 
 [Service]
 TimeoutStartSec=30

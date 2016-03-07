@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-meshblu-server-http-register
-After=octoblu-meshblu-server-http@%i.service
+
 
 [Service]
 TimeoutStartSec=300

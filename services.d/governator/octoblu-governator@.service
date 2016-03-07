@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-governator
-Requires=octoblu-governator-sidekick@%i.service
+Wants=octoblu-governator-sidekick@%i.service
 
 [Service]
 TimeoutStartSec=300

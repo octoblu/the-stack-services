@@ -1,7 +1,6 @@
 [Unit]
 Description=octoblu-governator-sidekick
 
-
 [Service]
 TimeoutStartSec=30
 Restart=always

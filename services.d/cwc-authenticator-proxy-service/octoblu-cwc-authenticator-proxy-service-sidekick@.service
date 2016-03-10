@@ -1,0 +1,26 @@
+[Unit]
+Description=octoblu-cwc-authenticator-proxy-service-sidekick
+After=octoblu-cwc-authenticator-proxy-service@%i.service
+
+[Service]
+TimeoutStartSec=30
+Restart=always
+
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-cwc-authenticator-proxy-service-sidekick-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-cwc-authenticator-proxy-service-sidekick-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-cwc-authenticator-proxy-service-sidekick-%i/kronk-run \
+"
+ExecStart=/usr/bin/etcdctl exec-watch \
+  /octoblu/cwc-authenticator-proxy-service/restart \
+  -- /run/kronk/octoblu-cwc-authenticator-proxy-service-sidekick-%i/kronk-run \
+    /kronk/sidekick/start octoblu-cwc-authenticator-proxy-service-sidekick-%i \
+    10 /octoblu/cwc-authenticator-proxy-service/docker_url octoblu-cwc-authenticator-proxy-service-%i octoblu-cwc-authenticator-proxy-service-register-%i
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-cwc-authenticator-proxy-service@%i.service

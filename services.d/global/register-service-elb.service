@@ -11,7 +11,7 @@ ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
 "
 ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   --name register-service-elb \
-  --env ELB_NAME=service-cluster,traefik-major \
+  --env ELB_NAME=service-cluster,traefik-major,alexa-service-cluster-elb \
   --env INSTANCE_HOSTNAME=$(hostname) \
   --env-file /tmp/octoblu-register-service-elb.env \
   $(/usr/bin/etcdctl get /octoblu/register-service-elb/docker_url) \

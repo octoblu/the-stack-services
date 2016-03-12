@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-aws-iam-register
-After=octoblu-aws-iam@%i.service
+
 
 [Service]
 TimeoutStartSec=300

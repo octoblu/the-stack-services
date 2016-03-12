@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-meshblu-authenticator-facebook-sidekick
-After=octoblu-meshblu-authenticator-facebook@%i.service
+
 
 [Service]
 TimeoutStartSec=30

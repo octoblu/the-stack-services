@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-organization-service-register
-After=octoblu-organization-service@%i.service
+
 
 [Service]
 TimeoutStartSec=300

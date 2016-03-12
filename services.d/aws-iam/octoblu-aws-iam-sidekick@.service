@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-aws-iam-sidekick
-After=octoblu-aws-iam@%i.service
+
 
 [Service]
 TimeoutStartSec=30

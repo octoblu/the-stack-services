@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-member-service-register
-After=octoblu-member-service@%i.service
+
 
 [Service]
 TimeoutStartSec=300

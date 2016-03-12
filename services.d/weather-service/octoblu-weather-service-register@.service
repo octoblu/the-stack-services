@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-weather-service-register
-After=octoblu-weather-service@%i.service
+
 
 [Service]
 TimeoutStartSec=300

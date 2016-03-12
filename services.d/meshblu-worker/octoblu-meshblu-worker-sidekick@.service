@@ -1,7 +1,7 @@
 [Unit]
 Description=octoblu-meshblu-worker-sidekick
 Wants=vulcand.service
-After=vulcand.service
+
 
 [Service]
 TimeoutStartSec=30

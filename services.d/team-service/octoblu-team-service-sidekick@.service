@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-team-service-sidekick
-After=octoblu-team-service@%i.service
+
 
 [Service]
 TimeoutStartSec=30

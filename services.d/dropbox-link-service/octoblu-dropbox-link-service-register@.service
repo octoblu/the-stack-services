@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-dropbox-link-service-register
-After=octoblu-dropbox-link-service@%i.service
+
 
 [Service]
 TimeoutStartSec=300

@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-box-link-service-register
-After=octoblu-box-link-service@%i.service
+
 
 [Service]
 TimeoutStartSec=300

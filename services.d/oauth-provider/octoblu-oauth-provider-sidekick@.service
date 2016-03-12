@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-oauth-provider-sidekick
-After=octoblu-oauth-provider@%i.service
+
 
 [Service]
 TimeoutStartSec=30

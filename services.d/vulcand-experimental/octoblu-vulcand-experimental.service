@@ -1,0 +1,24 @@
+[Unit]
+Description=octoblu-vulcand-experimental
+Wants=docker.service
+
+[Service]
+TimeoutStartSec=0
+Restart=always
+ExecStartPre=-/usr/bin/docker rm -f octoblu-vulcand-experimental
+ExecStart=/usr/bin/sh -c "/usr/bin/docker run    \
+  --rm \
+  --name octoblu-vulcand-experimental \
+  -p 82:8181 \
+  -p 8282:8282 \
+  $(/usr/bin/etcdctl get /octoblu/vulcand-experimental/docker_url) \
+    -apiInterface=0.0.0.0 \
+    -logSeverity=WARN \
+    -interface=0.0.0.0 \
+    --etcd=http://$(/usr/bin/ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
+"
+ExecStop=/usr/bin/docker stop octoblu-vulcand-experimental
+
+[X-Fleet]
+MachineMetadata=Services=true
+Global=true

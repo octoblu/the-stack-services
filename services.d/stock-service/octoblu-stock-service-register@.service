@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-stock-service-register
-After=octoblu-stock-service@%i.service
+
 
 [Service]
 TimeoutStartSec=300

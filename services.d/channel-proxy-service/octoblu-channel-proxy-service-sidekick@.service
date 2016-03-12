@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-channel-proxy-service-sidekick
-After=octoblu-channel-proxy-service@%i.service
+
 
 [Service]
 TimeoutStartSec=30

@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-email-service-register
-After=octoblu-email-service@%i.service
+
 
 [Service]
 TimeoutStartSec=300

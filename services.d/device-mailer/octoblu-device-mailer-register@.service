@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-device-mailer-register
-After=octoblu-device-mailer@%i.service
+
 
 [Service]
 TimeoutStartSec=300

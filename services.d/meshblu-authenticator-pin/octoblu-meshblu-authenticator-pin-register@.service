@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-meshblu-authenticator-pin-register
-After=octoblu-meshblu-authenticator-pin@%i.service
+
 
 [Service]
 TimeoutStartSec=300

@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-sms-service-sidekick
-After=octoblu-sms-service@%i.service
+
 
 [Service]
 TimeoutStartSec=30

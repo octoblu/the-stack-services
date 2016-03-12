@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-terminator-service-sidekick
-After=octoblu-terminator-service@%i.service
+
 
 [Service]
 TimeoutStartSec=30

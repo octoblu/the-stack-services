@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-nanocyte-flow-deploy-service-register
-After=octoblu-nanocyte-flow-deploy-service@%i.service
+
 
 [Service]
 TimeoutStartSec=300

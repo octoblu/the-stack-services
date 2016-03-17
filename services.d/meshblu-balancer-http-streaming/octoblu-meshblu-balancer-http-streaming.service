@@ -15,7 +15,7 @@ ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
 ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   --name octoblu-meshblu-balancer-http-streaming \
   --memory 512m \
-  -e SERVERS=\"$(/usr/bin/etcdctl ls /vulcand/meshblu-core-protocol-adapter-http-streaming/backend/servers | /usr/bin/xargs -L1 /usr/bin/etcdctl get | /usr/bin/docker run --rm --interactive realguess/jq jq --raw-output '.URL' | /usr/bin/awk -v ORS=' ' '{ print $1 }')\" \
+  -e SERVERS=\"$(/usr/bin/etcdctl ls /vulcand/backends/octoblu-meshblu-core-protocol-adapter-http-streaming/servers | /usr/bin/xargs -L1 /usr/bin/etcdctl get | /usr/bin/docker run --rm --interactive realguess/jq jq --raw-output '.URL' | /usr/bin/awk -v ORS=' ' '{ print $1 }'| sed -e 's/http:\\/\\///g')\" \
   -e SERVER_NAME=${COREOS_PRIVATE_IPV4} \
   --env-file /tmp/octoblu-meshblu-balancer-http-streaming.env \
   -p $(/usr/bin/etcdctl get /octoblu/meshblu-balancer-http-streaming/port):80 \

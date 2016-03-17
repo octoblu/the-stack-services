@@ -4,8 +4,8 @@ Description=octoblu-meshblu-balancer-http-streaming-register-sidekick
 [Service]
 TimeoutStartSec=30
 Restart=always
-ExecStart=/bin/sh -c "/usr/bin/etcdctl exec-watch \
-  /octoblu/meshblu-haproxy/backends/restart \
+ExecStart=/bin/sh -c "/usr/bin/etcdctl exec-watch --recursive \
+  /vulcand/backends/meshblu-core-protocol-adapter-http-streaming/servers \
   -- $(docker stop \
     --time=30 \
     octoblu-meshblu-balancer-http-streaming)"

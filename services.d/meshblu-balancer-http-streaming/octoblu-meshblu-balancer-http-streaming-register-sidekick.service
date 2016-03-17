@@ -1,0 +1,17 @@
+[Unit]
+Description=octoblu-meshblu-balancer-http-streaming-register-sidekick
+
+[Service]
+TimeoutStartSec=30
+Restart=always
+ExecStart=/bin/sh -c "/usr/bin/etcdctl exec-watch \
+  /octoblu/meshblu-haproxy/backends/restart \
+  -- $(docker stop \
+    --time=30 \
+    octoblu-meshblu-balancer-http-streaming)"
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-meshblu-balancer-http-streaming.service

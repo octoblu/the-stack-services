@@ -1,0 +1,45 @@
+[Unit]
+Description=octoblu-meshblu-core-protocol-adapter-http-streaming
+Wants=octoblu-meshblu-core-protocol-adapter-http-streaming-register@%i.service
+Wants=octoblu-meshblu-core-protocol-adapter-http-streaming-sidekick@%i.service
+
+[Service]
+TimeoutStartSec=300
+StartLimitInterval=30
+StartLimitBurst=30
+Restart=always
+
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk to /tmp' \
+  && /usr/bin/etcdctl get /kronk/service/start-pre > /tmp/octoblu-meshblu-core-protocol-adapter-http-streaming-%i-kronk-start-pre \
+  && /usr/bin/etcdctl get /kronk/service/start > /tmp/octoblu-meshblu-core-protocol-adapter-http-streaming-%i-kronk-start \
+  && /usr/bin/etcdctl get /kronk/service/stop > /tmp/octoblu-meshblu-core-protocol-adapter-http-streaming-%i-kronk-stop \
+  && chmod +x /tmp/octoblu-meshblu-core-protocol-adapter-http-streaming-%i-kronk-* \
+"
+ExecStartPre=/bin/bash -c " \
+  /tmp/octoblu-meshblu-core-protocol-adapter-http-streaming-%i-kronk-start-pre \
+    octoblu-meshblu-core-protocol-adapter-http-streaming \
+    %i \
+    /octoblu/meshblu-core-protocol-adapter-http-streaming/env \
+    /octoblu/meshblu-core-protocol-adapter-http-streaming/docker_url \
+"
+ExecStart=/bin/bash -c " \
+  /tmp/octoblu-meshblu-core-protocol-adapter-http-streaming-%i-kronk-start \
+    octoblu-meshblu-core-protocol-adapter-http-streaming \
+    %i \
+    512m \
+    /octoblu/meshblu-core-protocol-adapter-http-streaming/docker_url \
+    /octoblu/meshblu-core-protocol-adapter-http-streaming \
+"
+ExecStop=/bin/bash -c " \
+  /tmp/octoblu-meshblu-core-protocol-adapter-http-streaming-%i-kronk-stop \
+    octoblu-meshblu-core-protocol-adapter-http-streaming \
+    %i \
+"
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+MachineMetadata=Services=true

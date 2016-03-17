@@ -1,0 +1,31 @@
+[Unit]
+Description=octoblu-meshblu-balancer-http-streaming
+
+[Service]
+EnvironmentFile=/etc/environment
+TimeoutStartSec=300
+Restart=always
+ExecStartPre=/usr/bin/etcdctl get /octoblu/meshblu-balancer-http-streaming/docker_url || /usr/bin/echo "etcd did not contain /octoblu/meshblu-balancer-http-streaming/docker_url" && exit 1
+ExecStartPre=-/usr/bin/docker rm --force octoblu-meshblu-balancer-http-streaming-env octoblu-meshblu-balancer-http-streaming
+ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
+  --name octoblu-meshblu-balancer-http-streaming-env \
+  -e ETCDCTL_PEERS=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
+  quay.io/octoblu/etcd-to-env /octoblu/meshblu-balancer-http-streaming/env > /tmp/octoblu-meshblu-balancer-http-streaming.env \
+"
+ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
+  --name octoblu-meshblu-balancer-http-streaming \
+  --memory 512m \
+  -e SERVERS=\"$(/usr/bin/etcdctl ls /vulcand/meshblu-core-protocol-adapter-http-streaming/backend/servers | /usr/bin/xargs -L1 /usr/bin/etcdctl get | /usr/bin/docker run --rm --interactive realguess/jq jq --raw-output '.URL' | /usr/bin/awk -v ORS=' ' '{ print $1 }')\" \
+  -e SERVER_NAME=${COREOS_PRIVATE_IPV4} \
+  --env-file /tmp/octoblu-meshblu-balancer-http-streaming.env \
+  -p $(/usr/bin/etcdctl get /octoblu/meshblu-balancer-http-streaming/port):80 \
+  -p $(/usr/bin/etcdctl get /octoblu/meshblu-balancer-http-streaming/port_control):9000 \
+  $(/usr/bin/etcdctl get /octoblu/meshblu-balancer-http-streaming/docker_url) \
+"
+ExecStop=/usr/bin/docker kill octoblu-meshblu-balancer-http-streaming
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+MachineMetadata=Services=true

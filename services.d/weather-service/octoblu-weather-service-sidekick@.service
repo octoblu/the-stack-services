@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-weather-service-sidekick
-After=octoblu-weather-service@%i.service
+
 
 [Service]
 TimeoutStartSec=30

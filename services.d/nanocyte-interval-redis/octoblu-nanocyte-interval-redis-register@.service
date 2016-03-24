@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-nanocyte-interval-redis-register
-After=octoblu-nanocyte-interval-redis@%i.service
+
 
 [Service]
 TimeoutStartSec=300

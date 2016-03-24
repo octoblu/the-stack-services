@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-cwc-integration-service-register
-After=octoblu-cwc-integration-service@%i.service
+
 
 [Service]
 TimeoutStartSec=300

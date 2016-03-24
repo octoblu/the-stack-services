@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-meshblu-authenticator-cwc-sidekick
-After=octoblu-meshblu-authenticator-cwc@%i.service
+
 
 [Service]
 TimeoutStartSec=30

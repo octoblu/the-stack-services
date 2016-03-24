@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-triggers-service-register
-After=octoblu-triggers-service@%i.service
+
 
 [Service]
 TimeoutStartSec=300

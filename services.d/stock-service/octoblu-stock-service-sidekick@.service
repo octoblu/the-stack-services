@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-stock-service-sidekick
-After=octoblu-stock-service@%i.service
+
 
 [Service]
 TimeoutStartSec=30

@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-meshblu-responder-service-sidekick
-After=octoblu-meshblu-responder-service@%i.service
+
 
 [Service]
 TimeoutStartSec=30

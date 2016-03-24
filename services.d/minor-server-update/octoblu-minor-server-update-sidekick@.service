@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-minor-server-update-sidekick
-After=octoblu-minor-server-update@%i.service
+
 
 [Service]
 TimeoutStartSec=30

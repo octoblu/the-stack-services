@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-meshblu-authenticator-citrix-sidekick
-After=octoblu-meshblu-authenticator-citrix@%i.service
+
 
 [Service]
 TimeoutStartSec=30

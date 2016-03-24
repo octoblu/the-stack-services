@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-sns-service-register
-After=octoblu-sns-service@%i.service
+
 
 [Service]
 TimeoutStartSec=300

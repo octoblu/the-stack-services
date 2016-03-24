@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-deployinate-service-sidekick
-After=octoblu-deployinate-service@%i.service
+
 
 [Service]
 TimeoutStartSec=30

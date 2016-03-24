@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-friendly-sharefile-service-register
-After=octoblu-friendly-sharefile-service@%i.service
+
 
 [Service]
 TimeoutStartSec=300

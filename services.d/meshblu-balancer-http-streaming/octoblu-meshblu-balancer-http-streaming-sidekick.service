@@ -1,0 +1,20 @@
+[Unit]
+Description=octoblu-meshblu-balancer-http-streaming-sidekick
+
+[Service]
+TimeoutStartSec=30
+Restart=always
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk to /tmp' \
+  && /usr/bin/etcdctl get /kronk/sidekick/start > /tmp/octoblu-meshblu-balancer-http-streaming-sidekick-kronk-start \
+  && chmod +x /tmp/octoblu-meshblu-balancer-http-streaming-sidekick-kronk-* \
+"
+ExecStart=/usr/bin/etcdctl exec-watch \
+  /octoblu/meshblu-balancer-http-streaming/restart \
+  -- /tmp/octoblu-meshblu-balancer-http-streaming-sidekick-kronk-start 10 /octoblu/meshblu-balancer-http-streaming/docker_url octoblu-meshblu-balancer-http-streaming octoblu-meshblu-balancer-http-streaming-register
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-meshblu-balancer-http-streaming.service

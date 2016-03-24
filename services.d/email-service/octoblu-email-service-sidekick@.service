@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-email-service-sidekick
-After=octoblu-email-service@%i.service
+
 
 [Service]
 TimeoutStartSec=30

@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-google-drive-link-service-register
-After=octoblu-google-drive-link-service@%i.service
+
 
 [Service]
 TimeoutStartSec=300

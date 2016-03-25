@@ -1,0 +1,24 @@
+[Unit]
+Description=octoblu-elasticsearch-archive
+
+[Service]
+Type=simple
+TimeoutStartSec=300
+ExecStartPre=/usr/bin/etcdctl get /octoblu/elasticsearch-archive/docker_url || /usr/bin/echo "etcd did not contain /octoblu/elasticsearch-archive/docker_url" && exit 1
+ExecStartPre=-/usr/bin/docker rm --force octoblu-elasticsearch-archive-env octoblu-elasticsearch-archive
+ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
+  --name octoblu-elasticsearch-archive-env \
+  -e ETCDCTL_PEERS=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
+  quay.io/octoblu/etcd-to-env /octoblu/elasticsearch-archive/env > /tmp/octoblu-elasticsearch-archive.env \
+"
+ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
+  --name octoblu-elasticsearch-archive \
+  --env-file /tmp/octoblu-elasticsearch-archive.env \
+  $(/usr/bin/etcdctl get /octoblu/elasticsearch-archive/docker_url) \
+"
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+MachineMetadata=Services=true

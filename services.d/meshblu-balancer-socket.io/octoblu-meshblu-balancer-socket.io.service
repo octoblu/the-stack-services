@@ -1,0 +1,30 @@
+[Unit]
+Description=octoblu-meshblu-balancer-socket.io
+
+[Service]
+EnvironmentFile=/etc/environment
+TimeoutStartSec=300
+Restart=always
+ExecStartPre=/usr/bin/etcdctl get /octoblu/meshblu-balancer-socket.io/docker_url || /usr/bin/echo "etcd did not contain /octoblu/meshblu-balancer-socket.io/docker_url" && exit 1
+ExecStartPre=-/usr/bin/docker rm --force octoblu-meshblu-balancer-socket.io-env octoblu-meshblu-balancer-socket.io
+ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
+  --name octoblu-meshblu-balancer-socket.io-env \
+  -e ETCDCTL_PEERS=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
+  quay.io/octoblu/etcd-to-env /octoblu/meshblu-balancer-socket.io/env > /tmp/octoblu-meshblu-balancer-socket.io.env \
+"
+ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
+  --name octoblu-meshblu-balancer-socket.io \
+  --memory 512m \
+  -e SERVERS=\"$(/usr/bin/etcdctl ls /vulcand/backends/octoblu-meshblu-core-protocol-adapter-socket.io/servers | /usr/bin/xargs -L1 /usr/bin/etcdctl get | /usr/bin/docker run --rm --interactive realguess/jq jq --raw-output '.URL' | /usr/bin/awk -v ORS=' ' '{ print $1 }'| sed -e 's/http:\\/\\///g')\" \
+  -e SERVER_NAME=${COREOS_PRIVATE_IPV4} \
+  --env-file /tmp/octoblu-meshblu-balancer-socket.io.env \
+  -p $(/usr/bin/etcdctl get /octoblu/meshblu-balancer-socket.io/port):80 \
+  $(/usr/bin/etcdctl get /octoblu/meshblu-balancer-socket.io/docker_url) \
+"
+ExecStop=/usr/bin/docker kill octoblu-meshblu-balancer-socket.io
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+MachineMetadata=Services=true

@@ -18,6 +18,7 @@ ExecStartPre=/bin/bash -c " \
     octoblu-meshblu-core-protocol-adapter-coap \
     %i \
     /octoblu/meshblu-core-protocol-adapter-coap/register-env \
+    5683/udp \
 "
 ExecStart=/bin/sh -c " \
   /tmp/octoblu-meshblu-core-protocol-adapter-coap-register-%i-kronk-start \

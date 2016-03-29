@@ -31,7 +31,7 @@ ExecStart=/bin/bash -c " \
       512m \
       /octoblu/meshblu-core-protocol-adapter-coap/docker_url \
       /octoblu/meshblu-core-protocol-adapter-coap \
-      1883 \
+      5683/udp \
 "
 ExecStop=/bin/bash -c " \
   /run/kronk/octoblu-meshblu-core-protocol-adapter-coap-%i/kronk-run \

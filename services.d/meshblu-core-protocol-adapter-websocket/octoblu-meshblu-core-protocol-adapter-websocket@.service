@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-meshblu-core-protocol-adapter-websocket
-Wants=octoblu-meshblu-core-protocol-adapter-websocket-tcp@%i.service
+Wants=octoblu-meshblu-core-protocol-adapter-websocket-register@%i.service
 Wants=octoblu-meshblu-core-protocol-adapter-websocket-sidekick@%i.service
 
 [Service]
@@ -31,7 +31,6 @@ ExecStart=/bin/bash -c " \
       512m \
       /octoblu/meshblu-core-protocol-adapter-websocket/docker_url \
       /octoblu/meshblu-core-protocol-adapter-websocket \
-      8002 \
 "
 ExecStop=/bin/bash -c " \
   /run/kronk/octoblu-meshblu-core-protocol-adapter-websocket-%i/kronk-run \

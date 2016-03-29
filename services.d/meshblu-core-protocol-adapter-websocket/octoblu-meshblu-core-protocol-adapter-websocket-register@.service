@@ -18,7 +18,6 @@ ExecStartPre=/bin/bash -c " \
     octoblu-meshblu-core-protocol-adapter-websocket \
     %i \
     /octoblu/meshblu-core-protocol-adapter-websocket/register-env \
-    1883/tcp \
 "
 ExecStart=/bin/sh -c " \
   /tmp/octoblu-meshblu-core-protocol-adapter-websocket-register-%i-kronk-start \

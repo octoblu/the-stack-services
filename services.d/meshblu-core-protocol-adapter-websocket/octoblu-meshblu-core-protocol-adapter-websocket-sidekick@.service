@@ -17,7 +17,7 @@ ExecStart=/usr/bin/etcdctl exec-watch \
   /octoblu/meshblu-core-protocol-adapter-websocket/restart \
   -- /run/kronk/octoblu-meshblu-core-protocol-adapter-websocket-sidekick-%i/kronk-run \
     /kronk/sidekick/start octoblu-meshblu-core-protocol-adapter-websocket-sidekick-%i \
-    10 /octoblu/meshblu-core-protocol-adapter-websocket/docker_url octoblu-meshblu-core-protocol-adapter-websocket-%i octoblu-meshblu-core-protocol-adapter-websocket-tcp-%i
+    10 /octoblu/meshblu-core-protocol-adapter-websocket/docker_url octoblu-meshblu-core-protocol-adapter-websocket-%i octoblu-meshblu-core-protocol-adapter-websocket-register-%i
 
 [Install]
 WantedBy=multi-user.target

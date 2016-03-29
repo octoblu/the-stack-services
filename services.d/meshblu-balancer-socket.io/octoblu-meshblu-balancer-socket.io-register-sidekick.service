@@ -1,0 +1,17 @@
+[Unit]
+Description=octoblu-meshblu-balancer-socket.io-register-sidekick
+
+[Service]
+TimeoutStartSec=30
+Restart=always
+ExecStart=/bin/sh -c "/usr/bin/etcdctl exec-watch --recursive \
+  /vulcand/backends/octoblu-meshblu-core-protocol-adapter-socket.io/servers \
+  -- $(docker stop \
+    --time=30 \
+    octoblu-meshblu-balancer-socket.io)"
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-meshblu-balancer-socket.io.service

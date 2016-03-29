@@ -1,0 +1,37 @@
+[Unit]
+Description=octoblu-meshblu-core-protocol-adapter-websocket-register
+
+
+[Service]
+TimeoutStartSec=300
+EnvironmentFile=/etc/environment
+Restart=always
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk to /tmp' \
+  && /usr/bin/etcdctl get /kronk/register/start-pre > /tmp/octoblu-meshblu-core-protocol-adapter-websocket-register-%i-kronk-start-pre \
+  && /usr/bin/etcdctl get /kronk/register/start > /tmp/octoblu-meshblu-core-protocol-adapter-websocket-register-%i-kronk-start \
+  && /usr/bin/etcdctl get /kronk/register/stop > /tmp/octoblu-meshblu-core-protocol-adapter-websocket-register-%i-kronk-stop \
+  && chmod +x /tmp/octoblu-meshblu-core-protocol-adapter-websocket-register-%i-kronk-* \
+"
+ExecStartPre=/bin/bash -c " \
+  /tmp/octoblu-meshblu-core-protocol-adapter-websocket-register-%i-kronk-start-pre \
+    octoblu-meshblu-core-protocol-adapter-websocket \
+    %i \
+    /octoblu/meshblu-core-protocol-adapter-websocket/register-env \
+    1883/tcp \
+"
+ExecStart=/bin/sh -c " \
+  /tmp/octoblu-meshblu-core-protocol-adapter-websocket-register-%i-kronk-start \
+    octoblu-meshblu-core-protocol-adapter-websocket \
+    %i \
+    octoblu-meshblu-core-protocol-adapter-websocket \
+    /octoblu/register-tcp/docker_url \
+"
+ExecStop=/bin/sh -c " \
+  /tmp/octoblu-meshblu-core-protocol-adapter-websocket-register-%i-kronk-stop \
+    octoblu-meshblu-core-protocol-adapter-websocket \
+    %i \
+"
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-meshblu-core-protocol-adapter-websocket@%i.service

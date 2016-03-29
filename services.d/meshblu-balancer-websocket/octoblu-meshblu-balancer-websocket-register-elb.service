@@ -1,5 +1,5 @@
 [Unit]
-Description=octoblu-meshblu-core-protocol-adapter-coap-dns
+Description=octoblu-meshblu-balancer-websocket-register-elb
 
 [Service]
 TimeoutStartSec=30
@@ -10,16 +10,15 @@ ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
   quay.io/octoblu/etcd-to-env /octoblu/register-service-elb/env > /tmp/register-service-elb.env \
 "
 ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
-  --name octoblu-meshblu-core-protocol-adapter-coap-register-single-dns \
-  -e RECORD=$(etcdctl get /octoblu/meshblu-core-protocol-adapter-coap/dns_record) \
-  -e DOMAIN=$(etcdctl get /octoblu/meshblu-core-protocol-adapter-coap/dns_domain) \
-  -e IP=${COREOS_PUBLIC_IPV4} \
+  --name octoblu-meshblu-balancer-websocket-register-elb \
+  -e ELB_NAME=$(etcdctl get /octoblu/meshblu-balancer-websocket/elb_name) \
+  -e INSTANCE_HOSTNAME=$(hostname) \
   --env-file /tmp/register-service-elb.env \
-  $(/usr/bin/etcdctl get /octoblu/register-single-dns/docker_url) \
+  $(/usr/bin/etcdctl get /octoblu/register-service-elb/docker_url) \
 "
 
 [Install]
 WantedBy=multi-user.target
 
 [X-Fleet]
-X-ConditionMachineOf=octoblu-meshblu-core-protocol-adapter-coap@%i.service
+X-ConditionMachineOf=octoblu-meshblu-balancer-websocket.service

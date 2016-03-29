@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-meshblu-core-protocol-adapter-mqtt
-Wants=octoblu-meshblu-core-protocol-adapter-mqtt-register@%i.service
+Wants=octoblu-meshblu-core-protocol-adapter-mqtt-tcp@%i.service
 Wants=octoblu-meshblu-core-protocol-adapter-mqtt-sidekick@%i.service
 
 [Service]
@@ -8,7 +8,6 @@ TimeoutStartSec=300
 StartLimitInterval=30
 StartLimitBurst=30
 Restart=always
-
 
 ExecStartPre=/bin/bash -c " \
   echo 'Writing kronk' \
@@ -32,6 +31,7 @@ ExecStart=/bin/bash -c " \
       512m \
       /octoblu/meshblu-core-protocol-adapter-mqtt/docker_url \
       /octoblu/meshblu-core-protocol-adapter-mqtt \
+      1883 \
 "
 ExecStop=/bin/bash -c " \
   /run/kronk/octoblu-meshblu-core-protocol-adapter-mqtt-%i/kronk-run \

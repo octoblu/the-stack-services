@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-meshblu-core-protocol-adapter-xmpp
-Wants=octoblu-meshblu-core-protocol-adapter-xmpp-register@%i.service
+Wants=octoblu-meshblu-core-protocol-adapter-xmpp-tcp@%i.service
 Wants=octoblu-meshblu-core-protocol-adapter-xmpp-sidekick@%i.service
 
 [Service]
@@ -8,7 +8,6 @@ TimeoutStartSec=300
 StartLimitInterval=30
 StartLimitBurst=30
 Restart=always
-
 
 ExecStartPre=/bin/bash -c " \
   echo 'Writing kronk' \
@@ -32,6 +31,7 @@ ExecStart=/bin/bash -c " \
       512m \
       /octoblu/meshblu-core-protocol-adapter-xmpp/docker_url \
       /octoblu/meshblu-core-protocol-adapter-xmpp \
+      5222 \
 "
 ExecStop=/bin/bash -c " \
   /run/kronk/octoblu-meshblu-core-protocol-adapter-xmpp-%i/kronk-run \

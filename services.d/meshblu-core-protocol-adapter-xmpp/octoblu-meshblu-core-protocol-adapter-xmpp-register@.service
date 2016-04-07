@@ -1,35 +1,36 @@
 [Unit]
 Description=octoblu-meshblu-core-protocol-adapter-xmpp-register
-After=octoblu-meshblu-core-protocol-adapter-xmpp@%i.service
+
 
 [Service]
 TimeoutStartSec=300
 EnvironmentFile=/etc/environment
 Restart=always
 ExecStartPre=/bin/bash -c " \
-  echo 'Writing kronk' \
-  && mkdir -p /run/kronk/octoblu-meshblu-core-protocol-adapter-xmpp-register-%i \
-  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-meshblu-core-protocol-adapter-xmpp-register-%i/kronk-run \
-  && chmod +x /run/kronk/octoblu-meshblu-core-protocol-adapter-xmpp-register-%i/kronk-run \
+  echo 'Writing kronk to /tmp' \
+  && /usr/bin/etcdctl get /kronk/register/start-pre > /tmp/octoblu-meshblu-core-protocol-adapter-xmpp-register-%i-kronk-start-pre \
+  && /usr/bin/etcdctl get /kronk/register/start > /tmp/octoblu-meshblu-core-protocol-adapter-xmpp-register-%i-kronk-start \
+  && /usr/bin/etcdctl get /kronk/register/stop > /tmp/octoblu-meshblu-core-protocol-adapter-xmpp-register-%i-kronk-stop \
+  && chmod +x /tmp/octoblu-meshblu-core-protocol-adapter-xmpp-register-%i-kronk-* \
 "
 ExecStartPre=/bin/bash -c " \
-  /run/kronk/octoblu-meshblu-core-protocol-adapter-xmpp-register-%i/kronk-run \
-    /kronk/register/start-pre octoblu-meshblu-core-protocol-adapter-xmpp-%i \
-      octoblu-meshblu-core-protocol-adapter-xmpp \
-      %i \
-      /octoblu/meshblu-core-protocol-adapter-xmpp/register-env \
+  /tmp/octoblu-meshblu-core-protocol-adapter-xmpp-register-%i-kronk-start-pre \
+    octoblu-meshblu-core-protocol-adapter-xmpp \
+    %i \
+    /octoblu/meshblu-core-protocol-adapter-xmpp/register-env \
+    5222/tcp \
 "
 ExecStart=/bin/sh -c " \
-  /run/kronk/octoblu-meshblu-core-protocol-adapter-xmpp-register-%i/kronk-run \
-    /kronk/register/start octoblu-meshblu-core-protocol-adapter-xmpp-%i \
-      octoblu-meshblu-core-protocol-adapter-xmpp \
-      %i \
+  /tmp/octoblu-meshblu-core-protocol-adapter-xmpp-register-%i-kronk-start \
+    octoblu-meshblu-core-protocol-adapter-xmpp \
+    %i \
+    octoblu-meshblu-core-protocol-adapter-xmpp \
+    /octoblu/register-tcp/docker_url \
 "
 ExecStop=/bin/sh -c " \
-  /run/kronk/octoblu-meshblu-core-protocol-adapter-xmpp-register-%i/kronk-run \
-    /kronk/register/stop octoblu-meshblu-core-protocol-adapter-xmpp-%i \
-      octoblu-meshblu-core-protocol-adapter-xmpp \
-      %i \
+  /tmp/octoblu-meshblu-core-protocol-adapter-xmpp-register-%i-kronk-stop \
+    octoblu-meshblu-core-protocol-adapter-xmpp \
+    %i \
 "
 
 [X-Fleet]

@@ -1,0 +1,26 @@
+[Unit]
+Description=octoblu-meshblu-core-firehose-socket.io-sidekick
+After=octoblu-meshblu-core-firehose-socket.io@%i.service
+
+[Service]
+TimeoutStartSec=30
+Restart=always
+
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-meshblu-core-firehose-socket.io-sidekick-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-meshblu-core-firehose-socket.io-sidekick-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-meshblu-core-firehose-socket.io-sidekick-%i/kronk-run \
+"
+ExecStart=/usr/bin/etcdctl exec-watch \
+  /octoblu/meshblu-core-firehose-socket.io/restart \
+  -- /run/kronk/octoblu-meshblu-core-firehose-socket.io-sidekick-%i/kronk-run \
+    /kronk/sidekick/start octoblu-meshblu-core-firehose-socket.io-sidekick-%i \
+    10 /octoblu/meshblu-core-firehose-socket.io/docker_url octoblu-meshblu-core-firehose-socket.io-%i octoblu-meshblu-core-firehose-socket.io-register-%i
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-meshblu-core-firehose-socket.io@%i.service

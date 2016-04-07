@@ -1,0 +1,36 @@
+[Unit]
+Description=octoblu-meshblu-core-firehose-socket.io-register
+After=octoblu-meshblu-core-firehose-socket.io@%i.service
+
+[Service]
+TimeoutStartSec=300
+EnvironmentFile=/etc/environment
+Restart=always
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-meshblu-core-firehose-socket.io-register-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-meshblu-core-firehose-socket.io-register-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-meshblu-core-firehose-socket.io-register-%i/kronk-run \
+"
+ExecStartPre=/bin/bash -c " \
+  /run/kronk/octoblu-meshblu-core-firehose-socket.io-register-%i/kronk-run \
+    /kronk/register/start-pre octoblu-meshblu-core-firehose-socket.io-%i \
+      octoblu-meshblu-core-firehose-socket.io \
+      %i \
+      /octoblu/meshblu-core-firehose-socket.io/register-env \
+"
+ExecStart=/bin/sh -c " \
+  /run/kronk/octoblu-meshblu-core-firehose-socket.io-register-%i/kronk-run \
+    /kronk/register/start octoblu-meshblu-core-firehose-socket.io-%i \
+      octoblu-meshblu-core-firehose-socket.io \
+      %i \
+"
+ExecStop=/bin/sh -c " \
+  /run/kronk/octoblu-meshblu-core-firehose-socket.io-register-%i/kronk-run \
+    /kronk/register/stop octoblu-meshblu-core-firehose-socket.io-%i \
+      octoblu-meshblu-core-firehose-socket.io \
+      %i \
+"
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-meshblu-core-firehose-socket.io@%i.service

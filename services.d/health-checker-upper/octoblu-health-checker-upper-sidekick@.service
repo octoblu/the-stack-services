@@ -1,0 +1,26 @@
+[Unit]
+Description=octoblu-health-checker-upper-sidekick
+After=octoblu-health-checker-upper@%i.service
+
+[Service]
+TimeoutStartSec=30
+Restart=always
+
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-health-checker-upper-sidekick-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-health-checker-upper-sidekick-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-health-checker-upper-sidekick-%i/kronk-run \
+"
+ExecStart=/usr/bin/etcdctl exec-watch \
+  /octoblu/health-checker-upper/restart \
+  -- /run/kronk/octoblu-health-checker-upper-sidekick-%i/kronk-run \
+    /kronk/sidekick/start octoblu-health-checker-upper-sidekick-%i \
+    10 /octoblu/health-checker-upper/docker_url octoblu-health-checker-upper-%i octoblu-health-checker-upper-register-%i
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-health-checker-upper@%i.service

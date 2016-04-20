@@ -1,0 +1,11 @@
+[Unit]
+Description=Run Kuzco
+
+[Timer]
+OnCalendar=07:00
+
+[Install]
+WantedBy=timers.target
+
+[X-Fleet]
+Global=true

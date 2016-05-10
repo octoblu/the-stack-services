@@ -1,0 +1,26 @@
+[Unit]
+Description=octoblu-meshblu-channel-splunk-sidekick
+After=octoblu-meshblu-channel-splunk@%i.service
+
+[Service]
+TimeoutStartSec=30
+Restart=always
+
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-meshblu-channel-splunk-sidekick-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-meshblu-channel-splunk-sidekick-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-meshblu-channel-splunk-sidekick-%i/kronk-run \
+"
+ExecStart=/usr/bin/etcdctl exec-watch \
+  /octoblu/meshblu-channel-splunk/restart \
+  -- /run/kronk/octoblu-meshblu-channel-splunk-sidekick-%i/kronk-run \
+    /kronk/sidekick/start octoblu-meshblu-channel-splunk-sidekick-%i \
+    10 /octoblu/meshblu-channel-splunk/docker_url octoblu-meshblu-channel-splunk-%i octoblu-meshblu-channel-splunk-register-%i
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-meshblu-channel-splunk@%i.service

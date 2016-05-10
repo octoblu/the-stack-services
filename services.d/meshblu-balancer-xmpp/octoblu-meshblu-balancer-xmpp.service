@@ -1,0 +1,31 @@
+[Unit]
+Description=octoblu-meshblu-balancer-xmpp
+
+[Service]
+EnvironmentFile=/etc/environment
+TimeoutStartSec=300
+Restart=always
+ExecStartPre=/usr/bin/etcdctl get /octoblu/meshblu-balancer-xmpp/docker_url || /usr/bin/echo "etcd did not contain /octoblu/meshblu-balancer-xmpp/docker_url" && exit 1
+ExecStartPre=-/usr/bin/docker rm --force octoblu-meshblu-balancer-xmpp-env octoblu-meshblu-balancer-xmpp
+ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
+  --name octoblu-meshblu-balancer-xmpp-env \
+  -e ETCDCTL_PEERS=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
+  quay.io/octoblu/etcd-to-env /octoblu/meshblu-balancer-xmpp/env > /tmp/octoblu-meshblu-balancer-xmpp.env \
+"
+ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
+  --name octoblu-meshblu-balancer-xmpp \
+  --memory 512m \
+  -e SERVERS=\"$(/usr/bin/etcdctl ls /vulcand/backends/octoblu-meshblu-core-protocol-adapter-xmpp/servers | /usr/bin/xargs -L1 /usr/bin/etcdctl get | /usr/bin/docker run --rm --interactive realguess/jq jq --raw-output '.URL' | /usr/bin/awk -v ORS=' ' '{ print $1 }'| sed -e 's/http:\\/\\///g')\" \
+  -e SERVER_NAME=${COREOS_PRIVATE_IPV4} \
+  --env-file /tmp/octoblu-meshblu-balancer-xmpp.env \
+  -p $(/usr/bin/etcdctl get /octoblu/meshblu-balancer-xmpp/port):5222 \
+  -p :9000 \
+  $(/usr/bin/etcdctl get /octoblu/meshblu-balancer-xmpp/docker_url) \
+"
+ExecStop=/usr/bin/docker kill octoblu-meshblu-balancer-xmpp
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+MachineMetadata=Services=true

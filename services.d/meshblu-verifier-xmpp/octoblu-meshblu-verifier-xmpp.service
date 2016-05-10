@@ -1,0 +1,27 @@
+[Unit]
+Description=octoblu-meshblu-verifier-xmpp
+Wants=vulcand.service
+After=vulcand.service
+
+[Service]
+Type=simple
+TimeoutStartSec=300
+ExecStartPre=/usr/bin/etcdctl get /octoblu/meshblu-verifier-xmpp/docker_url || /usr/bin/echo "etcd did not contain /octoblu/meshblu-verifier-xmpp/docker_url" && exit 1
+ExecStartPre=-/usr/bin/docker rm --force octoblu-meshblu-verifier-xmpp-env octoblu-meshblu-verifier-xmpp
+ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
+  --name octoblu-meshblu-verifier-xmpp-env \
+  -e ETCDCTL_PEERS=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
+  quay.io/octoblu/etcd-to-env /octoblu/meshblu-verifier-xmpp/env > /tmp/octoblu-meshblu-verifier-xmpp.env \
+"
+ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
+  --name octoblu-meshblu-verifier-xmpp \
+  --env-file /tmp/octoblu-meshblu-verifier-xmpp.env \
+  $(/usr/bin/etcdctl get /octoblu/meshblu-verifier-xmpp/docker_url) \
+"
+# ExecStop=/usr/bin/docker kill octoblu-meshblu-verifier-xmpp
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+MachineMetadata=Services=true

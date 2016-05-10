@@ -1,0 +1,45 @@
+[Unit]
+Description=octoblu-meshblu-core-protocol-adapter-http
+Wants=octoblu-meshblu-core-protocol-adapter-http-register@%i.service
+Wants=octoblu-meshblu-core-protocol-adapter-http-sidekick@%i.service
+
+[Service]
+TimeoutStartSec=300
+StartLimitInterval=30
+StartLimitBurst=30
+Restart=always
+
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk to /tmp' \
+  && /usr/bin/etcdctl get /kronk/service/start-pre > /tmp/octoblu-meshblu-core-protocol-adapter-http-%i-kronk-start-pre \
+  && /usr/bin/etcdctl get /kronk/service/start > /tmp/octoblu-meshblu-core-protocol-adapter-http-%i-kronk-start \
+  && /usr/bin/etcdctl get /kronk/service/stop > /tmp/octoblu-meshblu-core-protocol-adapter-http-%i-kronk-stop \
+  && chmod +x /tmp/octoblu-meshblu-core-protocol-adapter-http-%i-kronk-* \
+"
+ExecStartPre=/bin/bash -c " \
+  /tmp/octoblu-meshblu-core-protocol-adapter-http-%i-kronk-start-pre \
+    octoblu-meshblu-core-protocol-adapter-http \
+    %i \
+    /octoblu/meshblu-core-protocol-adapter-http/env \
+    /octoblu/meshblu-core-protocol-adapter-http/docker_url \
+"
+ExecStart=/bin/bash -c " \
+  /tmp/octoblu-meshblu-core-protocol-adapter-http-%i-kronk-start \
+    octoblu-meshblu-core-protocol-adapter-http \
+    %i \
+    512m \
+    /octoblu/meshblu-core-protocol-adapter-http/docker_url \
+    /octoblu/meshblu-core-protocol-adapter-http \
+"
+ExecStop=/bin/bash -c " \
+  /tmp/octoblu-meshblu-core-protocol-adapter-http-%i-kronk-stop \
+    octoblu-meshblu-core-protocol-adapter-http \
+    %i \
+"
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+MachineMetadata=Services=true

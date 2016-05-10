@@ -1,0 +1,26 @@
+[Unit]
+Description=octoblu-file-downloader-service-sidekick
+After=octoblu-file-downloader-service@%i.service
+
+[Service]
+TimeoutStartSec=30
+Restart=always
+
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-file-downloader-service-sidekick-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-file-downloader-service-sidekick-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-file-downloader-service-sidekick-%i/kronk-run \
+"
+ExecStart=/usr/bin/etcdctl exec-watch \
+  /octoblu/file-downloader-service/restart \
+  -- /run/kronk/octoblu-file-downloader-service-sidekick-%i/kronk-run \
+    /kronk/sidekick/start octoblu-file-downloader-service-sidekick-%i \
+    10 /octoblu/file-downloader-service/docker_url octoblu-file-downloader-service-%i octoblu-file-downloader-service-register-%i
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-file-downloader-service@%i.service

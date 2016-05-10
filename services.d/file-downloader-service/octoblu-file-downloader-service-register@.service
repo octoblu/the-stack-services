@@ -1,0 +1,36 @@
+[Unit]
+Description=octoblu-file-downloader-service-register
+After=octoblu-file-downloader-service@%i.service
+
+[Service]
+TimeoutStartSec=300
+EnvironmentFile=/etc/environment
+Restart=always
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-file-downloader-service-register-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-file-downloader-service-register-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-file-downloader-service-register-%i/kronk-run \
+"
+ExecStartPre=/bin/bash -c " \
+  /run/kronk/octoblu-file-downloader-service-register-%i/kronk-run \
+    /kronk/register/start-pre octoblu-file-downloader-service-%i \
+      octoblu-file-downloader-service \
+      %i \
+      /octoblu/file-downloader-service/register-env \
+"
+ExecStart=/bin/sh -c " \
+  /run/kronk/octoblu-file-downloader-service-register-%i/kronk-run \
+    /kronk/register/start octoblu-file-downloader-service-%i \
+      octoblu-file-downloader-service \
+      %i \
+"
+ExecStop=/bin/sh -c " \
+  /run/kronk/octoblu-file-downloader-service-register-%i/kronk-run \
+    /kronk/register/stop octoblu-file-downloader-service-%i \
+      octoblu-file-downloader-service \
+      %i \
+"
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-file-downloader-service@%i.service

@@ -1,0 +1,47 @@
+[Unit]
+Description=octoblu-data-forwarder-splunk
+Wants=octoblu-data-forwarder-splunk-register@%i.service
+Wants=octoblu-data-forwarder-splunk-sidekick@%i.service
+
+[Service]
+TimeoutStartSec=300
+StartLimitInterval=30
+StartLimitBurst=30
+Restart=always
+
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-data-forwarder-splunk-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-data-forwarder-splunk-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-data-forwarder-splunk-%i/kronk-run \
+"
+ExecStartPre=/bin/bash -c " \
+  /run/kronk/octoblu-data-forwarder-splunk-%i/kronk-run \
+    /kronk/service/start-pre octoblu-data-forwarder-splunk-%i \
+      octoblu-data-forwarder-splunk \
+      %i \
+      /octoblu/data-forwarder-splunk/env \
+      /octoblu/data-forwarder-splunk/docker_url \
+"
+ExecStart=/bin/bash -c " \
+  /run/kronk/octoblu-data-forwarder-splunk-%i/kronk-run \
+    /kronk/service/start octoblu-data-forwarder-splunk-%i \
+      octoblu-data-forwarder-splunk \
+      %i \
+      512m \
+      /octoblu/data-forwarder-splunk/docker_url \
+      /octoblu/data-forwarder-splunk \
+"
+ExecStop=/bin/bash -c " \
+  /run/kronk/octoblu-data-forwarder-splunk-%i/kronk-run \
+    /kronk/service/stop octoblu-data-forwarder-splunk-%i \
+      octoblu-data-forwarder-splunk \
+      %i \
+"
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+MachineMetadata=Services=true

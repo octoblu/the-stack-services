@@ -1,0 +1,47 @@
+[Unit]
+Description=octoblu-forwarder-service
+Wants=octoblu-forwarder-service-register@%i.service
+Wants=octoblu-forwarder-service-sidekick@%i.service
+
+[Service]
+TimeoutStartSec=300
+StartLimitInterval=30
+StartLimitBurst=30
+Restart=always
+
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-forwarder-service-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-forwarder-service-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-forwarder-service-%i/kronk-run \
+"
+ExecStartPre=/bin/bash -c " \
+  /run/kronk/octoblu-forwarder-service-%i/kronk-run \
+    /kronk/service/start-pre octoblu-forwarder-service-%i \
+      octoblu-forwarder-service \
+      %i \
+      /octoblu/forwarder-service/env \
+      /octoblu/forwarder-service/docker_url \
+"
+ExecStart=/bin/bash -c " \
+  /run/kronk/octoblu-forwarder-service-%i/kronk-run \
+    /kronk/service/start octoblu-forwarder-service-%i \
+      octoblu-forwarder-service \
+      %i \
+      512m \
+      /octoblu/forwarder-service/docker_url \
+      /octoblu/forwarder-service \
+"
+ExecStop=/bin/bash -c " \
+  /run/kronk/octoblu-forwarder-service-%i/kronk-run \
+    /kronk/service/stop octoblu-forwarder-service-%i \
+      octoblu-forwarder-service \
+      %i \
+"
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+MachineMetadata=Services=true

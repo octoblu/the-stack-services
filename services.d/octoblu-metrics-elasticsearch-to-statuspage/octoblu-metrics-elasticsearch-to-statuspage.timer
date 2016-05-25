@@ -1,0 +1,12 @@
+[Unit]
+Description=octoblu-metrics-elasticsearch-to-statuspage timer
+
+[Timer]
+OnBootSec=3 minutes
+OnUnitActiveSec=1 minute
+
+[Install]
+WantedBy=timers.target
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-metrics-elasticsearch-to-statuspage.service

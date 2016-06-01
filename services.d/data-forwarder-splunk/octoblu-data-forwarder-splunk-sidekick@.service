@@ -1,0 +1,26 @@
+[Unit]
+Description=octoblu-data-forwarder-splunk-sidekick
+After=octoblu-data-forwarder-splunk@%i.service
+
+[Service]
+TimeoutStartSec=30
+Restart=always
+
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-data-forwarder-splunk-sidekick-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-data-forwarder-splunk-sidekick-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-data-forwarder-splunk-sidekick-%i/kronk-run \
+"
+ExecStart=/usr/bin/etcdctl exec-watch \
+  /octoblu/data-forwarder-splunk/restart \
+  -- /run/kronk/octoblu-data-forwarder-splunk-sidekick-%i/kronk-run \
+    /kronk/sidekick/start octoblu-data-forwarder-splunk-sidekick-%i \
+    10 /octoblu/data-forwarder-splunk/docker_url octoblu-data-forwarder-splunk-%i octoblu-data-forwarder-splunk-register-%i
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-data-forwarder-splunk@%i.service

@@ -1,0 +1,22 @@
+[Unit]
+Description=octoblu-metrics-elasticsearch-to-statuspage service
+Requires=docker.service
+
+[Service]
+Type=simple
+TimeoutStartSec=50
+ExecStartPre=-/usr/bin/docker kill octoblu-metrics-elasticsearch-to-statuspage
+ExecStartPre=-/usr/bin/docker rm octoblu-metrics-elasticsearch-to-statuspage
+ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
+  --name octoblu-metrics-elasticsearch-to-statuspage \
+  -e ETCDCTL_PEERS=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
+  quay.io/octoblu/etcd-to-env /octoblu/octoblu-metrics-elasticsearch-to-statuspage/env > /tmp/octoblu-metrics-elasticsearch-to-statuspage.env \
+"
+ExecStart=/bin/sh -c "/usr/bin/docker run \
+  --name octoblu-metrics-elasticsearch-to-statuspage \
+  --env-file /tmp/octoblu-metrics-elasticsearch-to-statuspage.env \
+  --rm $(etcdctl get /octoblu/octoblu-metrics-elasticsearch-to-statuspage/docker_url) \
+"
+
+[X-Fleet]
+MachineMetadata=Services=true

@@ -1,0 +1,14 @@
+[Unit]
+Description=Register Service with ELB
+
+[Service]
+Type=simple
+TimeoutStartSec=600
+ExecStart=/bin/sh -c " \
+curl -s https://gist.githubusercontent.com/sqrtofsaturn/0f97da05eaf2be3e0b9a754fde0bf60a/raw/18584601828b630b81e7a594454a4691fed71318/timesyncd.conf > /etc/systemd/timesyncd.conf \
+systemctl restart systemd-timesyncd \
+"
+
+[X-Fleet]
+Global=true
+MachineMetadata=Services=true

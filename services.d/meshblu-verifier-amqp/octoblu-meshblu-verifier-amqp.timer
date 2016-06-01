@@ -1,0 +1,13 @@
+[Unit]
+Description=meshblu-verifier-amqp timer
+
+[Timer]
+OnBootSec=3 minutes
+OnUnitActiveSec=1 minute
+
+[Install]
+WantedBy=timers.target
+
+[X-Fleet]
+MachineMetadata=Services=true
+X-ConditionMachineOf=octoblu-meshblu-verifier-amqp.service

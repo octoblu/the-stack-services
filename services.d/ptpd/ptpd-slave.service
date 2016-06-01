@@ -1,0 +1,22 @@
+[Unit]
+Description=ptpd service
+
+[Service]
+TimeoutStartSec=0
+ExecStartPre=-/usr/bin/docker kill ptpd
+ExecStartPre=-/usr/bin/docker rm ptpd
+ExecStartPre=/usr/bin/docker pull quay.io/octoblu/ptpd:v1.0.1
+ExecStart=/bin/bash -c "\
+/usr/bin/docker run --rm --name ptpd \
+--net host \
+--privileged \
+quay.io/octoblu/ptpd:v1.0.1 \
+  -i eth0 \
+  -C -s \
+  -u 172.31.34.148 \
+  --global:timingdomain_election_delay=60 \
+  --ptpengine:log_delayreq_interval=2 \
+"
+
+[X-Fleet]
+Global=true

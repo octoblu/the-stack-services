@@ -1,0 +1,36 @@
+[Unit]
+Description=octoblu-forwarder-service-register
+After=octoblu-forwarder-service@%i.service
+
+[Service]
+TimeoutStartSec=300
+EnvironmentFile=/etc/environment
+Restart=always
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-forwarder-service-register-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-forwarder-service-register-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-forwarder-service-register-%i/kronk-run \
+"
+ExecStartPre=/bin/bash -c " \
+  /run/kronk/octoblu-forwarder-service-register-%i/kronk-run \
+    /kronk/register/start-pre octoblu-forwarder-service-%i \
+      octoblu-forwarder-service \
+      %i \
+      /octoblu/forwarder-service/register-env \
+"
+ExecStart=/bin/sh -c " \
+  /run/kronk/octoblu-forwarder-service-register-%i/kronk-run \
+    /kronk/register/start octoblu-forwarder-service-%i \
+      octoblu-forwarder-service \
+      %i \
+"
+ExecStop=/bin/sh -c " \
+  /run/kronk/octoblu-forwarder-service-register-%i/kronk-run \
+    /kronk/register/stop octoblu-forwarder-service-%i \
+      octoblu-forwarder-service \
+      %i \
+"
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-forwarder-service@%i.service

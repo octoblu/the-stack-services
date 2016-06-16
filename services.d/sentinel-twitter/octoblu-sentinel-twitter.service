@@ -6,19 +6,19 @@ After=vulcand.service
 [Service]
 Type=simple
 TimeoutStartSec=300
-ExecStartPre=/usr/bin/etcdctl get /octoblu/twitter-sentinel/docker_url || /usr/bin/echo "etcd did not contain /octoblu/twitter-sentinel/docker_url" && exit 1
-ExecStartPre=-/usr/bin/docker rm --force octoblu-twitter-sentinel-env octoblu-twitter-sentinel
+ExecStartPre=/usr/bin/etcdctl get /octoblu/sentinel-twitter/docker_url || /usr/bin/echo "etcd did not contain /octoblu/sentinel-twitter/docker_url" && exit 1
+ExecStartPre=-/usr/bin/docker rm --force octoblu-sentinel-twitter-env octoblu-sentinel-twitter
 ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
-  --name octoblu-twitter-sentinel-env \
+  --name octoblu-sentinel-twitter-env \
   -e ETCDCTL_PEERS=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
-  quay.io/octoblu/etcd-to-env /octoblu/twitter-sentinel/env > /tmp/octoblu-twitter-sentinel.env \
+  quay.io/octoblu/etcd-to-env /octoblu/sentinel-twitter/env > /tmp/octoblu-sentinel-twitter.env \
 "
 ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
-  --name octoblu-twitter-sentinel \
-  --env-file /tmp/octoblu-twitter-sentinel.env \
-  $(/usr/bin/etcdctl get /octoblu/twitter-sentinel/docker_url) \
+  --name octoblu-sentinel-twitter \
+  --env-file /tmp/octoblu-sentinel-twitter.env \
+  $(/usr/bin/etcdctl get /octoblu/sentinel-twitter/docker_url) \
 "
-# ExecStop=/usr/bin/docker kill octoblu-twitter-sentinel
+# ExecStop=/usr/bin/docker kill octoblu-sentinel-twitter
 
 [Install]
 WantedBy=multi-user.target

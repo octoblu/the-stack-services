@@ -1,0 +1,28 @@
+[Unit]
+Description=octoblu-app-octoblu-sidekick
+After=octoblu-app-octoblu@%i.service
+
+[Service]
+EnvironmentFile=/etc/environment
+TimeoutStartSec=30
+Restart=always
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-app-octoblu-sidekick-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-app-octoblu-sidekick-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-app-octoblu-sidekick-%i/kronk-run \
+"
+ExecStart=/bin/sh -c " \
+  /run/kronk/octoblu-app-octoblu-sidekick-%i/kronk-run \
+    /kronk/sidekick/start octoblu-app-octoblu-%i \
+    octoblu \
+    app-octoblu \
+    %i \
+"
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-app-octoblu@%i.service

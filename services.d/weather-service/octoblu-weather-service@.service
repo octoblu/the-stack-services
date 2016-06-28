@@ -4,38 +4,38 @@ Wants=octoblu-weather-service-register@%i.service
 Wants=octoblu-weather-service-sidekick@%i.service
 
 [Service]
+EnvironmentFile=/etc/environment
 TimeoutStartSec=300
 StartLimitInterval=30
 StartLimitBurst=30
 Restart=always
 
-
 ExecStartPre=/bin/bash -c " \
-  echo 'Writing kronk to /tmp' \
-  && /usr/bin/etcdctl get /kronk/service/start-pre > /tmp/octoblu-weather-service-%i-kronk-start-pre \
-  && /usr/bin/etcdctl get /kronk/service/start > /tmp/octoblu-weather-service-%i-kronk-start \
-  && /usr/bin/etcdctl get /kronk/service/stop > /tmp/octoblu-weather-service-%i-kronk-stop \
-  && chmod +x /tmp/octoblu-weather-service-%i-kronk-* \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-weather-service-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-weather-service-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-weather-service-%i/kronk-run \
 "
 ExecStartPre=/bin/bash -c " \
-  /tmp/octoblu-weather-service-%i-kronk-start-pre \
-    octoblu-weather-service \
-    %i \
-    /octoblu/weather-service/env \
-    /octoblu/weather-service/docker_url \
+  /run/kronk/octoblu-weather-service-%i/kronk-run \
+    /kronk/service/start-pre octoblu-weather-service-%i \
+      octoblu \
+      weather-service \
+      %i \
 "
 ExecStart=/bin/bash -c " \
-  /tmp/octoblu-weather-service-%i-kronk-start \
-    octoblu-weather-service \
-    %i \
-    512m \
-    /octoblu/weather-service/docker_url \
-    /octoblu/weather-service \
+  /run/kronk/octoblu-weather-service-%i/kronk-run \
+    /kronk/service/start octoblu-weather-service-%i \
+      octoblu \
+      weather-service \
+      %i \
 "
 ExecStop=/bin/bash -c " \
-  /tmp/octoblu-weather-service-%i-kronk-stop \
-    octoblu-weather-service \
-    %i \
+  /run/kronk/octoblu-weather-service-%i/kronk-run \
+    /kronk/service/stop octoblu-weather-service-%i \
+      octoblu \
+      weather-service \
+      %i \
 "
 
 [Install]

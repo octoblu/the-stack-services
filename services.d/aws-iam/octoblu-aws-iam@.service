@@ -4,11 +4,11 @@ Wants=octoblu-aws-iam-register@%i.service
 Wants=octoblu-aws-iam-sidekick@%i.service
 
 [Service]
+EnvironmentFile=/etc/environment
 TimeoutStartSec=300
 StartLimitInterval=30
 StartLimitBurst=30
 Restart=always
-
 
 ExecStartPre=/bin/bash -c " \
   echo 'Writing kronk' \
@@ -19,24 +19,22 @@ ExecStartPre=/bin/bash -c " \
 ExecStartPre=/bin/bash -c " \
   /run/kronk/octoblu-aws-iam-%i/kronk-run \
     /kronk/service/start-pre octoblu-aws-iam-%i \
-      octoblu-aws-iam \
+      octoblu \
+      aws-iam \
       %i \
-      /octoblu/aws-iam/env \
-      /octoblu/aws-iam/docker_url \
 "
 ExecStart=/bin/bash -c " \
   /run/kronk/octoblu-aws-iam-%i/kronk-run \
     /kronk/service/start octoblu-aws-iam-%i \
-      octoblu-aws-iam \
+      octoblu \
+      aws-iam \
       %i \
-      512m \
-      /octoblu/aws-iam/docker_url \
-      /octoblu/aws-iam \
 "
 ExecStop=/bin/bash -c " \
   /run/kronk/octoblu-aws-iam-%i/kronk-run \
     /kronk/service/stop octoblu-aws-iam-%i \
-      octoblu-aws-iam \
+      octoblu \
+      aws-iam \
       %i \
 "
 

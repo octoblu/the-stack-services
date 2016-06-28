@@ -1,11 +1,11 @@
 [Unit]
 Description=octoblu-alexa-service-sidekick
-
+After=octoblu-alexa-service@%i.service
 
 [Service]
+EnvironmentFile=/etc/environment
 TimeoutStartSec=30
 Restart=always
-
 
 ExecStartPre=/bin/bash -c " \
   echo 'Writing kronk' \
@@ -13,11 +13,13 @@ ExecStartPre=/bin/bash -c " \
   && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-alexa-service-sidekick-%i/kronk-run \
   && chmod +x /run/kronk/octoblu-alexa-service-sidekick-%i/kronk-run \
 "
-ExecStart=/usr/bin/etcdctl exec-watch \
-  /octoblu/alexa-service/restart \
-  -- /run/kronk/octoblu-alexa-service-sidekick-%i/kronk-run \
-    /kronk/sidekick/start octoblu-alexa-service-sidekick-%i \
-    10 /octoblu/alexa-service/docker_url octoblu-alexa-service-%i octoblu-alexa-service-register-%i
+ExecStart=/bin/sh -c " \
+  /run/kronk/octoblu-alexa-service-sidekick-%i/kronk-run \
+    /kronk/sidekick/start octoblu-alexa-service-%i \
+    octoblu \
+    alexa-service \
+    %i \
+"
 
 [Install]
 WantedBy=multi-user.target

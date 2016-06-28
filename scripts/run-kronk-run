@@ -1,12 +1,11 @@
 #!/bin/bash
 
-
 generate_service_files(){
   echo "generate_service_files"
   local project_name="$1"
   local directory_name="${HOME}/Projects/Octoblu/the-stack-services/services.d/${project_name}"
 
-  deployinate-configurator traefik \
+  deployinate-configurator service \
     --dir "${directory_name}" \
     "${project_name}"
 }
@@ -22,7 +21,8 @@ major_units(){
 
   major_fleetctl list-units --no-legend \
   | grep "${project_name}" \
-  | awk '{print $1}'
+  | awk '{print $1}' \
+  | sort -r
 }
 
 minor_fleetctl(){
@@ -36,7 +36,8 @@ minor_units(){
 
   minor_fleetctl list-units --no-legend \
   | grep "${project_name}" \
-  | awk '{print $1}'
+  | awk '{print $1}' \
+  | sort -r
 }
 
 push_to_major(){
@@ -46,6 +47,7 @@ push_to_major(){
 
   pushd "${directory_name}"
   major_fleetctl destroy *
+  major_fleetctl submit *
   major_fleetctl submit *
   popd
 }
@@ -58,6 +60,7 @@ push_to_minor(){
   pushd "${directory_name}"
   minor_fleetctl destroy *
   minor_fleetctl submit *
+  minor_fleetctl submit *
   popd
 }
 
@@ -67,10 +70,20 @@ restart_majors(){
   local units=( $(major_units "${project_name}") )
 
   for unit in "${units[@]}"; do
+    local check_status=1
+    local status_indicator='='
     echo "restart '${unit}'"
     major_fleetctl destroy "${unit}"
-    major_fleetctl start "${unit}"
-    major_fleetctl start "${unit}"
+    sleep 2
+    major_fleetctl load "${unit}"
+    while [ "${check_status}" == "1" ]; do
+      echo "start '${unit}'"
+      major_fleetctl start "${unit}"
+
+      major_fleetctl status "${unit}" | grep 'active (running)'
+      check_status=$?
+      status_indicator="${status_indicator}="
+    done
   done
 }
 
@@ -80,10 +93,20 @@ restart_minors(){
   local units=( $(minor_units "${project_name}") )
 
   for unit in "${units[@]}"; do
+    local check_status=1
+    local status_indicator='='
     echo "restart '${unit}'"
     minor_fleetctl destroy "${unit}"
-    minor_fleetctl start "${unit}"
-    minor_fleetctl start "${unit}"
+    sleep 2
+    minor_fleetctl load "${unit}"
+    while [ "${check_status}" == "1" ]; do
+      echo "${status_indicator} start '${unit}'"
+      minor_fleetctl start "${unit}"
+
+      minor_fleetctl status "${unit}" | grep 'active (running)'
+      check_status="$?"
+      status_indicator="${status_indicator}="
+    done
   done
 }
 
@@ -93,6 +116,7 @@ main(){
   generate_service_files "${project_name}" \
   && push_to_minor "${project_name}" \
   && restart_minors "${project_name}" \
+  && sleep 30 \
   && push_to_major "${project_name}" \
   && restart_majors "${project_name}"
 }

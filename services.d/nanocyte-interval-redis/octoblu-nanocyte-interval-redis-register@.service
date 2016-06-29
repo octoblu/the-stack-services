@@ -1,33 +1,38 @@
 [Unit]
 Description=octoblu-nanocyte-interval-redis-register
-
+After=octoblu-nanocyte-interval-redis@%i.service
 
 [Service]
-TimeoutStartSec=300
 EnvironmentFile=/etc/environment
+TimeoutStartSec=300
 Restart=always
+
 ExecStartPre=/bin/bash -c " \
-  echo 'Writing kronk to /tmp' \
-  && /usr/bin/etcdctl get /kronk/register/start-pre > /tmp/octoblu-nanocyte-interval-redis-register-%i-kronk-start-pre \
-  && /usr/bin/etcdctl get /kronk/register/start > /tmp/octoblu-nanocyte-interval-redis-register-%i-kronk-start \
-  && /usr/bin/etcdctl get /kronk/register/stop > /tmp/octoblu-nanocyte-interval-redis-register-%i-kronk-stop \
-  && chmod +x /tmp/octoblu-nanocyte-interval-redis-register-%i-kronk-* \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-nanocyte-interval-redis-register-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-nanocyte-interval-redis-register-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-nanocyte-interval-redis-register-%i/kronk-run \
 "
 ExecStartPre=/bin/bash -c " \
-  /tmp/octoblu-nanocyte-interval-redis-register-%i-kronk-start-pre \
-    octoblu-nanocyte-interval-redis \
-    %i \
-    /octoblu/nanocyte-interval-redis/register-env \
+  /run/kronk/octoblu-nanocyte-interval-redis-register-%i/kronk-run \
+    /kronk/register/start-pre octoblu-nanocyte-interval-redis-%i \
+      octoblu \
+      nanocyte-interval-redis \
+      %i \
 "
 ExecStart=/bin/sh -c " \
-  /tmp/octoblu-nanocyte-interval-redis-register-%i-kronk-start \
-    octoblu-nanocyte-interval-redis \
-    %i \
+  /run/kronk/octoblu-nanocyte-interval-redis-register-%i/kronk-run \
+    /kronk/register/start octoblu-nanocyte-interval-redis-%i \
+      octoblu \
+      nanocyte-interval-redis \
+      %i \
 "
 ExecStop=/bin/sh -c " \
-  /tmp/octoblu-nanocyte-interval-redis-register-%i-kronk-stop \
-    octoblu-nanocyte-interval-redis \
-    %i \
+  /run/kronk/octoblu-nanocyte-interval-redis-register-%i/kronk-run \
+    /kronk/register/stop octoblu-nanocyte-interval-redis-%i \
+      octoblu \
+      nanocyte-interval-redis \
+      %i \
 "
 
 [X-Fleet]

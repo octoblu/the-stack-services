@@ -4,11 +4,11 @@ Wants=octoblu-meshblu-amqp-auth-service-register@%i.service
 Wants=octoblu-meshblu-amqp-auth-service-sidekick@%i.service
 
 [Service]
+EnvironmentFile=/etc/environment
 TimeoutStartSec=300
 StartLimitInterval=30
 StartLimitBurst=30
 Restart=always
-
 
 ExecStartPre=/bin/bash -c " \
   echo 'Writing kronk' \
@@ -19,24 +19,22 @@ ExecStartPre=/bin/bash -c " \
 ExecStartPre=/bin/bash -c " \
   /run/kronk/octoblu-meshblu-amqp-auth-service-%i/kronk-run \
     /kronk/service/start-pre octoblu-meshblu-amqp-auth-service-%i \
-      octoblu-meshblu-amqp-auth-service \
+      octoblu \
+      meshblu-amqp-auth-service \
       %i \
-      /octoblu/meshblu-amqp-auth-service/env \
-      /octoblu/meshblu-amqp-auth-service/docker_url \
 "
 ExecStart=/bin/bash -c " \
   /run/kronk/octoblu-meshblu-amqp-auth-service-%i/kronk-run \
     /kronk/service/start octoblu-meshblu-amqp-auth-service-%i \
-      octoblu-meshblu-amqp-auth-service \
+      octoblu \
+      meshblu-amqp-auth-service \
       %i \
-      512m \
-      /octoblu/meshblu-amqp-auth-service/docker_url \
-      /octoblu/meshblu-amqp-auth-service \
 "
 ExecStop=/bin/bash -c " \
   /run/kronk/octoblu-meshblu-amqp-auth-service-%i/kronk-run \
     /kronk/service/stop octoblu-meshblu-amqp-auth-service-%i \
-      octoblu-meshblu-amqp-auth-service \
+      octoblu \
+      meshblu-amqp-auth-service \
       %i \
 "
 

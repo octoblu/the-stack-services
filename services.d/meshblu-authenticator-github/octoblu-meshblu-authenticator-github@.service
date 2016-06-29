@@ -4,38 +4,38 @@ Wants=octoblu-meshblu-authenticator-github-register@%i.service
 Wants=octoblu-meshblu-authenticator-github-sidekick@%i.service
 
 [Service]
+EnvironmentFile=/etc/environment
 TimeoutStartSec=300
 StartLimitInterval=30
 StartLimitBurst=30
 Restart=always
 
-
 ExecStartPre=/bin/bash -c " \
-  echo 'Writing kronk to /tmp' \
-  && /usr/bin/etcdctl get /kronk/service/start-pre > /tmp/octoblu-meshblu-authenticator-github-%i-kronk-start-pre \
-  && /usr/bin/etcdctl get /kronk/service/start > /tmp/octoblu-meshblu-authenticator-github-%i-kronk-start \
-  && /usr/bin/etcdctl get /kronk/service/stop > /tmp/octoblu-meshblu-authenticator-github-%i-kronk-stop \
-  && chmod +x /tmp/octoblu-meshblu-authenticator-github-%i-kronk-* \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-meshblu-authenticator-github-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-meshblu-authenticator-github-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-meshblu-authenticator-github-%i/kronk-run \
 "
 ExecStartPre=/bin/bash -c " \
-  /tmp/octoblu-meshblu-authenticator-github-%i-kronk-start-pre \
-    octoblu-meshblu-authenticator-github \
-    %i \
-    /octoblu/meshblu-authenticator-github/env \
-    /octoblu/meshblu-authenticator-github/docker_url \
+  /run/kronk/octoblu-meshblu-authenticator-github-%i/kronk-run \
+    /kronk/service/start-pre octoblu-meshblu-authenticator-github-%i \
+      octoblu \
+      meshblu-authenticator-github \
+      %i \
 "
 ExecStart=/bin/bash -c " \
-  /tmp/octoblu-meshblu-authenticator-github-%i-kronk-start \
-    octoblu-meshblu-authenticator-github \
-    %i \
-    512m \
-    /octoblu/meshblu-authenticator-github/docker_url \
-    /octoblu/meshblu-authenticator-github \
+  /run/kronk/octoblu-meshblu-authenticator-github-%i/kronk-run \
+    /kronk/service/start octoblu-meshblu-authenticator-github-%i \
+      octoblu \
+      meshblu-authenticator-github \
+      %i \
 "
 ExecStop=/bin/bash -c " \
-  /tmp/octoblu-meshblu-authenticator-github-%i-kronk-stop \
-    octoblu-meshblu-authenticator-github \
-    %i \
+  /run/kronk/octoblu-meshblu-authenticator-github-%i/kronk-run \
+    /kronk/service/stop octoblu-meshblu-authenticator-github-%i \
+      octoblu \
+      meshblu-authenticator-github \
+      %i \
 "
 
 [Install]

@@ -1,33 +1,38 @@
 [Unit]
 Description=octoblu-rest-service-register
-
+After=octoblu-rest-service@%i.service
 
 [Service]
-TimeoutStartSec=300
 EnvironmentFile=/etc/environment
+TimeoutStartSec=300
 Restart=always
+
 ExecStartPre=/bin/bash -c " \
-  echo 'Writing kronk to /tmp' \
-  && /usr/bin/etcdctl get /kronk/register/start-pre > /tmp/octoblu-rest-service-register-%i-kronk-start-pre \
-  && /usr/bin/etcdctl get /kronk/register/start > /tmp/octoblu-rest-service-register-%i-kronk-start \
-  && /usr/bin/etcdctl get /kronk/register/stop > /tmp/octoblu-rest-service-register-%i-kronk-stop \
-  && chmod +x /tmp/octoblu-rest-service-register-%i-kronk-* \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-rest-service-register-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-rest-service-register-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-rest-service-register-%i/kronk-run \
 "
 ExecStartPre=/bin/bash -c " \
-  /tmp/octoblu-rest-service-register-%i-kronk-start-pre \
-    octoblu-rest-service \
-    %i \
-    /octoblu/rest-service/register-env \
+  /run/kronk/octoblu-rest-service-register-%i/kronk-run \
+    /kronk/register/start-pre octoblu-rest-service-%i \
+      octoblu \
+      rest-service \
+      %i \
 "
 ExecStart=/bin/sh -c " \
-  /tmp/octoblu-rest-service-register-%i-kronk-start \
-    octoblu-rest-service \
-    %i \
+  /run/kronk/octoblu-rest-service-register-%i/kronk-run \
+    /kronk/register/start octoblu-rest-service-%i \
+      octoblu \
+      rest-service \
+      %i \
 "
 ExecStop=/bin/sh -c " \
-  /tmp/octoblu-rest-service-register-%i-kronk-stop \
-    octoblu-rest-service \
-    %i \
+  /run/kronk/octoblu-rest-service-register-%i/kronk-run \
+    /kronk/register/stop octoblu-rest-service-%i \
+      octoblu \
+      rest-service \
+      %i \
 "
 
 [X-Fleet]

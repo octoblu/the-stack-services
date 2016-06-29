@@ -1,32 +1,42 @@
 [Unit]
 Description=octoblu-nanocyte-interval-service
-Wants=vulcand.service
-After=vulcand.service
+Wants=octoblu-nanocyte-interval-service-register@%i.service
+Wants=octoblu-nanocyte-interval-service-sidekick@%i.service
 
 [Service]
+EnvironmentFile=/etc/environment
 TimeoutStartSec=300
+StartLimitInterval=30
+StartLimitBurst=30
 Restart=always
-ExecStartPre=/bin/sh -c '/usr/bin/docker login \
-  --username $(/usr/bin/etcdctl get /docker/quay.io/username) \
-  --password $(/usr/bin/etcdctl get /docker/quay.io/password) \
-  --email $(/usr/bin/etcdctl get /docker/quay.io/email) \
-  quay.io'
-ExecStartPre=/usr/bin/etcdctl get /octoblu/nanocyte-interval-service/docker_url || /usr/bin/echo "etcd did not contain /octoblu/nanocyte-interval-service/docker_url" && exit 1
-ExecStartPre=-/usr/bin/docker kill octoblu-nanocyte-interval-service-env-%i
-ExecStartPre=-/usr/bin/docker rm octoblu-nanocyte-interval-service-env-%i
-ExecStartPre=-/usr/bin/docker kill octoblu-nanocyte-interval-service-%i
-ExecStartPre=-/usr/bin/docker rm octoblu-nanocyte-interval-service-%i
-ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
-  --name octoblu-nanocyte-interval-service-env-%i \
-  -e ETCDCTL_PEERS=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
-  quay.io/octoblu/etcd-to-env /octoblu/nanocyte-interval-service/env > /tmp/octoblu-nanocyte-interval-service-%i.env \
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-nanocyte-interval-service-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-nanocyte-interval-service-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-nanocyte-interval-service-%i/kronk-run \
 "
-ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
-  --name octoblu-nanocyte-interval-service-%i \
-  --env-file /tmp/octoblu-nanocyte-interval-service-%i.env \
-  $(/usr/bin/etcdctl get /octoblu/nanocyte-interval-service/docker_url) \
+ExecStartPre=/bin/bash -c " \
+  /run/kronk/octoblu-nanocyte-interval-service-%i/kronk-run \
+    /kronk/service/start-pre octoblu-nanocyte-interval-service-%i \
+      octoblu \
+      nanocyte-interval-service \
+      %i \
 "
-ExecStop=/usr/bin/docker kill octoblu-nanocyte-interval-service-%i
+ExecStart=/bin/bash -c " \
+  /run/kronk/octoblu-nanocyte-interval-service-%i/kronk-run \
+    /kronk/service/start octoblu-nanocyte-interval-service-%i \
+      octoblu \
+      nanocyte-interval-service \
+      %i \
+"
+ExecStop=/bin/bash -c " \
+  /run/kronk/octoblu-nanocyte-interval-service-%i/kronk-run \
+    /kronk/service/stop octoblu-nanocyte-interval-service-%i \
+      octoblu \
+      nanocyte-interval-service \
+      %i \
+"
 
 [Install]
 WantedBy=multi-user.target

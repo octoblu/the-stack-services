@@ -1,18 +1,25 @@
 [Unit]
 Description=octoblu-nanocyte-interval-service-sidekick
-Wants=vulcand.service
-
+After=octoblu-nanocyte-interval-service@%i.service
 
 [Service]
+EnvironmentFile=/etc/environment
 TimeoutStartSec=30
 Restart=always
-ExecStart=/bin/sh -c "/usr/bin/etcdctl exec-watch \
-  /octoblu/nanocyte-interval-service/restart \
-  -- sh -c \"(docker inspect --format='{{.Id}}' --type=image \$(etcdctl get /octoblu/nanocyte-interval-service/docker_url) \
-               || docker pull \$(etcdctl get /octoblu/nanocyte-interval-service/docker_url)) \
-               && docker stop \
-                    --time=30 \
-                    octoblu-nanocyte-interval-service-%i\""
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-nanocyte-interval-service-sidekick-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-nanocyte-interval-service-sidekick-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-nanocyte-interval-service-sidekick-%i/kronk-run \
+"
+ExecStart=/bin/sh -c " \
+  /run/kronk/octoblu-nanocyte-interval-service-sidekick-%i/kronk-run \
+    /kronk/sidekick/start octoblu-nanocyte-interval-service-%i \
+    octoblu \
+    nanocyte-interval-service \
+    %i \
+"
 
 [Install]
 WantedBy=multi-user.target

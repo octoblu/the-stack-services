@@ -120,7 +120,7 @@ restart_majors(){
       major_fleetctl start "${unit}"
       sleep 2
 
-      major_fleetctl list-units | grep "${unit}" | grep running
+      major_fleetctl list-units | grep "${unit}.service" | grep running
       check_status=$?
       status_indicator="${status_indicator}="
     done
@@ -145,7 +145,7 @@ restart_minors(){
       minor_fleetctl start "${unit}"
       sleep 2
 
-      minor_fleetctl list-units | grep "${unit}" | grep running
+      minor_fleetctl list-units | grep "${unit}.service" | grep running
       check_status="$?"
       status_indicator="${status_indicator}="
     done

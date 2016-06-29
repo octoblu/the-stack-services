@@ -1,18 +1,25 @@
 [Unit]
 Description=octoblu-nanocyte-engine-worker-sidekick
-Wants=vulcand.service
-
+After=octoblu-nanocyte-engine-worker@%i.service
 
 [Service]
+EnvironmentFile=/etc/environment
 TimeoutStartSec=30
 Restart=always
-ExecStart=/bin/sh -c "/usr/bin/etcdctl exec-watch \
-  /octoblu/nanocyte-engine-worker/restart \
-  -- sh -c \"(docker inspect --format='{{.Id}}' --type=image \$(etcdctl get /octoblu/nanocyte-engine-worker/docker_url) \
-               || docker pull \$(etcdctl get /octoblu/nanocyte-engine-worker/docker_url)) \
-               && docker stop \
-                    --time=30 \
-                    octoblu-nanocyte-engine-worker-%i\""
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-nanocyte-engine-worker-sidekick-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-nanocyte-engine-worker-sidekick-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-nanocyte-engine-worker-sidekick-%i/kronk-run \
+"
+ExecStart=/bin/sh -c " \
+  /run/kronk/octoblu-nanocyte-engine-worker-sidekick-%i/kronk-run \
+    /kronk/sidekick/start octoblu-nanocyte-engine-worker-%i \
+    octoblu \
+    nanocyte-engine-worker \
+    %i \
+"
 
 [Install]
 WantedBy=multi-user.target

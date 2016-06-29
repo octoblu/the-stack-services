@@ -4,38 +4,38 @@ Wants=octoblu-oauth-provider-register@%i.service
 Wants=octoblu-oauth-provider-sidekick@%i.service
 
 [Service]
+EnvironmentFile=/etc/environment
 TimeoutStartSec=300
 StartLimitInterval=30
 StartLimitBurst=30
 Restart=always
 
-
 ExecStartPre=/bin/bash -c " \
-  echo 'Writing kronk to /tmp' \
-  && /usr/bin/etcdctl get /kronk/service/start-pre > /tmp/octoblu-oauth-provider-%i-kronk-start-pre \
-  && /usr/bin/etcdctl get /kronk/service/start > /tmp/octoblu-oauth-provider-%i-kronk-start \
-  && /usr/bin/etcdctl get /kronk/service/stop > /tmp/octoblu-oauth-provider-%i-kronk-stop \
-  && chmod +x /tmp/octoblu-oauth-provider-%i-kronk-* \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-oauth-provider-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-oauth-provider-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-oauth-provider-%i/kronk-run \
 "
 ExecStartPre=/bin/bash -c " \
-  /tmp/octoblu-oauth-provider-%i-kronk-start-pre \
-    octoblu-oauth-provider \
-    %i \
-    /octoblu/oauth-provider/env \
-    /octoblu/oauth-provider/docker_url \
+  /run/kronk/octoblu-oauth-provider-%i/kronk-run \
+    /kronk/service/start-pre octoblu-oauth-provider-%i \
+      octoblu \
+      oauth-provider \
+      %i \
 "
 ExecStart=/bin/bash -c " \
-  /tmp/octoblu-oauth-provider-%i-kronk-start \
-    octoblu-oauth-provider \
-    %i \
-    512m \
-    /octoblu/oauth-provider/docker_url \
-    /octoblu/oauth-provider \
+  /run/kronk/octoblu-oauth-provider-%i/kronk-run \
+    /kronk/service/start octoblu-oauth-provider-%i \
+      octoblu \
+      oauth-provider \
+      %i \
 "
 ExecStop=/bin/bash -c " \
-  /tmp/octoblu-oauth-provider-%i-kronk-stop \
-    octoblu-oauth-provider \
-    %i \
+  /run/kronk/octoblu-oauth-provider-%i/kronk-run \
+    /kronk/service/stop octoblu-oauth-provider-%i \
+      octoblu \
+      oauth-provider \
+      %i \
 "
 
 [Install]

@@ -1,33 +1,38 @@
 [Unit]
 Description=octoblu-sns-service-register
-
+After=octoblu-sns-service@%i.service
 
 [Service]
-TimeoutStartSec=300
 EnvironmentFile=/etc/environment
+TimeoutStartSec=300
 Restart=always
+
 ExecStartPre=/bin/bash -c " \
-  echo 'Writing kronk to /tmp' \
-  && /usr/bin/etcdctl get /kronk/register/start-pre > /tmp/octoblu-sns-service-register-%i-kronk-start-pre \
-  && /usr/bin/etcdctl get /kronk/register/start > /tmp/octoblu-sns-service-register-%i-kronk-start \
-  && /usr/bin/etcdctl get /kronk/register/stop > /tmp/octoblu-sns-service-register-%i-kronk-stop \
-  && chmod +x /tmp/octoblu-sns-service-register-%i-kronk-* \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-sns-service-register-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-sns-service-register-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-sns-service-register-%i/kronk-run \
 "
 ExecStartPre=/bin/bash -c " \
-  /tmp/octoblu-sns-service-register-%i-kronk-start-pre \
-    octoblu-sns-service \
-    %i \
-    /octoblu/sns-service/register-env \
+  /run/kronk/octoblu-sns-service-register-%i/kronk-run \
+    /kronk/register/start-pre octoblu-sns-service-%i \
+      octoblu \
+      sns-service \
+      %i \
 "
 ExecStart=/bin/sh -c " \
-  /tmp/octoblu-sns-service-register-%i-kronk-start \
-    octoblu-sns-service \
-    %i \
+  /run/kronk/octoblu-sns-service-register-%i/kronk-run \
+    /kronk/register/start octoblu-sns-service-%i \
+      octoblu \
+      sns-service \
+      %i \
 "
 ExecStop=/bin/sh -c " \
-  /tmp/octoblu-sns-service-register-%i-kronk-stop \
-    octoblu-sns-service \
-    %i \
+  /run/kronk/octoblu-sns-service-register-%i/kronk-run \
+    /kronk/register/stop octoblu-sns-service-%i \
+      octoblu \
+      sns-service \
+      %i \
 "
 
 [X-Fleet]

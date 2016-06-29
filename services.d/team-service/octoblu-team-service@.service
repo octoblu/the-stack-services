@@ -4,44 +4,38 @@ Wants=octoblu-team-service-register@%i.service
 Wants=octoblu-team-service-sidekick@%i.service
 
 [Service]
+EnvironmentFile=/etc/environment
 TimeoutStartSec=300
 StartLimitInterval=30
 StartLimitBurst=30
 Restart=always
 
-
-ExecStartPre=/bin/sh -c '/usr/bin/docker login \
-  --username $(/usr/bin/etcdctl get /docker/quay.io/username) \
-  --password $(/usr/bin/etcdctl get /docker/quay.io/password) \
-  --email $(/usr/bin/etcdctl get /docker/quay.io/email) \
-  quay.io'
-
 ExecStartPre=/bin/bash -c " \
-  echo 'Writing kronk to /tmp' \
-  && /usr/bin/etcdctl get /kronk/service/start-pre > /tmp/octoblu-team-service-%i-kronk-start-pre \
-  && /usr/bin/etcdctl get /kronk/service/start > /tmp/octoblu-team-service-%i-kronk-start \
-  && /usr/bin/etcdctl get /kronk/service/stop > /tmp/octoblu-team-service-%i-kronk-stop \
-  && chmod +x /tmp/octoblu-team-service-%i-kronk-* \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-team-service-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-team-service-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-team-service-%i/kronk-run \
 "
 ExecStartPre=/bin/bash -c " \
-  /tmp/octoblu-team-service-%i-kronk-start-pre \
-    octoblu-team-service \
-    %i \
-    /octoblu/team-service/env \
-    /octoblu/team-service/docker_url \
+  /run/kronk/octoblu-team-service-%i/kronk-run \
+    /kronk/service/start-pre octoblu-team-service-%i \
+      octoblu \
+      team-service \
+      %i \
 "
 ExecStart=/bin/bash -c " \
-  /tmp/octoblu-team-service-%i-kronk-start \
-    octoblu-team-service \
-    %i \
-    512m \
-    /octoblu/team-service/docker_url \
-    /octoblu/team-service \
+  /run/kronk/octoblu-team-service-%i/kronk-run \
+    /kronk/service/start octoblu-team-service-%i \
+      octoblu \
+      team-service \
+      %i \
 "
 ExecStop=/bin/bash -c " \
-  /tmp/octoblu-team-service-%i-kronk-stop \
-    octoblu-team-service \
-    %i \
+  /run/kronk/octoblu-team-service-%i/kronk-run \
+    /kronk/service/stop octoblu-team-service-%i \
+      octoblu \
+      team-service \
+      %i \
 "
 
 [Install]

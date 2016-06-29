@@ -4,38 +4,38 @@ Wants=octoblu-organization-service-register@%i.service
 Wants=octoblu-organization-service-sidekick@%i.service
 
 [Service]
+EnvironmentFile=/etc/environment
 TimeoutStartSec=300
 StartLimitInterval=30
 StartLimitBurst=30
 Restart=always
 
-
 ExecStartPre=/bin/bash -c " \
-  echo 'Writing kronk to /tmp' \
-  && /usr/bin/etcdctl get /kronk/service/start-pre > /tmp/octoblu-organization-service-%i-kronk-start-pre \
-  && /usr/bin/etcdctl get /kronk/service/start > /tmp/octoblu-organization-service-%i-kronk-start \
-  && /usr/bin/etcdctl get /kronk/service/stop > /tmp/octoblu-organization-service-%i-kronk-stop \
-  && chmod +x /tmp/octoblu-organization-service-%i-kronk-* \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-organization-service-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-organization-service-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-organization-service-%i/kronk-run \
 "
 ExecStartPre=/bin/bash -c " \
-  /tmp/octoblu-organization-service-%i-kronk-start-pre \
-    octoblu-organization-service \
-    %i \
-    /octoblu/organization-service/env \
-    /octoblu/organization-service/docker_url \
+  /run/kronk/octoblu-organization-service-%i/kronk-run \
+    /kronk/service/start-pre octoblu-organization-service-%i \
+      octoblu \
+      organization-service \
+      %i \
 "
 ExecStart=/bin/bash -c " \
-  /tmp/octoblu-organization-service-%i-kronk-start \
-    octoblu-organization-service \
-    %i \
-    512m \
-    /octoblu/organization-service/docker_url \
-    /octoblu/organization-service \
+  /run/kronk/octoblu-organization-service-%i/kronk-run \
+    /kronk/service/start octoblu-organization-service-%i \
+      octoblu \
+      organization-service \
+      %i \
 "
 ExecStop=/bin/bash -c " \
-  /tmp/octoblu-organization-service-%i-kronk-stop \
-    octoblu-organization-service \
-    %i \
+  /run/kronk/octoblu-organization-service-%i/kronk-run \
+    /kronk/service/stop octoblu-organization-service-%i \
+      octoblu \
+      organization-service \
+      %i \
 "
 
 [Install]

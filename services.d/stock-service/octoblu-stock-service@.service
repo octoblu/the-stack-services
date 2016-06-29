@@ -4,38 +4,38 @@ Wants=octoblu-stock-service-register@%i.service
 Wants=octoblu-stock-service-sidekick@%i.service
 
 [Service]
+EnvironmentFile=/etc/environment
 TimeoutStartSec=300
 StartLimitInterval=30
 StartLimitBurst=30
 Restart=always
 
-
 ExecStartPre=/bin/bash -c " \
-  echo 'Writing kronk to /tmp' \
-  && /usr/bin/etcdctl get /kronk/service/start-pre > /tmp/octoblu-stock-service-%i-kronk-start-pre \
-  && /usr/bin/etcdctl get /kronk/service/start > /tmp/octoblu-stock-service-%i-kronk-start \
-  && /usr/bin/etcdctl get /kronk/service/stop > /tmp/octoblu-stock-service-%i-kronk-stop \
-  && chmod +x /tmp/octoblu-stock-service-%i-kronk-* \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-stock-service-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-stock-service-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-stock-service-%i/kronk-run \
 "
 ExecStartPre=/bin/bash -c " \
-  /tmp/octoblu-stock-service-%i-kronk-start-pre \
-    octoblu-stock-service \
-    %i \
-    /octoblu/stock-service/env \
-    /octoblu/stock-service/docker_url \
+  /run/kronk/octoblu-stock-service-%i/kronk-run \
+    /kronk/service/start-pre octoblu-stock-service-%i \
+      octoblu \
+      stock-service \
+      %i \
 "
 ExecStart=/bin/bash -c " \
-  /tmp/octoblu-stock-service-%i-kronk-start \
-    octoblu-stock-service \
-    %i \
-    512m \
-    /octoblu/stock-service/docker_url \
-    /octoblu/stock-service \
+  /run/kronk/octoblu-stock-service-%i/kronk-run \
+    /kronk/service/start octoblu-stock-service-%i \
+      octoblu \
+      stock-service \
+      %i \
 "
 ExecStop=/bin/bash -c " \
-  /tmp/octoblu-stock-service-%i-kronk-stop \
-    octoblu-stock-service \
-    %i \
+  /run/kronk/octoblu-stock-service-%i/kronk-run \
+    /kronk/service/stop octoblu-stock-service-%i \
+      octoblu \
+      stock-service \
+      %i \
 "
 
 [Install]

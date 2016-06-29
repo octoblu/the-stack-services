@@ -1,33 +1,38 @@
 [Unit]
 Description=octoblu-shadow-service-register
-
+After=octoblu-shadow-service@%i.service
 
 [Service]
-TimeoutStartSec=300
 EnvironmentFile=/etc/environment
+TimeoutStartSec=300
 Restart=always
+
 ExecStartPre=/bin/bash -c " \
-  echo 'Writing kronk to /tmp' \
-  && /usr/bin/etcdctl get /kronk/register/start-pre > /tmp/octoblu-shadow-service-register-%i-kronk-start-pre \
-  && /usr/bin/etcdctl get /kronk/register/start > /tmp/octoblu-shadow-service-register-%i-kronk-start \
-  && /usr/bin/etcdctl get /kronk/register/stop > /tmp/octoblu-shadow-service-register-%i-kronk-stop \
-  && chmod +x /tmp/octoblu-shadow-service-register-%i-kronk-* \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-shadow-service-register-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-shadow-service-register-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-shadow-service-register-%i/kronk-run \
 "
 ExecStartPre=/bin/bash -c " \
-  /tmp/octoblu-shadow-service-register-%i-kronk-start-pre \
-    octoblu-shadow-service \
-    %i \
-    /octoblu/shadow-service/register-env \
+  /run/kronk/octoblu-shadow-service-register-%i/kronk-run \
+    /kronk/register/start-pre octoblu-shadow-service-%i \
+      octoblu \
+      shadow-service \
+      %i \
 "
 ExecStart=/bin/sh -c " \
-  /tmp/octoblu-shadow-service-register-%i-kronk-start \
-    octoblu-shadow-service \
-    %i \
+  /run/kronk/octoblu-shadow-service-register-%i/kronk-run \
+    /kronk/register/start octoblu-shadow-service-%i \
+      octoblu \
+      shadow-service \
+      %i \
 "
 ExecStop=/bin/sh -c " \
-  /tmp/octoblu-shadow-service-register-%i-kronk-stop \
-    octoblu-shadow-service \
-    %i \
+  /run/kronk/octoblu-shadow-service-register-%i/kronk-run \
+    /kronk/register/stop octoblu-shadow-service-%i \
+      octoblu \
+      shadow-service \
+      %i \
 "
 
 [X-Fleet]

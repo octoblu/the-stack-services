@@ -1,34 +1,38 @@
 [Unit]
 Description=octoblu-governator-service-register
-
+After=octoblu-governator-service@%i.service
 
 [Service]
-TimeoutStartSec=300
 EnvironmentFile=/etc/environment
+TimeoutStartSec=300
 Restart=always
+
 ExecStartPre=/bin/bash -c " \
-  echo 'Writing kronk to /tmp' \
-  && /usr/bin/etcdctl get /kronk/register/start-pre > /tmp/octoblu-governator-service-register-%i-kronk-start-pre \
-  && /usr/bin/etcdctl get /kronk/register/start > /tmp/octoblu-governator-service-register-%i-kronk-start \
-  && /usr/bin/etcdctl get /kronk/register/stop > /tmp/octoblu-governator-service-register-%i-kronk-stop \
-  && chmod +x /tmp/octoblu-governator-service-register-%i-kronk-* \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-governator-service-register-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-governator-service-register-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-governator-service-register-%i/kronk-run \
 "
 ExecStartPre=/bin/bash -c " \
-  /tmp/octoblu-governator-service-register-%i-kronk-start-pre \
-    octoblu-governator-service \
-    %i \
-    /octoblu/governator-service/register-env \
+  /run/kronk/octoblu-governator-service-register-%i/kronk-run \
+    /kronk/register/start-pre octoblu-governator-service-%i \
+      octoblu \
+      governator-service-$(/usr/bin/etcdctl get /cluster/name) \
+      %i \
 "
 ExecStart=/bin/sh -c " \
-  /tmp/octoblu-governator-service-register-%i-kronk-start \
-    octoblu-governator-service \
-    %i \
-    octoblu-governator-service-$(/usr/bin/etcdctl get /cluster/name) \
+  /run/kronk/octoblu-governator-service-register-%i/kronk-run \
+    /kronk/register/start octoblu-governator-service-%i \
+      octoblu \
+      governator-service-$(/usr/bin/etcdctl get /cluster/name) \
+      %i \
 "
 ExecStop=/bin/sh -c " \
-  /tmp/octoblu-governator-service-register-%i-kronk-stop \
-    octoblu-governator-service \
-    %i \
+  /run/kronk/octoblu-governator-service-register-%i/kronk-run \
+    /kronk/register/stop octoblu-governator-service-%i \
+      octoblu \
+      governator-service-$(/usr/bin/etcdctl get /cluster/name) \
+      %i \
 "
 
 [X-Fleet]

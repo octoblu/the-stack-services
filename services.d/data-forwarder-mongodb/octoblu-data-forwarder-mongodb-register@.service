@@ -3,9 +3,10 @@ Description=octoblu-data-forwarder-mongodb-register
 After=octoblu-data-forwarder-mongodb@%i.service
 
 [Service]
-TimeoutStartSec=300
 EnvironmentFile=/etc/environment
+TimeoutStartSec=300
 Restart=always
+
 ExecStartPre=/bin/bash -c " \
   echo 'Writing kronk' \
   && mkdir -p /run/kronk/octoblu-data-forwarder-mongodb-register-%i \
@@ -15,20 +16,22 @@ ExecStartPre=/bin/bash -c " \
 ExecStartPre=/bin/bash -c " \
   /run/kronk/octoblu-data-forwarder-mongodb-register-%i/kronk-run \
     /kronk/register/start-pre octoblu-data-forwarder-mongodb-%i \
-      octoblu-data-forwarder-mongodb \
+      octoblu \
+      data-forwarder-mongodb \
       %i \
-      /octoblu/data-forwarder-mongodb/register-env \
 "
 ExecStart=/bin/sh -c " \
   /run/kronk/octoblu-data-forwarder-mongodb-register-%i/kronk-run \
     /kronk/register/start octoblu-data-forwarder-mongodb-%i \
-      octoblu-data-forwarder-mongodb \
+      octoblu \
+      data-forwarder-mongodb \
       %i \
 "
 ExecStop=/bin/sh -c " \
   /run/kronk/octoblu-data-forwarder-mongodb-register-%i/kronk-run \
     /kronk/register/stop octoblu-data-forwarder-mongodb-%i \
-      octoblu-data-forwarder-mongodb \
+      octoblu \
+      data-forwarder-mongodb \
       %i \
 "
 

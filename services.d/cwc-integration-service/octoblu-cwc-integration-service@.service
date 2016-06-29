@@ -4,11 +4,11 @@ Wants=octoblu-cwc-integration-service-register@%i.service
 Wants=octoblu-cwc-integration-service-sidekick@%i.service
 
 [Service]
+EnvironmentFile=/etc/environment
 TimeoutStartSec=300
 StartLimitInterval=30
 StartLimitBurst=30
 Restart=always
-
 
 ExecStartPre=/bin/bash -c " \
   echo 'Writing kronk' \
@@ -19,24 +19,22 @@ ExecStartPre=/bin/bash -c " \
 ExecStartPre=/bin/bash -c " \
   /run/kronk/octoblu-cwc-integration-service-%i/kronk-run \
     /kronk/service/start-pre octoblu-cwc-integration-service-%i \
-      octoblu-cwc-integration-service \
+      octoblu \
+      cwc-integration-service \
       %i \
-      /octoblu/cwc-integration-service/env \
-      /octoblu/cwc-integration-service/docker_url \
 "
 ExecStart=/bin/bash -c " \
   /run/kronk/octoblu-cwc-integration-service-%i/kronk-run \
     /kronk/service/start octoblu-cwc-integration-service-%i \
-      octoblu-cwc-integration-service \
+      octoblu \
+      cwc-integration-service \
       %i \
-      512m \
-      /octoblu/cwc-integration-service/docker_url \
-      /octoblu/cwc-integration-service \
 "
 ExecStop=/bin/bash -c " \
   /run/kronk/octoblu-cwc-integration-service-%i/kronk-run \
     /kronk/service/stop octoblu-cwc-integration-service-%i \
-      octoblu-cwc-integration-service \
+      octoblu \
+      cwc-integration-service \
       %i \
 "
 

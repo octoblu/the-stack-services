@@ -1,11 +1,12 @@
 [Unit]
 Description=octoblu-email-service-register
-
+After=octoblu-email-service@%i.service
 
 [Service]
-TimeoutStartSec=300
 EnvironmentFile=/etc/environment
+TimeoutStartSec=300
 Restart=always
+
 ExecStartPre=/bin/bash -c " \
   echo 'Writing kronk' \
   && mkdir -p /run/kronk/octoblu-email-service-register-%i \
@@ -15,20 +16,22 @@ ExecStartPre=/bin/bash -c " \
 ExecStartPre=/bin/bash -c " \
   /run/kronk/octoblu-email-service-register-%i/kronk-run \
     /kronk/register/start-pre octoblu-email-service-%i \
-      octoblu-email-service \
+      octoblu \
+      email-service \
       %i \
-      /octoblu/email-service/register-env \
 "
 ExecStart=/bin/sh -c " \
   /run/kronk/octoblu-email-service-register-%i/kronk-run \
     /kronk/register/start octoblu-email-service-%i \
-      octoblu-email-service \
+      octoblu \
+      email-service \
       %i \
 "
 ExecStop=/bin/sh -c " \
   /run/kronk/octoblu-email-service-register-%i/kronk-run \
     /kronk/register/stop octoblu-email-service-%i \
-      octoblu-email-service \
+      octoblu \
+      email-service \
       %i \
 "
 

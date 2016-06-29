@@ -4,11 +4,11 @@ Wants=octoblu-data-forwarder-azure-service-bus-register@%i.service
 Wants=octoblu-data-forwarder-azure-service-bus-sidekick@%i.service
 
 [Service]
+EnvironmentFile=/etc/environment
 TimeoutStartSec=300
 StartLimitInterval=30
 StartLimitBurst=30
 Restart=always
-
 
 ExecStartPre=/bin/bash -c " \
   echo 'Writing kronk' \
@@ -19,24 +19,22 @@ ExecStartPre=/bin/bash -c " \
 ExecStartPre=/bin/bash -c " \
   /run/kronk/octoblu-data-forwarder-azure-service-bus-%i/kronk-run \
     /kronk/service/start-pre octoblu-data-forwarder-azure-service-bus-%i \
-      octoblu-data-forwarder-azure-service-bus \
+      octoblu \
+      data-forwarder-azure-service-bus \
       %i \
-      /octoblu/data-forwarder-azure-service-bus/env \
-      /octoblu/data-forwarder-azure-service-bus/docker_url \
 "
 ExecStart=/bin/bash -c " \
   /run/kronk/octoblu-data-forwarder-azure-service-bus-%i/kronk-run \
     /kronk/service/start octoblu-data-forwarder-azure-service-bus-%i \
-      octoblu-data-forwarder-azure-service-bus \
+      octoblu \
+      data-forwarder-azure-service-bus \
       %i \
-      512m \
-      /octoblu/data-forwarder-azure-service-bus/docker_url \
-      /octoblu/data-forwarder-azure-service-bus \
 "
 ExecStop=/bin/bash -c " \
   /run/kronk/octoblu-data-forwarder-azure-service-bus-%i/kronk-run \
     /kronk/service/stop octoblu-data-forwarder-azure-service-bus-%i \
-      octoblu-data-forwarder-azure-service-bus \
+      octoblu \
+      data-forwarder-azure-service-bus \
       %i \
 "
 

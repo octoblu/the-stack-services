@@ -85,6 +85,7 @@ push_to_major(){
   major_fleetctl submit *
   sleep 1
   major_fleetctl submit *
+  major_fleetctl submit *
   popd
 }
 
@@ -97,6 +98,7 @@ push_to_minor(){
   minor_fleetctl destroy *
   minor_fleetctl submit *
   sleep 1
+  minor_fleetctl submit *
   minor_fleetctl submit *
   popd
 }

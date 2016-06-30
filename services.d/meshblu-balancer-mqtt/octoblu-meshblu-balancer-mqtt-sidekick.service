@@ -1,17 +1,24 @@
 [Unit]
 Description=octoblu-meshblu-balancer-mqtt-sidekick
+After=octoblu-meshblu-balancer-mqtt.service
 
 [Service]
+EnvironmentFile=/etc/environment
 TimeoutStartSec=30
 Restart=always
+
 ExecStartPre=/bin/bash -c " \
-  echo 'Writing kronk to /tmp' \
-  && /usr/bin/etcdctl get /kronk/sidekick/start > /tmp/octoblu-meshblu-balancer-mqtt-sidekick-kronk-start \
-  && chmod +x /tmp/octoblu-meshblu-balancer-mqtt-sidekick-kronk-* \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-meshblu-balancer-mqtt-sidekick \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-meshblu-balancer-mqtt-sidekick/kronk-run \
+  && chmod +x /run/kronk/octoblu-meshblu-balancer-mqtt-sidekick/kronk-run \
 "
-ExecStart=/usr/bin/etcdctl exec-watch \
-  /octoblu/meshblu-balancer-mqtt/restart \
-  -- /tmp/octoblu-meshblu-balancer-mqtt-sidekick-kronk-start 10 /octoblu/meshblu-balancer-mqtt/docker_url octoblu-meshblu-balancer-mqtt octoblu-meshblu-balancer-mqtt-register
+ExecStart=/bin/sh -c " \
+  /run/kronk/octoblu-meshblu-balancer-mqtt-sidekick/kronk-run \
+    /kronk/sidekick/start octoblu-meshblu-balancer-mqtt \
+    octoblu \
+    meshblu-balancer-mqtt \
+"
 
 [Install]
 WantedBy=multi-user.target

@@ -4,6 +4,7 @@ Wants=octoblu-meshblu-core-protocol-adapter-websocket-register@%i.service
 Wants=octoblu-meshblu-core-protocol-adapter-websocket-sidekick@%i.service
 
 [Service]
+EnvironmentFile=/etc/environment
 TimeoutStartSec=300
 StartLimitInterval=30
 StartLimitBurst=30
@@ -18,24 +19,22 @@ ExecStartPre=/bin/bash -c " \
 ExecStartPre=/bin/bash -c " \
   /run/kronk/octoblu-meshblu-core-protocol-adapter-websocket-%i/kronk-run \
     /kronk/service/start-pre octoblu-meshblu-core-protocol-adapter-websocket-%i \
-      octoblu-meshblu-core-protocol-adapter-websocket \
+      octoblu \
+      meshblu-core-protocol-adapter-websocket \
       %i \
-      /octoblu/meshblu-core-protocol-adapter-websocket/env \
-      /octoblu/meshblu-core-protocol-adapter-websocket/docker_url \
 "
 ExecStart=/bin/bash -c " \
   /run/kronk/octoblu-meshblu-core-protocol-adapter-websocket-%i/kronk-run \
     /kronk/service/start octoblu-meshblu-core-protocol-adapter-websocket-%i \
-      octoblu-meshblu-core-protocol-adapter-websocket \
+      octoblu \
+      meshblu-core-protocol-adapter-websocket \
       %i \
-      512m \
-      /octoblu/meshblu-core-protocol-adapter-websocket/docker_url \
-      /octoblu/meshblu-core-protocol-adapter-websocket \
 "
 ExecStop=/bin/bash -c " \
   /run/kronk/octoblu-meshblu-core-protocol-adapter-websocket-%i/kronk-run \
     /kronk/service/stop octoblu-meshblu-core-protocol-adapter-websocket-%i \
-      octoblu-meshblu-core-protocol-adapter-websocket \
+      octoblu \
+      meshblu-core-protocol-adapter-websocket \
       %i \
 "
 

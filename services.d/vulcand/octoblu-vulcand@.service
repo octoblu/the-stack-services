@@ -1,0 +1,29 @@
+[Unit]
+Description=octoblu-vulcand
+Wants=octoblu-vulcand-register@%i.service
+Wants=octoblu-vulcand-sidekick@%i.service
+
+[Service]
+EnvironmentFile=/etc/environment
+TimeoutStartSec=300
+StartLimitInterval=30
+StartLimitBurst=30
+Restart=always
+
+ExecStartPre=-/usr/bin/docker rm -f octoblu-vulcand-%i
+ExecStart=/usr/bin/sh -c "/usr/bin/docker run    \
+  --rm \
+  --name octoblu-vulcand-%i \
+  -p 8181:8181 \
+  $(/usr/bin/etcdctl get /octoblu/vulcand/docker_url) \
+      -apiInterface=0.0.0.0 \
+      -interface=0.0.0.0 \
+      -etcd=http://$(/usr/bin/ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
+"
+ExecStop=/usr/bin/docker stop octoblu-vulcand-%i
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+MachineMetadata=Services=true

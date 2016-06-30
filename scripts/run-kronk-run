@@ -14,7 +14,7 @@ generate_service_files(){
 major_fleetctl(){
   env \
     FLEETCTL_TUNNEL=52.32.210.244 \
-    timeout 60 fleetctl --strict-host-key-checking=false $@
+    timeout 120 fleetctl --strict-host-key-checking=false $@
 }
 
 major_units(){
@@ -46,7 +46,7 @@ major_units(){
 minor_fleetctl(){
   env \
     FLEETCTL_TUNNEL=52.89.122.251 \
-    timeout 60 fleetctl --strict-host-key-checking=false $@
+    timeout 120 fleetctl --strict-host-key-checking=false $@
 }
 
 minor_units(){

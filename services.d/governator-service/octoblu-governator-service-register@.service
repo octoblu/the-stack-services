@@ -17,21 +17,21 @@ ExecStartPre=/bin/bash -c " \
   /run/kronk/octoblu-governator-service-register-%i/kronk-run \
     /kronk/register/start-pre octoblu-governator-service-%i \
       octoblu \
-      governator-service-$(/usr/bin/etcdctl get /cluster/name) \
+      governator-service \
       %i \
 "
 ExecStart=/bin/sh -c " \
   /run/kronk/octoblu-governator-service-register-%i/kronk-run \
     /kronk/register/start octoblu-governator-service-%i \
       octoblu \
-      governator-service-$(/usr/bin/etcdctl get /cluster/name) \
+      governator-service \
       %i \
 "
 ExecStop=/bin/sh -c " \
   /run/kronk/octoblu-governator-service-register-%i/kronk-run \
     /kronk/register/stop octoblu-governator-service-%i \
       octoblu \
-      governator-service-$(/usr/bin/etcdctl get /cluster/name) \
+      governator-service \
       %i \
 "
 

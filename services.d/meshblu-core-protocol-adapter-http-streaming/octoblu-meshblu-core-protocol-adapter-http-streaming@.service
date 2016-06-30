@@ -4,38 +4,38 @@ Wants=octoblu-meshblu-core-protocol-adapter-http-streaming-register@%i.service
 Wants=octoblu-meshblu-core-protocol-adapter-http-streaming-sidekick@%i.service
 
 [Service]
+EnvironmentFile=/etc/environment
 TimeoutStartSec=300
 StartLimitInterval=30
 StartLimitBurst=30
 Restart=always
 
-
 ExecStartPre=/bin/bash -c " \
-  echo 'Writing kronk to /tmp' \
-  && /usr/bin/etcdctl get /kronk/service/start-pre > /tmp/octoblu-meshblu-core-protocol-adapter-http-streaming-%i-kronk-start-pre \
-  && /usr/bin/etcdctl get /kronk/service/start > /tmp/octoblu-meshblu-core-protocol-adapter-http-streaming-%i-kronk-start \
-  && /usr/bin/etcdctl get /kronk/service/stop > /tmp/octoblu-meshblu-core-protocol-adapter-http-streaming-%i-kronk-stop \
-  && chmod +x /tmp/octoblu-meshblu-core-protocol-adapter-http-streaming-%i-kronk-* \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-meshblu-core-protocol-adapter-http-streaming-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-meshblu-core-protocol-adapter-http-streaming-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-meshblu-core-protocol-adapter-http-streaming-%i/kronk-run \
 "
 ExecStartPre=/bin/bash -c " \
-  /tmp/octoblu-meshblu-core-protocol-adapter-http-streaming-%i-kronk-start-pre \
-    octoblu-meshblu-core-protocol-adapter-http-streaming \
-    %i \
-    /octoblu/meshblu-core-protocol-adapter-http-streaming/env \
-    /octoblu/meshblu-core-protocol-adapter-http-streaming/docker_url \
+  /run/kronk/octoblu-meshblu-core-protocol-adapter-http-streaming-%i/kronk-run \
+    /kronk/service/start-pre octoblu-meshblu-core-protocol-adapter-http-streaming-%i \
+      octoblu \
+      meshblu-core-protocol-adapter-http-streaming \
+      %i \
 "
 ExecStart=/bin/bash -c " \
-  /tmp/octoblu-meshblu-core-protocol-adapter-http-streaming-%i-kronk-start \
-    octoblu-meshblu-core-protocol-adapter-http-streaming \
-    %i \
-    512m \
-    /octoblu/meshblu-core-protocol-adapter-http-streaming/docker_url \
-    /octoblu/meshblu-core-protocol-adapter-http-streaming \
+  /run/kronk/octoblu-meshblu-core-protocol-adapter-http-streaming-%i/kronk-run \
+    /kronk/service/start octoblu-meshblu-core-protocol-adapter-http-streaming-%i \
+      octoblu \
+      meshblu-core-protocol-adapter-http-streaming \
+      %i \
 "
 ExecStop=/bin/bash -c " \
-  /tmp/octoblu-meshblu-core-protocol-adapter-http-streaming-%i-kronk-stop \
-    octoblu-meshblu-core-protocol-adapter-http-streaming \
-    %i \
+  /run/kronk/octoblu-meshblu-core-protocol-adapter-http-streaming-%i/kronk-run \
+    /kronk/service/stop octoblu-meshblu-core-protocol-adapter-http-streaming-%i \
+      octoblu \
+      meshblu-core-protocol-adapter-http-streaming \
+      %i \
 "
 
 [Install]

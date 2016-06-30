@@ -1,36 +1,38 @@
 [Unit]
 Description=octoblu-meshblu-core-protocol-adapter-mqtt-register
-
+After=octoblu-meshblu-core-protocol-adapter-mqtt@%i.service
 
 [Service]
-TimeoutStartSec=300
 EnvironmentFile=/etc/environment
+TimeoutStartSec=300
 Restart=always
+
 ExecStartPre=/bin/bash -c " \
-  echo 'Writing kronk to /tmp' \
-  && /usr/bin/etcdctl get /kronk/register/start-pre > /tmp/octoblu-meshblu-core-protocol-adapter-mqtt-register-%i-kronk-start-pre \
-  && /usr/bin/etcdctl get /kronk/register/start > /tmp/octoblu-meshblu-core-protocol-adapter-mqtt-register-%i-kronk-start \
-  && /usr/bin/etcdctl get /kronk/register/stop > /tmp/octoblu-meshblu-core-protocol-adapter-mqtt-register-%i-kronk-stop \
-  && chmod +x /tmp/octoblu-meshblu-core-protocol-adapter-mqtt-register-%i-kronk-* \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-meshblu-core-protocol-adapter-mqtt-register-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-meshblu-core-protocol-adapter-mqtt-register-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-meshblu-core-protocol-adapter-mqtt-register-%i/kronk-run \
 "
 ExecStartPre=/bin/bash -c " \
-  /tmp/octoblu-meshblu-core-protocol-adapter-mqtt-register-%i-kronk-start-pre \
-    octoblu-meshblu-core-protocol-adapter-mqtt \
-    %i \
-    /octoblu/meshblu-core-protocol-adapter-mqtt/register-env \
-    1883/tcp \
+  /run/kronk/octoblu-meshblu-core-protocol-adapter-mqtt-register-%i/kronk-run \
+    /kronk/register/start-pre octoblu-meshblu-core-protocol-adapter-mqtt-%i \
+      octoblu \
+      meshblu-core-protocol-adapter-mqtt \
+      %i \
 "
 ExecStart=/bin/sh -c " \
-  /tmp/octoblu-meshblu-core-protocol-adapter-mqtt-register-%i-kronk-start \
-    octoblu-meshblu-core-protocol-adapter-mqtt \
-    %i \
-    octoblu-meshblu-core-protocol-adapter-mqtt \
-    /octoblu/register-tcp/docker_url \
+  /run/kronk/octoblu-meshblu-core-protocol-adapter-mqtt-register-%i/kronk-run \
+    /kronk/register/start octoblu-meshblu-core-protocol-adapter-mqtt-%i \
+      octoblu \
+      meshblu-core-protocol-adapter-mqtt \
+      %i \
 "
 ExecStop=/bin/sh -c " \
-  /tmp/octoblu-meshblu-core-protocol-adapter-mqtt-register-%i-kronk-stop \
-    octoblu-meshblu-core-protocol-adapter-mqtt \
-    %i \
+  /run/kronk/octoblu-meshblu-core-protocol-adapter-mqtt-register-%i/kronk-run \
+    /kronk/register/stop octoblu-meshblu-core-protocol-adapter-mqtt-%i \
+      octoblu \
+      meshblu-core-protocol-adapter-mqtt \
+      %i \
 "
 
 [X-Fleet]

@@ -27,3 +27,4 @@ WantedBy=multi-user.target
 
 [X-Fleet]
 MachineMetadata=Services=true
+Conflicts=octoblu-vulcand@*.service

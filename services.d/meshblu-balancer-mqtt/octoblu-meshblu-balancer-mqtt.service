@@ -1,28 +1,42 @@
 [Unit]
 Description=octoblu-meshblu-balancer-mqtt
+Wants=octoblu-meshblu-balancer-mqtt-register.service
+Wants=octoblu-meshblu-balancer-mqtt-sidekick.service
 
 [Service]
 EnvironmentFile=/etc/environment
 TimeoutStartSec=300
+StartLimitInterval=30
+StartLimitBurst=30
 Restart=always
-ExecStartPre=/usr/bin/etcdctl get /octoblu/meshblu-balancer-mqtt/docker_url || /usr/bin/echo "etcd did not contain /octoblu/meshblu-balancer-mqtt/docker_url" && exit 1
-ExecStartPre=-/usr/bin/docker rm --force octoblu-meshblu-balancer-mqtt-env octoblu-meshblu-balancer-mqtt
-ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
-  --name octoblu-meshblu-balancer-mqtt-env \
-  -e ETCDCTL_PEERS=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
-  quay.io/octoblu/etcd-to-env /octoblu/meshblu-balancer-mqtt/env > /tmp/octoblu-meshblu-balancer-mqtt.env \
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-meshblu-balancer-mqtt \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-meshblu-balancer-mqtt/kronk-run \
+  && chmod +x /run/kronk/octoblu-meshblu-balancer-mqtt/kronk-run \
 "
-ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
-  --name octoblu-meshblu-balancer-mqtt \
-  --memory 512m \
-  -e SERVERS=\"$(/usr/bin/etcdctl ls /vulcand/backends/octoblu-meshblu-core-protocol-adapter-mqtt/servers | /usr/bin/xargs -L1 /usr/bin/etcdctl get | /usr/bin/docker run --rm --interactive realguess/jq jq --raw-output '.URL' | /usr/bin/awk -v ORS=' ' '{ print $1 }'| sed -e 's/http:\\/\\///g')\" \
-  -e SERVER_NAME=${COREOS_PRIVATE_IPV4} \
-  --env-file /tmp/octoblu-meshblu-balancer-mqtt.env \
-  -p $(/usr/bin/etcdctl get /octoblu/meshblu-balancer-mqtt/port):1883 \
-  -p :9000 \
-  $(/usr/bin/etcdctl get /octoblu/meshblu-balancer-mqtt/docker_url) \
+ExecStartPre=/bin/bash -c " \
+  /run/kronk/octoblu-meshblu-balancer-mqtt/kronk-run \
+    /kronk/balancer/start-pre octoblu-meshblu-balancer-mqtt \
+      octoblu \
+      meshblu-balancer-mqtt \
+      meshblu-core-protocol-adapter-mqtt \
 "
-ExecStop=/usr/bin/docker kill octoblu-meshblu-balancer-mqtt
+ExecStart=/bin/bash -c " \
+  /run/kronk/octoblu-meshblu-balancer-mqtt/kronk-run \
+    /kronk/balancer/start octoblu-meshblu-balancer-mqtt \
+      octoblu \
+      meshblu-balancer-mqtt \
+      meshblu-core-protocol-adapter-mqtt \
+"
+ExecStop=/bin/bash -c " \
+  /run/kronk/octoblu-meshblu-balancer-mqtt/kronk-run \
+    /kronk/balancer/stop octoblu-meshblu-balancer-mqtt \
+      octoblu \
+      meshblu-balancer-mqtt \
+      meshblu-core-protocol-adapter-mqtt \
+"
 
 [Install]
 WantedBy=multi-user.target

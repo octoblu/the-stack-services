@@ -1,14 +1,25 @@
 [Unit]
-Description=octoblu-meshblu-balancer-firehose-socket.io-register-sidekick
+Description=octoblu-meshblu-balancer-firehose-socket.io-sidekick
+After=octoblu-meshblu-balancer-firehose-socket.io.service
 
 [Service]
+EnvironmentFile=/etc/environment
 TimeoutStartSec=30
 Restart=always
-ExecStart=/bin/sh -c "/usr/bin/etcdctl exec-watch --recursive \
-  /vulcand/backends/octoblu-meshblu-core-firehose-socket.io/servers \
-  -- $(docker stop \
-    --time=30 \
-    octoblu-meshblu-balancer-firehose-socket.io)"
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-meshblu-balancer-firehose-socket.io-sidekick \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-meshblu-balancer-firehose-socket.io-sidekick/kronk-run \
+  && chmod +x /run/kronk/octoblu-meshblu-balancer-firehose-socket.io-sidekick/kronk-run \
+"
+ExecStart=/bin/sh -c " \
+  /run/kronk/octoblu-meshblu-balancer-firehose-socket.io-sidekick/kronk-run \
+    /kronk/balancer-register-sidekick/start octoblu-meshblu-balancer-firehose-socket.io \
+    octoblu \
+    meshblu-balancer-firehose-socket.io \
+    meshblu-core-firehose-socket.io \
+"
 
 [Install]
 WantedBy=multi-user.target

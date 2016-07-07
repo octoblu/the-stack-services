@@ -1,0 +1,45 @@
+[Unit]
+Description=octoblu-interval-service
+Wants=octoblu-interval-service-register@%i.service
+Wants=octoblu-interval-service-sidekick@%i.service
+
+[Service]
+EnvironmentFile=/etc/environment
+TimeoutStartSec=300
+StartLimitInterval=30
+StartLimitBurst=30
+Restart=always
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-interval-service-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-interval-service-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-interval-service-%i/kronk-run \
+"
+ExecStartPre=/bin/bash -c " \
+  /run/kronk/octoblu-interval-service-%i/kronk-run \
+    /kronk/service/start-pre octoblu-interval-service-%i \
+      octoblu \
+      interval-service \
+      %i \
+"
+ExecStart=/bin/bash -c " \
+  /run/kronk/octoblu-interval-service-%i/kronk-run \
+    /kronk/service/start octoblu-interval-service-%i \
+      octoblu \
+      interval-service \
+      %i \
+"
+ExecStop=/bin/bash -c " \
+  /run/kronk/octoblu-interval-service-%i/kronk-run \
+    /kronk/service/stop octoblu-interval-service-%i \
+      octoblu \
+      interval-service \
+      %i \
+"
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+MachineMetadata=Services=true

@@ -3,7 +3,9 @@ Description=Register vulcand-control with ELB
 After=octoblu-vulcand-control@%i.service
 
 [Service]
+EnvironmentFile=/etc/environment
 TimeoutStartSec=600
+
 ExecStartPre=/bin/sh -c "/usr/bin/docker pull $(/usr/bin/etcdctl get /octoblu/register-service-elb/docker_url)"
 ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
   --name octoblu-vulcand-control-register-elb-%i-env \
@@ -12,7 +14,7 @@ ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
 "
 ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
   --name octoblu-vulcand-control-register-elb-%i \
-  --env ELB_NAME=vulcand-major \
+  --env ELB_NAME=$(etcdctl get /octoblu/vulcand-control/elb_names) \
   --env INSTANCE_HOSTNAME=$(hostname) \
   --env-file /tmp/octoblu-vulcand-control-register-elb-%i.env \
   $(/usr/bin/etcdctl get /octoblu/register-service-elb/docker_url) \

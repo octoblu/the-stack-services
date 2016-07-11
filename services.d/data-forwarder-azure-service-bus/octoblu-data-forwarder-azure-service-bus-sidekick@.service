@@ -3,9 +3,9 @@ Description=octoblu-data-forwarder-azure-service-bus-sidekick
 After=octoblu-data-forwarder-azure-service-bus@%i.service
 
 [Service]
+EnvironmentFile=/etc/environment
 TimeoutStartSec=30
 Restart=always
-
 
 ExecStartPre=/bin/bash -c " \
   echo 'Writing kronk' \
@@ -13,11 +13,13 @@ ExecStartPre=/bin/bash -c " \
   && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-data-forwarder-azure-service-bus-sidekick-%i/kronk-run \
   && chmod +x /run/kronk/octoblu-data-forwarder-azure-service-bus-sidekick-%i/kronk-run \
 "
-ExecStart=/usr/bin/etcdctl exec-watch \
-  /octoblu/data-forwarder-azure-service-bus/restart \
-  -- /run/kronk/octoblu-data-forwarder-azure-service-bus-sidekick-%i/kronk-run \
-    /kronk/sidekick/start octoblu-data-forwarder-azure-service-bus-sidekick-%i \
-    10 /octoblu/data-forwarder-azure-service-bus/docker_url octoblu-data-forwarder-azure-service-bus-%i octoblu-data-forwarder-azure-service-bus-register-%i
+ExecStart=/bin/sh -c " \
+  /run/kronk/octoblu-data-forwarder-azure-service-bus-sidekick-%i/kronk-run \
+    /kronk/sidekick/start octoblu-data-forwarder-azure-service-bus-%i \
+    octoblu \
+    data-forwarder-azure-service-bus \
+    %i \
+"
 
 [Install]
 WantedBy=multi-user.target

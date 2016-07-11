@@ -4,38 +4,38 @@ Wants=octoblu-nanocyte-engine-http-register@%i.service
 Wants=octoblu-nanocyte-engine-http-sidekick@%i.service
 
 [Service]
+EnvironmentFile=/etc/environment
 TimeoutStartSec=300
 StartLimitInterval=30
 StartLimitBurst=30
 Restart=always
 
-
 ExecStartPre=/bin/bash -c " \
-  echo 'Writing kronk to /tmp' \
-  && /usr/bin/etcdctl get /kronk/service/start-pre > /tmp/octoblu-nanocyte-engine-http-%i-kronk-start-pre \
-  && /usr/bin/etcdctl get /kronk/service/start > /tmp/octoblu-nanocyte-engine-http-%i-kronk-start \
-  && /usr/bin/etcdctl get /kronk/service/stop > /tmp/octoblu-nanocyte-engine-http-%i-kronk-stop \
-  && chmod +x /tmp/octoblu-nanocyte-engine-http-%i-kronk-* \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-nanocyte-engine-http-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-nanocyte-engine-http-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-nanocyte-engine-http-%i/kronk-run \
 "
 ExecStartPre=/bin/bash -c " \
-  /tmp/octoblu-nanocyte-engine-http-%i-kronk-start-pre \
-    octoblu-nanocyte-engine-http \
-    %i \
-    /octoblu/nanocyte-engine-http/env \
-    /octoblu/nanocyte-engine-http/docker_url \
+  /run/kronk/octoblu-nanocyte-engine-http-%i/kronk-run \
+    /kronk/service/start-pre octoblu-nanocyte-engine-http-%i \
+      octoblu \
+      nanocyte-engine-http \
+      %i \
 "
 ExecStart=/bin/bash -c " \
-  /tmp/octoblu-nanocyte-engine-http-%i-kronk-start \
-    octoblu-nanocyte-engine-http \
-    %i \
-    512m \
-    /octoblu/nanocyte-engine-http/docker_url \
-    /octoblu/nanocyte-engine-http \
+  /run/kronk/octoblu-nanocyte-engine-http-%i/kronk-run \
+    /kronk/service/start octoblu-nanocyte-engine-http-%i \
+      octoblu \
+      nanocyte-engine-http \
+      %i \
 "
 ExecStop=/bin/bash -c " \
-  /tmp/octoblu-nanocyte-engine-http-%i-kronk-stop \
-    octoblu-nanocyte-engine-http \
-    %i \
+  /run/kronk/octoblu-nanocyte-engine-http-%i/kronk-run \
+    /kronk/service/stop octoblu-nanocyte-engine-http-%i \
+      octoblu \
+      nanocyte-engine-http \
+      %i \
 "
 
 [Install]

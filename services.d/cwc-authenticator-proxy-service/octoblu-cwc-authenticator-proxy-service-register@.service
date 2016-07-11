@@ -3,9 +3,10 @@ Description=octoblu-cwc-authenticator-proxy-service-register
 After=octoblu-cwc-authenticator-proxy-service@%i.service
 
 [Service]
-TimeoutStartSec=300
 EnvironmentFile=/etc/environment
+TimeoutStartSec=300
 Restart=always
+
 ExecStartPre=/bin/bash -c " \
   echo 'Writing kronk' \
   && mkdir -p /run/kronk/octoblu-cwc-authenticator-proxy-service-register-%i \
@@ -15,20 +16,22 @@ ExecStartPre=/bin/bash -c " \
 ExecStartPre=/bin/bash -c " \
   /run/kronk/octoblu-cwc-authenticator-proxy-service-register-%i/kronk-run \
     /kronk/register/start-pre octoblu-cwc-authenticator-proxy-service-%i \
-      octoblu-cwc-authenticator-proxy-service \
+      octoblu \
+      cwc-authenticator-proxy-service \
       %i \
-      /octoblu/cwc-authenticator-proxy-service/register-env \
 "
 ExecStart=/bin/sh -c " \
   /run/kronk/octoblu-cwc-authenticator-proxy-service-register-%i/kronk-run \
     /kronk/register/start octoblu-cwc-authenticator-proxy-service-%i \
-      octoblu-cwc-authenticator-proxy-service \
+      octoblu \
+      cwc-authenticator-proxy-service \
       %i \
 "
 ExecStop=/bin/sh -c " \
   /run/kronk/octoblu-cwc-authenticator-proxy-service-register-%i/kronk-run \
     /kronk/register/stop octoblu-cwc-authenticator-proxy-service-%i \
-      octoblu-cwc-authenticator-proxy-service \
+      octoblu \
+      cwc-authenticator-proxy-service \
       %i \
 "
 

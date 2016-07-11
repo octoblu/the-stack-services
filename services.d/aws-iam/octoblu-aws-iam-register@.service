@@ -1,11 +1,12 @@
 [Unit]
 Description=octoblu-aws-iam-register
-
+After=octoblu-aws-iam@%i.service
 
 [Service]
-TimeoutStartSec=300
 EnvironmentFile=/etc/environment
+TimeoutStartSec=300
 Restart=always
+
 ExecStartPre=/bin/bash -c " \
   echo 'Writing kronk' \
   && mkdir -p /run/kronk/octoblu-aws-iam-register-%i \
@@ -15,20 +16,22 @@ ExecStartPre=/bin/bash -c " \
 ExecStartPre=/bin/bash -c " \
   /run/kronk/octoblu-aws-iam-register-%i/kronk-run \
     /kronk/register/start-pre octoblu-aws-iam-%i \
-      octoblu-aws-iam \
+      octoblu \
+      aws-iam \
       %i \
-      /octoblu/aws-iam/register-env \
 "
 ExecStart=/bin/sh -c " \
   /run/kronk/octoblu-aws-iam-register-%i/kronk-run \
     /kronk/register/start octoblu-aws-iam-%i \
-      octoblu-aws-iam \
+      octoblu \
+      aws-iam \
       %i \
 "
 ExecStop=/bin/sh -c " \
   /run/kronk/octoblu-aws-iam-register-%i/kronk-run \
     /kronk/register/stop octoblu-aws-iam-%i \
-      octoblu-aws-iam \
+      octoblu \
+      aws-iam \
       %i \
 "
 

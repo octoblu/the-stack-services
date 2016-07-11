@@ -1,33 +1,38 @@
 [Unit]
 Description=octoblu-meshblu-verifier-service-register
-
+After=octoblu-meshblu-verifier-service@%i.service
 
 [Service]
-TimeoutStartSec=300
 EnvironmentFile=/etc/environment
+TimeoutStartSec=300
 Restart=always
+
 ExecStartPre=/bin/bash -c " \
-  echo 'Writing kronk to /tmp' \
-  && /usr/bin/etcdctl get /kronk/register/start-pre > /tmp/octoblu-meshblu-verifier-service-register-%i-kronk-start-pre \
-  && /usr/bin/etcdctl get /kronk/register/start > /tmp/octoblu-meshblu-verifier-service-register-%i-kronk-start \
-  && /usr/bin/etcdctl get /kronk/register/stop > /tmp/octoblu-meshblu-verifier-service-register-%i-kronk-stop \
-  && chmod +x /tmp/octoblu-meshblu-verifier-service-register-%i-kronk-* \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-meshblu-verifier-service-register-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-meshblu-verifier-service-register-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-meshblu-verifier-service-register-%i/kronk-run \
 "
 ExecStartPre=/bin/bash -c " \
-  /tmp/octoblu-meshblu-verifier-service-register-%i-kronk-start-pre \
-    octoblu-meshblu-verifier-service \
-    %i \
-    /octoblu/meshblu-verifier-service/register-env \
+  /run/kronk/octoblu-meshblu-verifier-service-register-%i/kronk-run \
+    /kronk/register/start-pre octoblu-meshblu-verifier-service-%i \
+      octoblu \
+      meshblu-verifier-service \
+      %i \
 "
 ExecStart=/bin/sh -c " \
-  /tmp/octoblu-meshblu-verifier-service-register-%i-kronk-start \
-    octoblu-meshblu-verifier-service \
-    %i \
+  /run/kronk/octoblu-meshblu-verifier-service-register-%i/kronk-run \
+    /kronk/register/start octoblu-meshblu-verifier-service-%i \
+      octoblu \
+      meshblu-verifier-service \
+      %i \
 "
 ExecStop=/bin/sh -c " \
-  /tmp/octoblu-meshblu-verifier-service-register-%i-kronk-stop \
-    octoblu-meshblu-verifier-service \
-    %i \
+  /run/kronk/octoblu-meshblu-verifier-service-register-%i/kronk-run \
+    /kronk/register/stop octoblu-meshblu-verifier-service-%i \
+      octoblu \
+      meshblu-verifier-service \
+      %i \
 "
 
 [X-Fleet]

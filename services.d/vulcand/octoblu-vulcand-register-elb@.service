@@ -1,0 +1,24 @@
+[Unit]
+Description=Register vulcand with ELB
+After=octoblu-vulcand@%i.service
+
+[Service]
+EnvironmentFile=/etc/environment
+TimeoutStartSec=600
+
+ExecStartPre=/bin/sh -c "/usr/bin/docker pull $(/usr/bin/etcdctl get /octoblu/register-service-elb/docker_url)"
+ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
+  --name octoblu-vulcand-register-elb-%i-env \
+  --env ETCDCTL_PEERS=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
+  quay.io/octoblu/etcd-to-env /octoblu/register-service-elb/env > /tmp/octoblu-vulcand-register-elb-%i.env \
+"
+ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
+  --name octoblu-vulcand-register-elb-%i \
+  --env ELB_NAME=$(etcdctl get /octoblu/vulcand/elb_names) \
+  --env INSTANCE_HOSTNAME=$(hostname) \
+  --env-file /tmp/octoblu-vulcand-register-elb-%i.env \
+  $(/usr/bin/etcdctl get /octoblu/register-service-elb/docker_url) \
+"
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-vulcand@%i.service

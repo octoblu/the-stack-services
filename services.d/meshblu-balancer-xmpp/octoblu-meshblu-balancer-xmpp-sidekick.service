@@ -1,17 +1,24 @@
 [Unit]
 Description=octoblu-meshblu-balancer-xmpp-sidekick
+After=octoblu-meshblu-balancer-xmpp.service
 
 [Service]
+EnvironmentFile=/etc/environment
 TimeoutStartSec=30
 Restart=always
+
 ExecStartPre=/bin/bash -c " \
-  echo 'Writing kronk to /tmp' \
-  && /usr/bin/etcdctl get /kronk/sidekick/start > /tmp/octoblu-meshblu-balancer-xmpp-sidekick-kronk-start \
-  && chmod +x /tmp/octoblu-meshblu-balancer-xmpp-sidekick-kronk-* \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-meshblu-balancer-xmpp-sidekick \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-meshblu-balancer-xmpp-sidekick/kronk-run \
+  && chmod +x /run/kronk/octoblu-meshblu-balancer-xmpp-sidekick/kronk-run \
 "
-ExecStart=/usr/bin/etcdctl exec-watch \
-  /octoblu/meshblu-balancer-xmpp/restart \
-  -- /tmp/octoblu-meshblu-balancer-xmpp-sidekick-kronk-start 10 /octoblu/meshblu-balancer-xmpp/docker_url octoblu-meshblu-balancer-xmpp octoblu-meshblu-balancer-xmpp-register
+ExecStart=/bin/sh -c " \
+  /run/kronk/octoblu-meshblu-balancer-xmpp-sidekick/kronk-run \
+    /kronk/sidekick/start octoblu-meshblu-balancer-xmpp \
+    octoblu \
+    meshblu-balancer-xmpp \
+"
 
 [Install]
 WantedBy=multi-user.target

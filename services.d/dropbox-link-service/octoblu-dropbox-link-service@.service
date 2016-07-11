@@ -4,11 +4,11 @@ Wants=octoblu-dropbox-link-service-register@%i.service
 Wants=octoblu-dropbox-link-service-sidekick@%i.service
 
 [Service]
+EnvironmentFile=/etc/environment
 TimeoutStartSec=300
 StartLimitInterval=30
 StartLimitBurst=30
 Restart=always
-
 
 ExecStartPre=/bin/bash -c " \
   echo 'Writing kronk' \
@@ -19,24 +19,22 @@ ExecStartPre=/bin/bash -c " \
 ExecStartPre=/bin/bash -c " \
   /run/kronk/octoblu-dropbox-link-service-%i/kronk-run \
     /kronk/service/start-pre octoblu-dropbox-link-service-%i \
-      octoblu-dropbox-link-service \
+      octoblu \
+      dropbox-link-service \
       %i \
-      /octoblu/dropbox-link-service/env \
-      /octoblu/dropbox-link-service/docker_url \
 "
 ExecStart=/bin/bash -c " \
   /run/kronk/octoblu-dropbox-link-service-%i/kronk-run \
     /kronk/service/start octoblu-dropbox-link-service-%i \
-      octoblu-dropbox-link-service \
+      octoblu \
+      dropbox-link-service \
       %i \
-      512m \
-      /octoblu/dropbox-link-service/docker_url \
-      /octoblu/dropbox-link-service \
 "
 ExecStop=/bin/bash -c " \
   /run/kronk/octoblu-dropbox-link-service-%i/kronk-run \
     /kronk/service/stop octoblu-dropbox-link-service-%i \
-      octoblu-dropbox-link-service \
+      octoblu \
+      dropbox-link-service \
       %i \
 "
 

@@ -4,38 +4,38 @@ Wants=octoblu-terminator-service-register@%i.service
 Wants=octoblu-terminator-service-sidekick@%i.service
 
 [Service]
+EnvironmentFile=/etc/environment
 TimeoutStartSec=300
 StartLimitInterval=30
 StartLimitBurst=30
 Restart=always
 
-
 ExecStartPre=/bin/bash -c " \
-  echo 'Writing kronk to /tmp' \
-  && /usr/bin/etcdctl get /kronk/service/start-pre > /tmp/octoblu-terminator-service-%i-kronk-start-pre \
-  && /usr/bin/etcdctl get /kronk/service/start > /tmp/octoblu-terminator-service-%i-kronk-start \
-  && /usr/bin/etcdctl get /kronk/service/stop > /tmp/octoblu-terminator-service-%i-kronk-stop \
-  && chmod +x /tmp/octoblu-terminator-service-%i-kronk-* \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-terminator-service-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-terminator-service-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-terminator-service-%i/kronk-run \
 "
 ExecStartPre=/bin/bash -c " \
-  /tmp/octoblu-terminator-service-%i-kronk-start-pre \
-    octoblu-terminator-service \
-    %i \
-    /octoblu/terminator-service/env \
-    /octoblu/terminator-service/docker_url \
+  /run/kronk/octoblu-terminator-service-%i/kronk-run \
+    /kronk/service/start-pre octoblu-terminator-service-%i \
+      octoblu \
+      terminator-service \
+      %i \
 "
 ExecStart=/bin/bash -c " \
-  /tmp/octoblu-terminator-service-%i-kronk-start \
-    octoblu-terminator-service \
-    %i \
-    512m \
-    /octoblu/terminator-service/docker_url \
-    /octoblu/terminator-service \
+  /run/kronk/octoblu-terminator-service-%i/kronk-run \
+    /kronk/service/start octoblu-terminator-service-%i \
+      octoblu \
+      terminator-service \
+      %i \
 "
 ExecStop=/bin/bash -c " \
-  /tmp/octoblu-terminator-service-%i-kronk-stop \
-    octoblu-terminator-service \
-    %i \
+  /run/kronk/octoblu-terminator-service-%i/kronk-run \
+    /kronk/service/stop octoblu-terminator-service-%i \
+      octoblu \
+      terminator-service \
+      %i \
 "
 
 [Install]

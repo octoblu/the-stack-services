@@ -1,9 +1,10 @@
 [Unit]
 Description=octoblu-meshblu-core-protocol-adapter-mqtt
-Wants=octoblu-meshblu-core-protocol-adapter-mqtt-tcp@%i.service
+Wants=octoblu-meshblu-core-protocol-adapter-mqtt-register@%i.service
 Wants=octoblu-meshblu-core-protocol-adapter-mqtt-sidekick@%i.service
 
 [Service]
+EnvironmentFile=/etc/environment
 TimeoutStartSec=300
 StartLimitInterval=30
 StartLimitBurst=30
@@ -18,25 +19,22 @@ ExecStartPre=/bin/bash -c " \
 ExecStartPre=/bin/bash -c " \
   /run/kronk/octoblu-meshblu-core-protocol-adapter-mqtt-%i/kronk-run \
     /kronk/service/start-pre octoblu-meshblu-core-protocol-adapter-mqtt-%i \
-      octoblu-meshblu-core-protocol-adapter-mqtt \
+      octoblu \
+      meshblu-core-protocol-adapter-mqtt \
       %i \
-      /octoblu/meshblu-core-protocol-adapter-mqtt/env \
-      /octoblu/meshblu-core-protocol-adapter-mqtt/docker_url \
 "
 ExecStart=/bin/bash -c " \
   /run/kronk/octoblu-meshblu-core-protocol-adapter-mqtt-%i/kronk-run \
     /kronk/service/start octoblu-meshblu-core-protocol-adapter-mqtt-%i \
-      octoblu-meshblu-core-protocol-adapter-mqtt \
+      octoblu \
+      meshblu-core-protocol-adapter-mqtt \
       %i \
-      512m \
-      /octoblu/meshblu-core-protocol-adapter-mqtt/docker_url \
-      /octoblu/meshblu-core-protocol-adapter-mqtt \
-      1883 \
 "
 ExecStop=/bin/bash -c " \
   /run/kronk/octoblu-meshblu-core-protocol-adapter-mqtt-%i/kronk-run \
     /kronk/service/stop octoblu-meshblu-core-protocol-adapter-mqtt-%i \
-      octoblu-meshblu-core-protocol-adapter-mqtt \
+      octoblu \
+      meshblu-core-protocol-adapter-mqtt \
       %i \
 "
 

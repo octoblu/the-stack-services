@@ -4,11 +4,11 @@ Wants=octoblu-meshblu-authenticator-cwc-staging-register@%i.service
 Wants=octoblu-meshblu-authenticator-cwc-staging-sidekick@%i.service
 
 [Service]
+EnvironmentFile=/etc/environment
 TimeoutStartSec=300
 StartLimitInterval=30
 StartLimitBurst=30
 Restart=always
-
 
 ExecStartPre=/bin/bash -c " \
   echo 'Writing kronk' \
@@ -19,24 +19,22 @@ ExecStartPre=/bin/bash -c " \
 ExecStartPre=/bin/bash -c " \
   /run/kronk/octoblu-meshblu-authenticator-cwc-staging-%i/kronk-run \
     /kronk/service/start-pre octoblu-meshblu-authenticator-cwc-staging-%i \
-      octoblu-meshblu-authenticator-cwc-staging \
+      octoblu \
+      meshblu-authenticator-cwc-staging \
       %i \
-      /octoblu/meshblu-authenticator-cwc-staging/env \
-      /octoblu/meshblu-authenticator-cwc-staging/docker_url \
 "
 ExecStart=/bin/bash -c " \
   /run/kronk/octoblu-meshblu-authenticator-cwc-staging-%i/kronk-run \
     /kronk/service/start octoblu-meshblu-authenticator-cwc-staging-%i \
-      octoblu-meshblu-authenticator-cwc-staging \
+      octoblu \
+      meshblu-authenticator-cwc-staging \
       %i \
-      512m \
-      /octoblu/meshblu-authenticator-cwc-staging/docker_url \
-      /octoblu/meshblu-authenticator-cwc-staging \
 "
 ExecStop=/bin/bash -c " \
   /run/kronk/octoblu-meshblu-authenticator-cwc-staging-%i/kronk-run \
     /kronk/service/stop octoblu-meshblu-authenticator-cwc-staging-%i \
-      octoblu-meshblu-authenticator-cwc-staging \
+      octoblu \
+      meshblu-authenticator-cwc-staging \
       %i \
 "
 

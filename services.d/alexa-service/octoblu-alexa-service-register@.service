@@ -1,11 +1,12 @@
 [Unit]
 Description=octoblu-alexa-service-register
-
+After=octoblu-alexa-service@%i.service
 
 [Service]
-TimeoutStartSec=300
 EnvironmentFile=/etc/environment
+TimeoutStartSec=300
 Restart=always
+
 ExecStartPre=/bin/bash -c " \
   echo 'Writing kronk' \
   && mkdir -p /run/kronk/octoblu-alexa-service-register-%i \
@@ -15,20 +16,22 @@ ExecStartPre=/bin/bash -c " \
 ExecStartPre=/bin/bash -c " \
   /run/kronk/octoblu-alexa-service-register-%i/kronk-run \
     /kronk/register/start-pre octoblu-alexa-service-%i \
-      octoblu-alexa-service \
+      octoblu \
+      alexa-service \
       %i \
-      /octoblu/alexa-service/register-env \
 "
 ExecStart=/bin/sh -c " \
   /run/kronk/octoblu-alexa-service-register-%i/kronk-run \
     /kronk/register/start octoblu-alexa-service-%i \
-      octoblu-alexa-service \
+      octoblu \
+      alexa-service \
       %i \
 "
 ExecStop=/bin/sh -c " \
   /run/kronk/octoblu-alexa-service-register-%i/kronk-run \
     /kronk/register/stop octoblu-alexa-service-%i \
-      octoblu-alexa-service \
+      octoblu \
+      alexa-service \
       %i \
 "
 

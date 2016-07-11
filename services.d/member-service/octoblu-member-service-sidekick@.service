@@ -1,26 +1,25 @@
 [Unit]
 Description=octoblu-member-service-sidekick
-
+After=octoblu-member-service@%i.service
 
 [Service]
+EnvironmentFile=/etc/environment
 TimeoutStartSec=30
 Restart=always
 
-
-ExecStartPre=/bin/sh -c '/usr/bin/docker login \
-  --username $(/usr/bin/etcdctl get /docker/quay.io/username) \
-  --password $(/usr/bin/etcdctl get /docker/quay.io/password) \
-  --email $(/usr/bin/etcdctl get /docker/quay.io/email) \
-  quay.io'
-
 ExecStartPre=/bin/bash -c " \
-  echo 'Writing kronk to /tmp' \
-  && /usr/bin/etcdctl get /kronk/sidekick/start > /tmp/octoblu-member-service-sidekick-%i-kronk-start \
-  && chmod +x /tmp/octoblu-member-service-sidekick-%i-kronk-* \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-member-service-sidekick-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-member-service-sidekick-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-member-service-sidekick-%i/kronk-run \
 "
-ExecStart=/usr/bin/etcdctl exec-watch \
-  /octoblu/member-service/restart \
-  -- /tmp/octoblu-member-service-sidekick-%i-kronk-start 10 /octoblu/member-service/docker_url octoblu-member-service-%i octoblu-member-service-register-%i
+ExecStart=/bin/sh -c " \
+  /run/kronk/octoblu-member-service-sidekick-%i/kronk-run \
+    /kronk/sidekick/start octoblu-member-service-%i \
+    octoblu \
+    member-service \
+    %i \
+"
 
 [Install]
 WantedBy=multi-user.target

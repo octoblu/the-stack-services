@@ -3,9 +3,9 @@ Description=octoblu-meshblu-core-protocol-adapter-coap-sidekick
 After=octoblu-meshblu-core-protocol-adapter-coap@%i.service
 
 [Service]
+EnvironmentFile=/etc/environment
 TimeoutStartSec=30
 Restart=always
-
 
 ExecStartPre=/bin/bash -c " \
   echo 'Writing kronk' \
@@ -13,11 +13,13 @@ ExecStartPre=/bin/bash -c " \
   && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-meshblu-core-protocol-adapter-coap-sidekick-%i/kronk-run \
   && chmod +x /run/kronk/octoblu-meshblu-core-protocol-adapter-coap-sidekick-%i/kronk-run \
 "
-ExecStart=/usr/bin/etcdctl exec-watch \
-  /octoblu/meshblu-core-protocol-adapter-coap/restart \
-  -- /run/kronk/octoblu-meshblu-core-protocol-adapter-coap-sidekick-%i/kronk-run \
-    /kronk/sidekick/start octoblu-meshblu-core-protocol-adapter-coap-sidekick-%i \
-    10 /octoblu/meshblu-core-protocol-adapter-coap/docker_url octoblu-meshblu-core-protocol-adapter-coap-%i octoblu-meshblu-core-protocol-adapter-coap-tcp-%i
+ExecStart=/bin/sh -c " \
+  /run/kronk/octoblu-meshblu-core-protocol-adapter-coap-sidekick-%i/kronk-run \
+    /kronk/sidekick/start octoblu-meshblu-core-protocol-adapter-coap-%i \
+    octoblu \
+    meshblu-core-protocol-adapter-coap \
+    %i \
+"
 
 [Install]
 WantedBy=multi-user.target

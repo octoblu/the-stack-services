@@ -4,38 +4,38 @@ Wants=octoblu-meshblu-authenticator-citrix-register@%i.service
 Wants=octoblu-meshblu-authenticator-citrix-sidekick@%i.service
 
 [Service]
+EnvironmentFile=/etc/environment
 TimeoutStartSec=300
 StartLimitInterval=30
 StartLimitBurst=30
 Restart=always
 
-
 ExecStartPre=/bin/bash -c " \
-  echo 'Writing kronk to /tmp' \
-  && /usr/bin/etcdctl get /kronk/service/start-pre > /tmp/octoblu-meshblu-authenticator-citrix-%i-kronk-start-pre \
-  && /usr/bin/etcdctl get /kronk/service/start > /tmp/octoblu-meshblu-authenticator-citrix-%i-kronk-start \
-  && /usr/bin/etcdctl get /kronk/service/stop > /tmp/octoblu-meshblu-authenticator-citrix-%i-kronk-stop \
-  && chmod +x /tmp/octoblu-meshblu-authenticator-citrix-%i-kronk-* \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-meshblu-authenticator-citrix-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-meshblu-authenticator-citrix-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-meshblu-authenticator-citrix-%i/kronk-run \
 "
 ExecStartPre=/bin/bash -c " \
-  /tmp/octoblu-meshblu-authenticator-citrix-%i-kronk-start-pre \
-    octoblu-meshblu-authenticator-citrix \
-    %i \
-    /octoblu/meshblu-authenticator-citrix/env \
-    /octoblu/meshblu-authenticator-citrix/docker_url \
+  /run/kronk/octoblu-meshblu-authenticator-citrix-%i/kronk-run \
+    /kronk/service/start-pre octoblu-meshblu-authenticator-citrix-%i \
+      octoblu \
+      meshblu-authenticator-citrix \
+      %i \
 "
 ExecStart=/bin/bash -c " \
-  /tmp/octoblu-meshblu-authenticator-citrix-%i-kronk-start \
-    octoblu-meshblu-authenticator-citrix \
-    %i \
-    512m \
-    /octoblu/meshblu-authenticator-citrix/docker_url \
-    /octoblu/meshblu-authenticator-citrix \
+  /run/kronk/octoblu-meshblu-authenticator-citrix-%i/kronk-run \
+    /kronk/service/start octoblu-meshblu-authenticator-citrix-%i \
+      octoblu \
+      meshblu-authenticator-citrix \
+      %i \
 "
 ExecStop=/bin/bash -c " \
-  /tmp/octoblu-meshblu-authenticator-citrix-%i-kronk-stop \
-    octoblu-meshblu-authenticator-citrix \
-    %i \
+  /run/kronk/octoblu-meshblu-authenticator-citrix-%i/kronk-run \
+    /kronk/service/stop octoblu-meshblu-authenticator-citrix-%i \
+      octoblu \
+      meshblu-authenticator-citrix \
+      %i \
 "
 
 [Install]

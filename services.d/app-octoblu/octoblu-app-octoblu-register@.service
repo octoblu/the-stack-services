@@ -1,0 +1,39 @@
+[Unit]
+Description=octoblu-app-octoblu-register
+After=octoblu-app-octoblu@%i.service
+
+[Service]
+EnvironmentFile=/etc/environment
+TimeoutStartSec=300
+Restart=always
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-app-octoblu-register-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-app-octoblu-register-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-app-octoblu-register-%i/kronk-run \
+"
+ExecStartPre=/bin/bash -c " \
+  /run/kronk/octoblu-app-octoblu-register-%i/kronk-run \
+    /kronk/register/start-pre octoblu-app-octoblu-%i \
+      octoblu \
+      app-octoblu \
+      %i \
+"
+ExecStart=/bin/sh -c " \
+  /run/kronk/octoblu-app-octoblu-register-%i/kronk-run \
+    /kronk/register/start octoblu-app-octoblu-%i \
+      octoblu \
+      app-octoblu \
+      %i \
+"
+ExecStop=/bin/sh -c " \
+  /run/kronk/octoblu-app-octoblu-register-%i/kronk-run \
+    /kronk/register/stop octoblu-app-octoblu-%i \
+      octoblu \
+      app-octoblu \
+      %i \
+"
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-app-octoblu@%i.service

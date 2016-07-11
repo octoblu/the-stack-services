@@ -4,44 +4,38 @@ Wants=octoblu-namespace-service-register@%i.service
 Wants=octoblu-namespace-service-sidekick@%i.service
 
 [Service]
+EnvironmentFile=/etc/environment
 TimeoutStartSec=300
 StartLimitInterval=30
 StartLimitBurst=30
 Restart=always
 
-
-ExecStartPre=/bin/sh -c '/usr/bin/docker login \
-  --username $(/usr/bin/etcdctl get /docker/quay.io/username) \
-  --password $(/usr/bin/etcdctl get /docker/quay.io/password) \
-  --email $(/usr/bin/etcdctl get /docker/quay.io/email) \
-  quay.io'
-
 ExecStartPre=/bin/bash -c " \
-  echo 'Writing kronk to /tmp' \
-  && /usr/bin/etcdctl get /kronk/service/start-pre > /tmp/octoblu-namespace-service-%i-kronk-start-pre \
-  && /usr/bin/etcdctl get /kronk/service/start > /tmp/octoblu-namespace-service-%i-kronk-start \
-  && /usr/bin/etcdctl get /kronk/service/stop > /tmp/octoblu-namespace-service-%i-kronk-stop \
-  && chmod +x /tmp/octoblu-namespace-service-%i-kronk-* \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-namespace-service-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-namespace-service-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-namespace-service-%i/kronk-run \
 "
 ExecStartPre=/bin/bash -c " \
-  /tmp/octoblu-namespace-service-%i-kronk-start-pre \
-    octoblu-namespace-service \
-    %i \
-    /octoblu/namespace-service/env \
-    /octoblu/namespace-service/docker_url \
+  /run/kronk/octoblu-namespace-service-%i/kronk-run \
+    /kronk/service/start-pre octoblu-namespace-service-%i \
+      octoblu \
+      namespace-service \
+      %i \
 "
 ExecStart=/bin/bash -c " \
-  /tmp/octoblu-namespace-service-%i-kronk-start \
-    octoblu-namespace-service \
-    %i \
-    512m \
-    /octoblu/namespace-service/docker_url \
-    /octoblu/namespace-service \
+  /run/kronk/octoblu-namespace-service-%i/kronk-run \
+    /kronk/service/start octoblu-namespace-service-%i \
+      octoblu \
+      namespace-service \
+      %i \
 "
 ExecStop=/bin/bash -c " \
-  /tmp/octoblu-namespace-service-%i-kronk-stop \
-    octoblu-namespace-service \
-    %i \
+  /run/kronk/octoblu-namespace-service-%i/kronk-run \
+    /kronk/service/stop octoblu-namespace-service-%i \
+      octoblu \
+      namespace-service \
+      %i \
 "
 
 [Install]

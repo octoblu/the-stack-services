@@ -3,9 +3,10 @@
 generate_service_files(){
   echo "generate_service_files"
   local project_name="$1"
+  local service_type="$2"
   local directory_name="${HOME}/Projects/Octoblu/the-stack-services/services.d/${project_name}"
 
-  deployinate-configurator service \
+  deployinate-configurator "${service_type}" \
     --dir "${directory_name}" \
     "${project_name}"
 }
@@ -13,31 +14,65 @@ generate_service_files(){
 major_fleetctl(){
   env \
     FLEETCTL_TUNNEL=52.32.210.244 \
-    fleetctl --strict-host-key-checking=false $@
+    timeout 120 fleetctl --strict-host-key-checking=false $@
 }
 
 major_units(){
   local project_name="$1"
+  local directory_name="${HOME}/Projects/Octoblu/the-stack-services/services.d/${project_name}"
+  local unit_count=0
+  local templates=""
 
-  major_fleetctl list-units --no-legend \
-  | grep "${project_name}" \
-  | awk '{print $1}' \
-  | sort -r
+  unit_count="$(major_fleetctl list-units --no-legend \
+    | grep "octoblu-${project_name}@" \
+    | wc -l)"
+
+  if [ "${unit_count}" == "0" ]; then
+    return 0
+  fi
+
+  pushd "${directory_name}" > /dev/null
+  templates=(*)
+  popd > /dev/null
+  templates=( $(printf "%s\n" ${templates[@]} | sort -r) )
+  for num in $(seq 1 "${unit_count}"); do
+    for template in "${templates[@]}"; do
+      local name="$(echo $template | sed 's/\.service//g')"
+      echo -n "${name}${num} "
+    done
+  done
 }
 
 minor_fleetctl(){
   env \
     FLEETCTL_TUNNEL=52.89.122.251 \
-    fleetctl --strict-host-key-checking=false $@
+    timeout 120 fleetctl --strict-host-key-checking=false $@
 }
 
 minor_units(){
   local project_name="$1"
+  local directory_name="${HOME}/Projects/Octoblu/the-stack-services/services.d/${project_name}"
+  local unit_count=0
+  local templates=""
 
-  minor_fleetctl list-units --no-legend \
-  | grep "${project_name}" \
-  | awk '{print $1}' \
-  | sort -r
+  unit_count="$(minor_fleetctl list-units --no-legend \
+    | grep "octoblu-${project_name}@" \
+    | wc -l)"
+
+  if [ "${unit_count}" == "0" ]; then
+    return 0
+  fi
+
+  pushd "${directory_name}" > /dev/null
+  templates=(*)
+  popd > /dev/null
+  templates=( $(printf "%s\n" ${templates[@]} | sort -r) )
+  for num in $(seq 1 "${unit_count}"); do
+    for template in "${templates[@]}"; do
+      local name="$(echo $template | sed 's/\.service//g')"
+      echo -n "${name}${num} "
+    done
+  done
 }
 
 push_to_major(){
@@ -47,6 +82,8 @@ push_to_major(){
 
   pushd "${directory_name}"
   major_fleetctl destroy *
+  major_fleetctl submit *
+  sleep 1
   major_fleetctl submit *
   major_fleetctl submit *
   popd
@@ -59,6 +96,8 @@ push_to_minor(){
 
   pushd "${directory_name}"
   minor_fleetctl destroy *
+  minor_fleetctl submit *
+  sleep 1
   minor_fleetctl submit *
   minor_fleetctl submit *
   popd
@@ -77,14 +116,16 @@ restart_majors(){
     sleep 2
     major_fleetctl load "${unit}"
     while [ "${check_status}" == "1" ]; do
-      echo "start '${unit}'"
+      echo "${status_indicator} start '${unit}'"
       major_fleetctl start "${unit}"
+      sleep 2
 
-      major_fleetctl status "${unit}" | grep 'active (running)'
+      major_fleetctl list-units | grep "${unit}.service" | grep running
       check_status=$?
       status_indicator="${status_indicator}="
     done
   done
+  return 0
 }
 
 restart_minors(){
@@ -102,22 +143,27 @@ restart_minors(){
     while [ "${check_status}" == "1" ]; do
       echo "${status_indicator} start '${unit}'"
       minor_fleetctl start "${unit}"
+      sleep 2
 
-      minor_fleetctl status "${unit}" | grep 'active (running)'
+      minor_fleetctl list-units | grep "${unit}.service" | grep running
       check_status="$?"
       status_indicator="${status_indicator}="
     done
   done
+  return 0
 }
 
 main(){
   local project_name="$1"
+  local service_type="${2:-service}"
 
-  generate_service_files "${project_name}" \
+  generate_service_files "${project_name}" "${service_type}" \
   && push_to_minor "${project_name}" \
   && restart_minors "${project_name}" \
   && sleep 30 \
   && push_to_major "${project_name}" \
   && restart_majors "${project_name}"
+  local exit_code=$?
+  exit ${exit_code}
 }
 main $@

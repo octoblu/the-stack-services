@@ -1,14 +1,25 @@
 [Unit]
-Description=octoblu-meshblu-balancer-http-streaming-register-sidekick
+Description=octoblu-meshblu-balancer-http-streaming-sidekick
+After=octoblu-meshblu-balancer-http-streaming.service
 
 [Service]
+EnvironmentFile=/etc/environment
 TimeoutStartSec=30
 Restart=always
-ExecStart=/bin/sh -c "/usr/bin/etcdctl exec-watch --recursive \
-  /vulcand/backends/octoblu-meshblu-core-protocol-adapter-http-streaming/servers \
-  -- $(docker stop \
-    --time=30 \
-    octoblu-meshblu-balancer-http-streaming)"
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-meshblu-balancer-http-streaming-sidekick \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-meshblu-balancer-http-streaming-sidekick/kronk-run \
+  && chmod +x /run/kronk/octoblu-meshblu-balancer-http-streaming-sidekick/kronk-run \
+"
+ExecStart=/bin/sh -c " \
+  /run/kronk/octoblu-meshblu-balancer-http-streaming-sidekick/kronk-run \
+    /kronk/balancer-register-sidekick/start octoblu-meshblu-balancer-http-streaming \
+    octoblu \
+    meshblu-balancer-http-streaming \
+    meshblu-core-protocol-adapter-http-streaming \
+"
 
 [Install]
 WantedBy=multi-user.target

@@ -4,38 +4,38 @@ Wants=octoblu-device-mailer-register@%i.service
 Wants=octoblu-device-mailer-sidekick@%i.service
 
 [Service]
+EnvironmentFile=/etc/environment
 TimeoutStartSec=300
 StartLimitInterval=30
 StartLimitBurst=30
 Restart=always
 
-
 ExecStartPre=/bin/bash -c " \
-  echo 'Writing kronk to /tmp' \
-  && /usr/bin/etcdctl get /kronk/service/start-pre > /tmp/octoblu-device-mailer-%i-kronk-start-pre \
-  && /usr/bin/etcdctl get /kronk/service/start > /tmp/octoblu-device-mailer-%i-kronk-start \
-  && /usr/bin/etcdctl get /kronk/service/stop > /tmp/octoblu-device-mailer-%i-kronk-stop \
-  && chmod +x /tmp/octoblu-device-mailer-%i-kronk-* \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-device-mailer-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-device-mailer-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-device-mailer-%i/kronk-run \
 "
 ExecStartPre=/bin/bash -c " \
-  /tmp/octoblu-device-mailer-%i-kronk-start-pre \
-    octoblu-device-mailer \
-    %i \
-    /octoblu/device-mailer/env \
-    /octoblu/device-mailer/docker_url \
+  /run/kronk/octoblu-device-mailer-%i/kronk-run \
+    /kronk/service/start-pre octoblu-device-mailer-%i \
+      octoblu \
+      device-mailer \
+      %i \
 "
 ExecStart=/bin/bash -c " \
-  /tmp/octoblu-device-mailer-%i-kronk-start \
-    octoblu-device-mailer \
-    %i \
-    512m \
-    /octoblu/device-mailer/docker_url \
-    /octoblu/device-mailer \
+  /run/kronk/octoblu-device-mailer-%i/kronk-run \
+    /kronk/service/start octoblu-device-mailer-%i \
+      octoblu \
+      device-mailer \
+      %i \
 "
 ExecStop=/bin/bash -c " \
-  /tmp/octoblu-device-mailer-%i-kronk-stop \
-    octoblu-device-mailer \
-    %i \
+  /run/kronk/octoblu-device-mailer-%i/kronk-run \
+    /kronk/service/stop octoblu-device-mailer-%i \
+      octoblu \
+      device-mailer \
+      %i \
 "
 
 [Install]

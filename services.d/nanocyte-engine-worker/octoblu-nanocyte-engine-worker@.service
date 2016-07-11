@@ -1,33 +1,42 @@
 [Unit]
 Description=octoblu-nanocyte-engine-worker
-Wants=vulcand.service
-After=vulcand.service
+Wants=octoblu-nanocyte-engine-worker-register@%i.service
+Wants=octoblu-nanocyte-engine-worker-sidekick@%i.service
 
 [Service]
+EnvironmentFile=/etc/environment
 TimeoutStartSec=300
+StartLimitInterval=30
+StartLimitBurst=30
 Restart=always
-ExecStartPre=/bin/sh -c '/usr/bin/docker login \
-  --username $(/usr/bin/etcdctl get /docker/quay.io/username) \
-  --password $(/usr/bin/etcdctl get /docker/quay.io/password) \
-  --email $(/usr/bin/etcdctl get /docker/quay.io/email) \
-  quay.io'
-ExecStartPre=/usr/bin/etcdctl get /octoblu/nanocyte-engine-worker/docker_url || /usr/bin/echo "etcd did not contain /octoblu/nanocyte-engine-worker/docker_url" && exit 1
-ExecStartPre=-/usr/bin/docker kill octoblu-nanocyte-engine-worker-env-%i
-ExecStartPre=-/usr/bin/docker rm octoblu-nanocyte-engine-worker-env-%i
-ExecStartPre=-/usr/bin/docker kill octoblu-nanocyte-engine-worker-%i
-ExecStartPre=-/usr/bin/docker rm octoblu-nanocyte-engine-worker-%i
-ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
-  --name octoblu-nanocyte-engine-worker-env-%i \
-  -e ETCDCTL_PEERS=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
-  quay.io/octoblu/etcd-to-env /octoblu/nanocyte-engine-worker/env > /tmp/octoblu-nanocyte-engine-worker-%i.env \
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-nanocyte-engine-worker-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-nanocyte-engine-worker-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-nanocyte-engine-worker-%i/kronk-run \
 "
-ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
-  --name octoblu-nanocyte-engine-worker-%i \
-  --memory 1024m \
-  --env-file /tmp/octoblu-nanocyte-engine-worker-%i.env \
-  $(/usr/bin/etcdctl get /octoblu/nanocyte-engine-worker/docker_url) \
+ExecStartPre=/bin/bash -c " \
+  /run/kronk/octoblu-nanocyte-engine-worker-%i/kronk-run \
+    /kronk/service/start-pre octoblu-nanocyte-engine-worker-%i \
+      octoblu \
+      nanocyte-engine-worker \
+      %i \
 "
-ExecStop=/usr/bin/docker kill octoblu-nanocyte-engine-worker-%i
+ExecStart=/bin/bash -c " \
+  /run/kronk/octoblu-nanocyte-engine-worker-%i/kronk-run \
+    /kronk/service/start octoblu-nanocyte-engine-worker-%i \
+      octoblu \
+      nanocyte-engine-worker \
+      %i \
+"
+ExecStop=/bin/bash -c " \
+  /run/kronk/octoblu-nanocyte-engine-worker-%i/kronk-run \
+    /kronk/service/stop octoblu-nanocyte-engine-worker-%i \
+      octoblu \
+      nanocyte-engine-worker \
+      %i \
+"
 
 [Install]
 WantedBy=multi-user.target

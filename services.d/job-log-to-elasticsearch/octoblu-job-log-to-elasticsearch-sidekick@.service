@@ -1,16 +1,25 @@
 [Unit]
 Description=octoblu-job-log-to-elasticsearch-sidekick
+After=octoblu-job-log-to-elasticsearch@%i.service
 
 [Service]
+EnvironmentFile=/etc/environment
 TimeoutStartSec=30
 Restart=always
-ExecStart=/bin/sh -c "/usr/bin/etcdctl exec-watch \
-  /octoblu/job-log-to-elasticsearch/restart \
-  -- sh -c \"(docker inspect --format='{{.Id}}' --type=image \$(etcdctl get /octoblu/job-log-to-elasticsearch/docker_url) \
-               || docker pull \$(etcdctl get /octoblu/job-log-to-elasticsearch/docker_url)) \
-               && docker stop \
-                    --time=5 \
-                    octoblu-job-log-to-elasticsearch-%i\""
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-job-log-to-elasticsearch-sidekick-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-job-log-to-elasticsearch-sidekick-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-job-log-to-elasticsearch-sidekick-%i/kronk-run \
+"
+ExecStart=/bin/sh -c " \
+  /run/kronk/octoblu-job-log-to-elasticsearch-sidekick-%i/kronk-run \
+    /kronk/sidekick/start octoblu-job-log-to-elasticsearch-%i \
+    octoblu \
+    job-log-to-elasticsearch \
+    %i \
+"
 
 [Install]
 WantedBy=multi-user.target

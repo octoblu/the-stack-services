@@ -1,30 +1,45 @@
 [Unit]
 Description=octoblu-friendly-sharefile-worker
-Wants=vulcand.service
-After=vulcand.service
+Wants=octoblu-friendly-sharefile-worker-register@%i.service
+Wants=octoblu-friendly-sharefile-worker-sidekick@%i.service
 
 [Service]
+EnvironmentFile=/etc/environment
 TimeoutStartSec=300
+StartLimitInterval=30
+StartLimitBurst=30
 Restart=always
 
-ExecStartPre=/usr/bin/etcdctl get /octoblu/friendly-sharefile-worker/docker_url || /usr/bin/echo "etcd did not contain /octoblu/friendly-sharefile-worker/docker_url" && exit 1
-ExecStartPre=-/usr/bin/docker rm --force octoblu-friendly-sharefile-worker-env-%i octoblu-friendly-sharefile-worker-%i
-ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
-  --name octoblu-friendly-sharefile-worker-env-%i \
-  -e ETCDCTL_PEERS=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
-  quay.io/octoblu/etcd-to-env /octoblu/friendly-sharefile-worker/env > /tmp/octoblu-friendly-sharefile-worker.env \
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-friendly-sharefile-worker-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-friendly-sharefile-worker-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-friendly-sharefile-worker-%i/kronk-run \
 "
-ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
-  --name octoblu-friendly-sharefile-worker-%i \
-  --env-file /tmp/octoblu-friendly-sharefile-worker.env \
-  --memory 512m \
-  $(/usr/bin/etcdctl get /octoblu/friendly-sharefile-worker/docker_url) \
+ExecStartPre=/bin/bash -c " \
+  /run/kronk/octoblu-friendly-sharefile-worker-%i/kronk-run \
+    /kronk/service/start-pre octoblu-friendly-sharefile-worker-%i \
+      octoblu \
+      friendly-sharefile-worker \
+      %i \
 "
-ExecStop=/usr/bin/docker stop --time=5 octoblu-friendly-sharefile-worker-%i
+ExecStart=/bin/bash -c " \
+  /run/kronk/octoblu-friendly-sharefile-worker-%i/kronk-run \
+    /kronk/service/start octoblu-friendly-sharefile-worker-%i \
+      octoblu \
+      friendly-sharefile-worker \
+      %i \
+"
+ExecStop=/bin/bash -c " \
+  /run/kronk/octoblu-friendly-sharefile-worker-%i/kronk-run \
+    /kronk/service/stop octoblu-friendly-sharefile-worker-%i \
+      octoblu \
+      friendly-sharefile-worker \
+      %i \
+"
 
 [Install]
 WantedBy=multi-user.target
 
 [X-Fleet]
-Conflicts=octoblu-friendly-sharefile-worker@*.service
 MachineMetadata=Services=true

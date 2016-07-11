@@ -1,17 +1,24 @@
 [Unit]
 Description=octoblu-meshblu-balancer-websocket-sidekick
+After=octoblu-meshblu-balancer-websocket.service
 
 [Service]
+EnvironmentFile=/etc/environment
 TimeoutStartSec=30
 Restart=always
+
 ExecStartPre=/bin/bash -c " \
-  echo 'Writing kronk to /tmp' \
-  && /usr/bin/etcdctl get /kronk/sidekick/start > /tmp/octoblu-meshblu-balancer-websocket-sidekick-kronk-start \
-  && chmod +x /tmp/octoblu-meshblu-balancer-websocket-sidekick-kronk-* \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-meshblu-balancer-websocket-sidekick \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-meshblu-balancer-websocket-sidekick/kronk-run \
+  && chmod +x /run/kronk/octoblu-meshblu-balancer-websocket-sidekick/kronk-run \
 "
-ExecStart=/usr/bin/etcdctl exec-watch \
-  /octoblu/meshblu-balancer-websocket/restart \
-  -- /tmp/octoblu-meshblu-balancer-websocket-sidekick-kronk-start 10 /octoblu/meshblu-balancer-websocket/docker_url octoblu-meshblu-balancer-websocket octoblu-meshblu-balancer-websocket-register
+ExecStart=/bin/sh -c " \
+  /run/kronk/octoblu-meshblu-balancer-websocket-sidekick/kronk-run \
+    /kronk/sidekick/start octoblu-meshblu-balancer-websocket \
+    octoblu \
+    meshblu-balancer-websocket \
+"
 
 [Install]
 WantedBy=multi-user.target

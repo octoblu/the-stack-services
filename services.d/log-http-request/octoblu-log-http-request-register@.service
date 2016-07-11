@@ -1,0 +1,39 @@
+[Unit]
+Description=octoblu-log-http-request-register
+After=octoblu-log-http-request@%i.service
+
+[Service]
+EnvironmentFile=/etc/environment
+TimeoutStartSec=300
+Restart=always
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-log-http-request-register-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-log-http-request-register-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-log-http-request-register-%i/kronk-run \
+"
+ExecStartPre=/bin/bash -c " \
+  /run/kronk/octoblu-log-http-request-register-%i/kronk-run \
+    /kronk/register/start-pre octoblu-log-http-request-%i \
+      octoblu \
+      log-http-request \
+      %i \
+"
+ExecStart=/bin/sh -c " \
+  /run/kronk/octoblu-log-http-request-register-%i/kronk-run \
+    /kronk/register/start octoblu-log-http-request-%i \
+      octoblu \
+      log-http-request \
+      %i \
+"
+ExecStop=/bin/sh -c " \
+  /run/kronk/octoblu-log-http-request-register-%i/kronk-run \
+    /kronk/register/stop octoblu-log-http-request-%i \
+      octoblu \
+      log-http-request \
+      %i \
+"
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-log-http-request@%i.service

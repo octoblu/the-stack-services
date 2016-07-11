@@ -1,11 +1,12 @@
 [Unit]
 Description=octoblu-channel-proxy-service-register
-
+After=octoblu-channel-proxy-service@%i.service
 
 [Service]
-TimeoutStartSec=300
 EnvironmentFile=/etc/environment
+TimeoutStartSec=300
 Restart=always
+
 ExecStartPre=/bin/bash -c " \
   echo 'Writing kronk' \
   && mkdir -p /run/kronk/octoblu-channel-proxy-service-register-%i \
@@ -15,20 +16,22 @@ ExecStartPre=/bin/bash -c " \
 ExecStartPre=/bin/bash -c " \
   /run/kronk/octoblu-channel-proxy-service-register-%i/kronk-run \
     /kronk/register/start-pre octoblu-channel-proxy-service-%i \
-      octoblu-channel-proxy-service \
+      octoblu \
+      channel-proxy-service \
       %i \
-      /octoblu/channel-proxy-service/register-env \
 "
 ExecStart=/bin/sh -c " \
   /run/kronk/octoblu-channel-proxy-service-register-%i/kronk-run \
     /kronk/register/start octoblu-channel-proxy-service-%i \
-      octoblu-channel-proxy-service \
+      octoblu \
+      channel-proxy-service \
       %i \
 "
 ExecStop=/bin/sh -c " \
   /run/kronk/octoblu-channel-proxy-service-register-%i/kronk-run \
     /kronk/register/stop octoblu-channel-proxy-service-%i \
-      octoblu-channel-proxy-service \
+      octoblu \
+      channel-proxy-service \
       %i \
 "
 

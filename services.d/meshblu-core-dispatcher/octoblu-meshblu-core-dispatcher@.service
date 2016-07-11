@@ -4,11 +4,11 @@ Wants=octoblu-meshblu-core-dispatcher-register@%i.service
 Wants=octoblu-meshblu-core-dispatcher-sidekick@%i.service
 
 [Service]
+EnvironmentFile=/etc/environment
 TimeoutStartSec=300
 StartLimitInterval=30
 StartLimitBurst=30
 Restart=always
-
 
 ExecStartPre=/bin/bash -c " \
   echo 'Writing kronk' \
@@ -19,24 +19,22 @@ ExecStartPre=/bin/bash -c " \
 ExecStartPre=/bin/bash -c " \
   /run/kronk/octoblu-meshblu-core-dispatcher-%i/kronk-run \
     /kronk/service/start-pre octoblu-meshblu-core-dispatcher-%i \
-      octoblu-meshblu-core-dispatcher \
+      octoblu \
+      meshblu-core-dispatcher \
       %i \
-      /octoblu/meshblu-core-dispatcher/env \
-      /octoblu/meshblu-core-dispatcher/docker_url \
 "
 ExecStart=/bin/bash -c " \
   /run/kronk/octoblu-meshblu-core-dispatcher-%i/kronk-run \
     /kronk/service/start octoblu-meshblu-core-dispatcher-%i \
-      octoblu-meshblu-core-dispatcher \
+      octoblu \
+      meshblu-core-dispatcher \
       %i \
-      512m \
-      /octoblu/meshblu-core-dispatcher/docker_url \
-      /octoblu/meshblu-core-dispatcher \
 "
 ExecStop=/bin/bash -c " \
   /run/kronk/octoblu-meshblu-core-dispatcher-%i/kronk-run \
     /kronk/service/stop octoblu-meshblu-core-dispatcher-%i \
-      octoblu-meshblu-core-dispatcher \
+      octoblu \
+      meshblu-core-dispatcher \
       %i \
 "
 

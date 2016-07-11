@@ -1,0 +1,26 @@
+[Unit]
+Description=octoblu-mongoclient-sidekick
+After=octoblu-mongoclient@%i.service
+
+[Service]
+TimeoutStartSec=30
+Restart=always
+
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-mongoclient-sidekick-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-mongoclient-sidekick-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-mongoclient-sidekick-%i/kronk-run \
+"
+ExecStart=/usr/bin/etcdctl exec-watch \
+  /octoblu/mongoclient/restart \
+  -- /run/kronk/octoblu-mongoclient-sidekick-%i/kronk-run \
+    /kronk/sidekick/start octoblu-mongoclient-sidekick-%i \
+    10 /octoblu/mongoclient/docker_url octoblu-mongoclient-%i octoblu-mongoclient-register-%i
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-mongoclient@%i.service

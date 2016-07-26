@@ -3,6 +3,7 @@ Description=ptpd service
 
 [Service]
 TimeoutStartSec=0
+Restart=always
 ExecStartPre=-/usr/bin/docker kill ptpd
 ExecStartPre=-/usr/bin/docker rm ptpd
 ExecStartPre=/usr/bin/docker pull quay.io/octoblu/ptpd:v1.0.1

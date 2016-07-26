@@ -1,6 +1,6 @@
 [Unit]
 Description=octoblu-vulcand
-Wants=octoblu-vulcand-register@%i.service
+Wants=octoblu-vulcand-register-elb@%i.service
 Wants=octoblu-vulcand-sidekick@%i.service
 
 [Service]

@@ -7,13 +7,19 @@ After=vulcand.service
 Type=simple
 TimeoutStartSec=300
 ExecStartPre=/usr/bin/etcdctl get /octoblu/meshblu-verifier-websocket/docker_url || /usr/bin/echo "etcd did not contain /octoblu/meshblu-verifier-websocket/docker_url" && exit 1
-ExecStartPre=-/usr/bin/docker rm --force octoblu-meshblu-verifier-websocket-env octoblu-meshblu-verifier-websocket
+ExecStartPre=-/bin/sh -c "/usr/bin/docker rm --force \
+  octoblu-meshblu-verifier-websocket-env \
+  octoblu-meshblu-verifier-websocket \
+  2>/dev/null \
+"
 ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
+  --net host \
   --name octoblu-meshblu-verifier-websocket-env \
   -e ETCDCTL_PEERS=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \
   quay.io/octoblu/etcd-to-env /octoblu/meshblu-verifier-websocket/env > /tmp/octoblu-meshblu-verifier-websocket.env \
 "
 ExecStart=/bin/sh -c "/usr/bin/docker run --rm \
+  --net host \
   --name octoblu-meshblu-verifier-websocket \
   --env-file /tmp/octoblu-meshblu-verifier-websocket.env \
   $(/usr/bin/etcdctl get /octoblu/meshblu-verifier-websocket/docker_url) \

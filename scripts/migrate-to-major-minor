@@ -35,8 +35,8 @@ update_service_files() {
 update_minord(){
   local project_name="$1"
   local git_directory="${HOME}/Projects/Octoblu/the-stack-services/services.d/${project_name}"
-  local minor_directory="${HOME}/Projects/Octoblu/the-stack-env-production/minor.d/octoblu/${project_name}"
-  local major_directory="${HOME}/Projects/Octoblu/the-stack-env-production/major.d/octoblu/${project_name}"
+  local minor_directory="${HOME}/Projects/Octoblu/the-stack-env-production/minor/etcd/octoblu/${project_name}"
+  local major_directory="${HOME}/Projects/Octoblu/the-stack-env-production/major/etcd/octoblu/${project_name}"
 
   cp -r "${major_directory}" "${minor_directory}"
   rm -r \
@@ -54,7 +54,7 @@ update_minord(){
 update_vulcand(){
   local project_name="$1"
   local host="$2"
-  local vulcand_dir="${HOME}/Projects/Octoblu/the-stack-env-production/vulcan.d/"
+  local vulcand_dir="${HOME}/Projects/Octoblu/the-stack-env-production/major/vulcand/"
 
   local script_dir=$(dirname "${BASH_SOURCE[0]}")
   bash -c "${script_dir}/build-vulcand \"${vulcand_dir}\" \"octoblu-${project_name}\" \"${host}\""

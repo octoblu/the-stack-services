@@ -2,19 +2,35 @@
 
 PROJECT_DIR="$HOME/Projects/Octoblu/the-stack-services"
 
-run_it() {
+run_commands() {
+  local service_name="$1"
+  local commands_str="$2"
+  local commands=( ${commands_str//,/ } )
+
+  for single_command in "${commands[@]}"; do
+    run_command "$service_name" "$single_command"
+  done
+}
+
+run_command() {
   local service_name="$1"
   local command="$2"
   echo "${command}ing $service_name..."
   gtimeout 15s fleetctl "${command}" "${service_name}"
+  if [ ! -z "$COMMAND_SLEEP" ]; then
+    sleep "$COMMAND_SLEEP"
+  fi
 }
 
 usage() {
-  echo './run-on-services.sh <command> [query]'
+  echo './run-on-services.sh <command[,command]> [query]'
   echo ''
   echo 'args: '
-  echo '  command: must be one of start, stop, or destroy'
+  echo '  command(s): must be one, or multiple, of start, stop, or destroy. Make sure they are comma separated, no spaces.'
   echo '  query: (optional) will only run on services that match the query. Defaults to *'
+  echo ''
+  echo 'env:'
+  echo '  COMMAND_SLEEP: the sleep duration after running each command'
   echo ''
   echo "example: ./run-fleetctl-command.sh start '*meshblu*'"
   echo ''
@@ -32,7 +48,7 @@ main() {
   fi
   if [ -z "$command" ]; then
     usage
-    echo "Missing fleetctl command"
+    echo "Missing fleetctl command(s)"
     exit 1
   fi
   local query="$2"
@@ -56,10 +72,10 @@ main() {
       local file_name="$(basename $file_path)"
       file_name="${file_name/\.service/}"
       if [[ "$file_name" =~ @$ ]]; then
-        run_it "${file_name}1" "$command"
-        run_it "${file_name}2" "$command"
+        run_commands "${file_name}1" "$command"
+        run_commands "${file_name}2" "$command"
       else
-        run_it "$file_name" "$command"
+        run_commands "${file_name}" "$command"
       fi
     done
   done

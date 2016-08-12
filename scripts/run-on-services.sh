@@ -113,6 +113,7 @@ main() {
     fi
     local service_name="${service_path/$services_path\//}"
     echo "* processing $service_name"
+    local count=""
     local files=( $(find $service_path -type f -maxdepth 1 -iname '*.service') )
     for file_path in "${files[@]}"; do
       if [ "$file_path" == "$service_path" ]; then
@@ -128,12 +129,27 @@ main() {
           run_commands "$command" "${file_name}${i}" 
           has_instances="true"
         done
-        if [ "$has_instances" == "false" ]; then
-          echo "* booting up 2 instances for ${file_name}"
-          run_commands "$command" "${file_name}1"
-          run_commands "$command" "${file_name}2"
+        if [ ! -z "$count" ]; then 
+          echo "auto booting up $count..."
+          for i in $(seq 1 $count); do
+            run_commands "$command" "${file_name}${i}"
+          done   
+        else 
+          if [[ "$command" =~ start ]] && [ "$has_instances" == "false" ]; then
+            read -s -p "how many instances of $file_name do you want?"$'\n' -n 1 count
+            if [ "$count" != "" ] && [[  "$count" =~ [0-9]* ]]; then
+              echo "booting up $count..."
+              for i in $(seq 1 $count); do
+                run_commands "$command" "${file_name}${i}"
+              done   
+            else
+              count="0"
+              echo "incorrect input, skipping"
+            fi
+          fi
         fi
       else
+        echo "booting up singleton service" 
         run_commands "$command" "${file_name}" 
       fi
     done

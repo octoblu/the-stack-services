@@ -122,10 +122,17 @@ main() {
       file_name="${file_name/\.service/}"
       if [[ "$file_name" =~ @$ ]]; then
         local service_instances=( $(filter_units "$units" | grep "$file_name" ) )
+        local has_instances="false"
         for instance in "${service_instances[@]}"; do
           local i="${instance/$file_name}" 
           run_commands "$command" "${file_name}${i}" 
+          has_instances="true"
         done
+        if [ "$has_instances" == "false" ]; then
+          echo "* booting up 2 instances for ${file_name}"
+          run_commands "$command" "${file_name}1"
+          run_commands "$command" "${file_name}2"
+        fi
       else
         run_commands "$command" "${file_name}" 
       fi

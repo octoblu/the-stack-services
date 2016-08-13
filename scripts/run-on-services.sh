@@ -31,7 +31,7 @@ run_command() {
     local file_path="$PROJECT_DIR/services.d/${folder_name}/${file_name}${file_extension}"
     service="$file_path" 
     if [ "$command" == "destroy" ]; then
-      service="${file_name}{$file_extension}"
+      service="${file_name}${file_extension}"
     fi
   fi
   echo "* running ${command} on ${service_name}..."

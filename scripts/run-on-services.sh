@@ -16,7 +16,7 @@ run_command() {
   local command="$1"
   local service_name="$2"
   local service="$service_name"
-  if [ "$command" == "submit" ]; then
+  if [ "$command" == "submit" -o "$command" == "destroy" ]; then
     local instance_number="${service_name//[^0-9]/}"
     if [ ! -z "$instance_number" -a "$instance_number" != "1" ]; then
       return 0
@@ -30,6 +30,9 @@ run_command() {
     fi
     local file_path="$PROJECT_DIR/services.d/${folder_name}/${file_name}${file_extension}"
     service="$file_path" 
+    if [ "$command" == "destroy" ]; then
+      service="${file_name}{$file_extension}"
+    fi
   fi
   echo "* running ${command} on ${service_name}..."
   run_fleet_cmd "${command}" "${service}" || return 1
@@ -129,16 +132,16 @@ main() {
           run_commands "$command" "${file_name}${i}" 
           has_instances="true"
         done
-        if [ ! -z "$count" ]; then 
-          echo "auto booting up $count..."
+        if [ ! -z "$count" ] && [ "$count" != "0" ]; then 
+          echo "auto running $count..."
           for i in $(seq 1 $count); do
             run_commands "$command" "${file_name}${i}"
           done   
         else 
           if [[ "$command" =~ start ]] && [ "$has_instances" == "false" ]; then
-            read -s -p "how many instances of $file_name do you want?"$'\n' -n 1 count
+            read -t 30 -s -p  "how many instances of $file_name? [enter] to skip:"$' ' -n 1 count
             if [ "$count" != "" ] && [[  "$count" =~ [0-9]* ]]; then
-              echo "booting up $count..."
+              echo "running $count..."
               for i in $(seq 1 $count); do
                 run_commands "$command" "${file_name}${i}"
               done   
@@ -149,7 +152,6 @@ main() {
           fi
         fi
       else
-        echo "booting up singleton service" 
         run_commands "$command" "${file_name}" 
       fi
     done

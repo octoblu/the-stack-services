@@ -21,20 +21,20 @@ run_command() {
     if [ ! -z "$instance_number" -a "$instance_number" != "1" ]; then
       return 0
     fi
-    local folder_name="${file_name/octoblu\-}"
+    local folder_name="${service_name/octoblu\-}"
     folder_name="${folder_name%\-register*}"
     folder_name="${folder_name%\-sidekick*}"
+    folder_name="${folder_name%\@*}"
     local file_extension=".service"
     if [[ "$service_name" =~ @$ ]]; then
       file_extension="@.service"
     fi
-    local file_path="$PROJECT_DIR/services.d/${folder_name}/${file_name}${file_extension}"
+    local file_path="$PROJECT_DIR/services.d/${folder_name}/${service_name/\.service/}${file_extension}"
     service="$file_path" 
     if [ "$command" == "destroy" ]; then
-      service="${file_name}${file_extension}"
+      service="${service_name}${file_extension}"
     fi
   fi
-  echo "* running ${command} on ${service_name}..."
   run_fleet_cmd "${command}" "${service}" || return 1
   if [ ! -z "$COMMAND_SLEEP" ]; then
     echo "* sleeping for $COMMAND_SLEEP"
@@ -45,6 +45,7 @@ run_command() {
 run_fleet_cmd() {
   local command="$1"
   local service="$2"
+  echo "* running fleetctl ${command} ${service}"
   gtimeout 15s fleetctl "${command}" "${service}"
 }
 

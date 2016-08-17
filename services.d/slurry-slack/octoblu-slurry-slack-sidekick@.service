@@ -1,0 +1,28 @@
+[Unit]
+Description=octoblu-slurry-slack-sidekick
+After=octoblu-slurry-slack@%i.service
+
+[Service]
+EnvironmentFile=/etc/environment
+TimeoutStartSec=30
+Restart=always
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-slurry-slack-sidekick-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-slurry-slack-sidekick-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-slurry-slack-sidekick-%i/kronk-run \
+"
+ExecStart=/bin/sh -c " \
+  /run/kronk/octoblu-slurry-slack-sidekick-%i/kronk-run \
+    /kronk/sidekick/start octoblu-slurry-slack-%i \
+    octoblu \
+    slurry-slack \
+    %i \
+"
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-slurry-slack@%i.service

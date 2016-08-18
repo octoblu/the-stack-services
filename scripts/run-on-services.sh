@@ -53,16 +53,16 @@ run_destroy() {
   local file_name="$(get_file_name "$service")"
   local instance="$(get_instance "$service")"
   local at="$(get_at "$service")"
-  is_first "$service"
-  local root_file="${file_name}${at}.service"
-  if [ "$?" == "0" ]; then
-    run_fleet_cmd destroy "$root_file"
-  fi
   local instance_file="${file_name}${at}${instance}.service"
-  if [ "$root_file" == "$instance_file" ]; then
-    return 0
-  fi
   run_fleet_cmd destroy "$instance_file" 
+  # local root_file="${file_name}${at}.service"
+  # if [ "$root_file" == "$instance_file" ]; then
+  #   return 0
+  # fi
+  # is_first "$service"
+  # if [ "$?" == "0" ]; then
+  #   run_fleet_cmd destroy "$root_file"
+  # fi
 }
 
 run_fleet_cmd() {

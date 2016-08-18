@@ -2,6 +2,7 @@
 
 PROJECT_DIR="$HOME/Projects/Octoblu/the-stack-services"
 SERVICESD="$PROJECT_DIR/services.d"
+INSTANCE_COUNT=""
 
 run_commands() {
   local commands_str="$1"
@@ -124,6 +125,101 @@ is_first() {
   return 0
 }
 
+get_full_file_name() {
+  local file_path="$1"
+  local file_name="$(basename $file_path)"
+  echo "${file_name/\.service/}"
+}
+
+is_instance_file() {
+  local file_name="$1"
+  if [[ "$file_name" =~ @$ ]]; then
+    return 0
+  fi
+  return 1
+}
+
+process_file_instances() {
+  local commands="$1"; shift
+  local file_name="$1"; shift
+  local units="$@"
+  local has_instances="false"
+  local service_instances=( $(filter_units "$units" | grep "$file_name" ) )
+  for instance in "${service_instances[@]}"; do
+    local i="${instance/$file_name}" 
+    echo "* running on an existing instance ${instance}"
+    run_commands "$commands" "${file_name}${i}" 
+    has_instances="true"
+  done
+  if [ "$has_instances" == "false" ]; then
+    return 1
+  fi
+}
+
+run_count_on_instances() {
+  local commands="$1"
+  local file_name="$2"
+  echo "* running ${INSTANCE_COUNT} instances..."
+  for i in $(seq 1 $INSTANCE_COUNT); do
+    run_commands "$commands" "${file_name}${i}"
+  done   
+}
+
+prompt_for_count() {
+  local file_name="$1"
+  read -t 30 -s -p  "how many instances of $file_name? [enter] to skip:"$' ' -n 1 INSTANCE_COUNT
+  echo ''
+}
+
+process_file() {
+  local commands="$1"; shift
+  local file_path="$1"; shift
+  local units="$@"
+  local file_name="$(get_full_file_name "$file_path")"
+  echo "* processing file $file_name"
+  is_instance_file "$file_name"
+  local is_instance="$?"
+  if [ "$is_instance" != "0" ]; then
+    echo "* running on global $file_name" 
+    run_commands "$commands" "$file_name" 
+    return "$?"
+  fi
+  process_file_instances "$commands" "$file_name" "$units" 
+  local has_instances="$?"
+  if [ "$has_instances" == "0" ]; then
+    return 0
+  fi
+  if [ ! -z "$INSTANCE_COUNT" ] && [ "$INSTANCE_COUNT" != "0" ]; then 
+    run_count_on_instances "$commands" "$file_name"
+    return 0
+  fi
+  if [[ "$commands" =~ start ]] && [ "$has_instances" == "1" ]; then
+    prompt_for_count "$file_name"
+    if [ "$INSTANCE_COUNT" != "" ] && [[  "$INSTANCE_COUNT" =~ [0-9]* ]]; then
+      run_count_on_instances "$commands" "$file_name"
+      return 0
+    fi
+    INSTANCE_COUNT="0"
+    echo "incorrect input, skipping"
+  fi
+}
+
+process_service() {
+  local commands="$1"; shift
+  local service_name="$1"; shift
+  local service_path="$1"; shift
+  local units="$@"
+  INSTANCE_COUNT=""
+  echo "* processing $service_name"
+  local files=( $(find $service_path -type f -maxdepth 1 -iname '*.service') )
+  for file_path in "${files[@]}"; do
+    if [ "$file_path" == "$service_path" ]; then
+      continue
+    fi
+    process_file "$commands" "$file_path" "$units"
+  done
+}
+
 filter_units() {
   local units=( $@ )
   for unit in "${units[@]}"; do
@@ -145,6 +241,7 @@ usage() {
   echo ''
   echo 'env:'
   echo '  COMMAND_SLEEP: the sleep duration after running each command'
+  echo '  DRY_RUN: if set this will not run any commands'
   echo ''
   echo "example: ./run-on-services.sh start '*meshblu*'"
   echo ''
@@ -157,16 +254,12 @@ fatal() {
 }
 
 main() {
-  local command="$1"
-  if [ "$command" == "--help" ]; then
+  local commands="$1"
+  if [ "$commands" == "--help" -o "$commands" == "-h"  ]; then
     usage
     exit 0
   fi
-  if [ "$command" == "-h" ]; then
-    usage
-    exit 0
-  fi
-  if [ -z "$command" ]; then
+  if [ -z "$commands" ]; then
     usage
     echo "Missing fleetctl command(s)"
     exit 1
@@ -178,6 +271,7 @@ main() {
   if [ -z "$query" ]; then 
     query='*'
   fi
+
   local services_path="$PROJECT_DIR/services.d"
   local services=( $(find $services_path -type d -maxdepth 1 -iname "$query") )
 
@@ -185,52 +279,14 @@ main() {
   if [ "$?" != "0" ]; then
     fatal 'unable to list units'
   fi
+
   local service_instances=( $(filter_units "$units") )
   for service_path in "${services[@]}"; do
     if [ "$service_path" == "$services_path" ]; then
       continue
     fi
     local service_name="${service_path/$services_path\//}"
-    echo "* processing $service_name"
-    local count=""
-    local files=( $(find $service_path -type f -maxdepth 1 -iname '*.service') )
-    for file_path in "${files[@]}"; do
-      if [ "$file_path" == "$service_path" ]; then
-        continue
-      fi
-      local file_name="$(basename $file_path)"
-      file_name="${file_name/\.service/}"
-      if [[ "$file_name" =~ @$ ]]; then
-        local service_instances=( $(filter_units "$units" | grep "$file_name" ) )
-        local has_instances="false"
-        for instance in "${service_instances[@]}"; do
-          local i="${instance/$file_name}" 
-          run_commands "$command" "${file_name}${i}" 
-          has_instances="true"
-        done
-        if [ ! -z "$count" ] && [ "$count" != "0" ]; then 
-          echo "auto running $count..."
-          for i in $(seq 1 $count); do
-            run_commands "$command" "${file_name}${i}"
-          done   
-        else 
-          if [[ "$command" =~ start ]] && [ "$has_instances" == "false" ]; then
-            read -t 30 -s -p  "how many instances of $file_name? [enter] to skip:"$' ' -n 1 count
-            if [ "$count" != "" ] && [[  "$count" =~ [0-9]* ]]; then
-              echo "running $count..."
-              for i in $(seq 1 $count); do
-                run_commands "$command" "${file_name}${i}"
-              done   
-            else
-              count="0"
-              echo "incorrect input, skipping"
-            fi
-          fi
-        fi
-      else
-        run_commands "$command" "${file_name}" 
-      fi
-    done
+    process_service "$commands" "$service_name" "$service_path" "$units"
   done
 }
 

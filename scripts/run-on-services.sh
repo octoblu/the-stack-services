@@ -1,6 +1,7 @@
 #!/bin/bash
 
 PROJECT_DIR="$HOME/Projects/Octoblu/the-stack-services"
+SERVICESD="$PROJECT_DIR/services.d"
 
 run_commands() {
   local commands_str="$1"
@@ -14,39 +15,113 @@ run_commands() {
 
 run_command() {
   local command="$1"
-  local service_name="$2"
-  local service="$service_name"
-  if [ "$command" == "submit" -o "$command" == "destroy" ]; then
-    local instance_number="${service_name//[^0-9]/}"
-    if [ ! -z "$instance_number" -a "$instance_number" != "1" ]; then
-      return 0
-    fi
-    local folder_name="${service_name/octoblu\-}"
-    folder_name="${folder_name%\-register*}"
-    folder_name="${folder_name%\-sidekick*}"
-    folder_name="${folder_name%\@*}"
-    local file_extension=".service"
-    if [[ "$service_name" =~ @$ ]]; then
-      file_extension="@.service"
-    fi
-    local file_path="$PROJECT_DIR/services.d/${folder_name}/${service_name/\.service/}${file_extension}"
-    service="$file_path" 
-    if [ "$command" == "destroy" ]; then
-      service="${service_name}${file_extension}"
-    fi
+  local service="$2"
+  case "$command" in
+    submit)
+      run_submit "$service" || return 1
+      ;;
+    destroy)
+      run_destroy "$service" || return 1
+      ;;
+    load | cat | unload | status | stop | start)
+      run_fleet_cmd "${command}" "${service}" || return 1
+      ;;
+    *)
+      echo "Invalid command $command"
+      exit 1
+      ;;
+  esac
+}
+
+run_submit() {
+  local service="$1"
+  is_first "$service"
+  if [ "$?" != "0" ]; then
+    return 0
   fi
-  run_fleet_cmd "${command}" "${service}" || return 1
-  if [ ! -z "$COMMAND_SLEEP" ]; then
-    echo "* sleeping for $COMMAND_SLEEP"
-    sleep "$COMMAND_SLEEP"
+  local file_path="$(get_file_path "$service")"
+  if [ ! -f "$file_path" ]; then
+    echo "Error: $file_path is not a file"
+    return 1
   fi
+  run_fleet_cmd submit "${file_path}"
+}
+
+run_destroy() {
+  local service="$1"
+  local file_name="$(get_file_name "$service")"
+  local instance="$(get_instance "$service")"
+  local at="$(get_at "$service")"
+  is_first "$service"
+  local root_file="${file_name}${at}.service"
+  if [ "$?" == "0" ]; then
+    run_fleet_cmd destroy "$root_file"
+  fi
+  local instance_file="${file_name}${at}${instance}.service"
+  if [ "$root_file" == "$instance_file" ]; then
+    return 0
+  fi
+  run_fleet_cmd destroy "$instance_file" 
 }
 
 run_fleet_cmd() {
   local command="$1"
   local service="$2"
-  echo "* running fleetctl ${command} ${service}"
-  gtimeout 15s fleetctl "${command}" "${service}"
+  echo "* running fleetctl ${command} ${service/$PROJECT_DIR\/}"
+  if [ -z "$DRY_RUN" ]; then
+    gtimeout 15s fleetctl "${command}" "${service}"
+  fi
+  command_sleep
+}
+
+command_sleep() {
+  if [ ! -z "$COMMAND_SLEEP" ]; then
+    echo "* [command] sleeping for $COMMAND_SLEEP"
+    sleep "$COMMAND_SLEEP"
+  fi
+}
+
+get_folder_name() {
+  local service="$1"
+  local folder_name="${service/octoblu\-}"
+  folder_name="${folder_name%\-register*}"
+  folder_name="${folder_name%\-sidekick*}"
+  folder_name="${folder_name%\@*}"
+  echo "$folder_name"
+}
+
+get_file_path() {
+  local service="$1"
+  local folder_name="$(get_folder_name "$service")"
+  local file_name="$(get_file_name "$service")"
+  local at="$(get_at "$service_name")"
+  echo "$SERVICESD/${folder_name}/${file_name}${at}.service"
+}
+
+get_instance() {
+  local service="$1"
+  echo "${service//[^0-9]/}"
+}
+
+get_file_name() {
+  local service="$1"
+  echo "${service%\@*}"
+}
+
+get_at() {
+  local service="$1"
+  if [[ "$service" =~ @ ]]; then
+    echo "@"
+  fi
+}
+
+is_first() {
+  local service="$1"
+  local instance="$(get_instance "$service")"
+  if [ ! -z "$instance" -a "$instance" != "1" ]; then
+    return 1
+  fi
+  return 0
 }
 
 filter_units() {

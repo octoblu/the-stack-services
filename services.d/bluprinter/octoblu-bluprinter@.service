@@ -1,0 +1,45 @@
+[Unit]
+Description=octoblu-bluprinter
+Wants=octoblu-bluprinter-register@%i.service
+Wants=octoblu-bluprinter-sidekick@%i.service
+
+[Service]
+EnvironmentFile=/etc/environment
+TimeoutStartSec=300
+StartLimitInterval=30
+StartLimitBurst=30
+Restart=always
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-bluprinter-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-bluprinter-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-bluprinter-%i/kronk-run \
+"
+ExecStartPre=/bin/bash -c " \
+  /run/kronk/octoblu-bluprinter-%i/kronk-run \
+    /kronk/service/start-pre octoblu-bluprinter-%i \
+      octoblu \
+      bluprinter \
+      %i \
+"
+ExecStart=/bin/bash -c " \
+  /run/kronk/octoblu-bluprinter-%i/kronk-run \
+    /kronk/service/start octoblu-bluprinter-%i \
+      octoblu \
+      bluprinter \
+      %i \
+"
+ExecStop=/bin/bash -c " \
+  /run/kronk/octoblu-bluprinter-%i/kronk-run \
+    /kronk/service/stop octoblu-bluprinter-%i \
+      octoblu \
+      bluprinter \
+      %i \
+"
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+MachineMetadata=Services=true

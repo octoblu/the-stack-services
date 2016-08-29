@@ -1,0 +1,39 @@
+[Unit]
+Description=octoblu-smart-conference-room-web-ui-register
+After=octoblu-smart-conference-room-web-ui@%i.service
+
+[Service]
+EnvironmentFile=/etc/environment
+TimeoutStartSec=300
+Restart=always
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-smart-conference-room-web-ui-register-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-smart-conference-room-web-ui-register-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-smart-conference-room-web-ui-register-%i/kronk-run \
+"
+ExecStartPre=/bin/bash -c " \
+  /run/kronk/octoblu-smart-conference-room-web-ui-register-%i/kronk-run \
+    /kronk/register/start-pre octoblu-smart-conference-room-web-ui-%i \
+      octoblu \
+      smart-conference-room-web-ui \
+      %i \
+"
+ExecStart=/bin/sh -c " \
+  /run/kronk/octoblu-smart-conference-room-web-ui-register-%i/kronk-run \
+    /kronk/register/start octoblu-smart-conference-room-web-ui-%i \
+      octoblu \
+      smart-conference-room-web-ui \
+      %i \
+"
+ExecStop=/bin/sh -c " \
+  /run/kronk/octoblu-smart-conference-room-web-ui-register-%i/kronk-run \
+    /kronk/register/stop octoblu-smart-conference-room-web-ui-%i \
+      octoblu \
+      smart-conference-room-web-ui \
+      %i \
+"
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-smart-conference-room-web-ui@%i.service

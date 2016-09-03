@@ -1,0 +1,39 @@
+[Unit]
+Description=octoblu-slurry-salesforce-register
+After=octoblu-slurry-salesforce@%i.service
+
+[Service]
+EnvironmentFile=/etc/environment
+TimeoutStartSec=300
+Restart=always
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-slurry-salesforce-register-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-slurry-salesforce-register-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-slurry-salesforce-register-%i/kronk-run \
+"
+ExecStartPre=/bin/bash -c " \
+  /run/kronk/octoblu-slurry-salesforce-register-%i/kronk-run \
+    /kronk/register/start-pre octoblu-slurry-salesforce-%i \
+      octoblu \
+      slurry-salesforce \
+      %i \
+"
+ExecStart=/bin/sh -c " \
+  /run/kronk/octoblu-slurry-salesforce-register-%i/kronk-run \
+    /kronk/register/start octoblu-slurry-salesforce-%i \
+      octoblu \
+      slurry-salesforce \
+      %i \
+"
+ExecStop=/bin/sh -c " \
+  /run/kronk/octoblu-slurry-salesforce-register-%i/kronk-run \
+    /kronk/register/stop octoblu-slurry-salesforce-%i \
+      octoblu \
+      slurry-salesforce \
+      %i \
+"
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-slurry-salesforce@%i.service

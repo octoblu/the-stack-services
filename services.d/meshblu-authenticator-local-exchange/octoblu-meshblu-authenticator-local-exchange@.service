@@ -1,0 +1,45 @@
+[Unit]
+Description=octoblu-meshblu-authenticator-local-exchange
+Wants=octoblu-meshblu-authenticator-local-exchange-register@%i.service
+Wants=octoblu-meshblu-authenticator-local-exchange-sidekick@%i.service
+
+[Service]
+EnvironmentFile=/etc/environment
+TimeoutStartSec=300
+StartLimitInterval=30
+StartLimitBurst=30
+Restart=always
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-meshblu-authenticator-local-exchange-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-meshblu-authenticator-local-exchange-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-meshblu-authenticator-local-exchange-%i/kronk-run \
+"
+ExecStartPre=/bin/bash -c " \
+  /run/kronk/octoblu-meshblu-authenticator-local-exchange-%i/kronk-run \
+    /kronk/service/start-pre octoblu-meshblu-authenticator-local-exchange-%i \
+      octoblu \
+      meshblu-authenticator-local-exchange \
+      %i \
+"
+ExecStart=/bin/bash -c " \
+  /run/kronk/octoblu-meshblu-authenticator-local-exchange-%i/kronk-run \
+    /kronk/service/start octoblu-meshblu-authenticator-local-exchange-%i \
+      octoblu \
+      meshblu-authenticator-local-exchange \
+      %i \
+"
+ExecStop=/bin/bash -c " \
+  /run/kronk/octoblu-meshblu-authenticator-local-exchange-%i/kronk-run \
+    /kronk/service/stop octoblu-meshblu-authenticator-local-exchange-%i \
+      octoblu \
+      meshblu-authenticator-local-exchange \
+      %i \
+"
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+MachineMetadata=Services=true

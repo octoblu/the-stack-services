@@ -1,0 +1,28 @@
+[Unit]
+Description=octoblu-meshblu-authenticator-local-exchange-sidekick
+After=octoblu-meshblu-authenticator-local-exchange@%i.service
+
+[Service]
+EnvironmentFile=/etc/environment
+TimeoutStartSec=30
+Restart=always
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-meshblu-authenticator-local-exchange-sidekick-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-meshblu-authenticator-local-exchange-sidekick-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-meshblu-authenticator-local-exchange-sidekick-%i/kronk-run \
+"
+ExecStart=/bin/sh -c " \
+  /run/kronk/octoblu-meshblu-authenticator-local-exchange-sidekick-%i/kronk-run \
+    /kronk/sidekick/start octoblu-meshblu-authenticator-local-exchange-%i \
+    octoblu \
+    meshblu-authenticator-local-exchange \
+    %i \
+"
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-meshblu-authenticator-local-exchange@%i.service

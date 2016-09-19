@@ -1,0 +1,39 @@
+[Unit]
+Description=octoblu-slurry-exchange-register
+After=octoblu-slurry-exchange@%i.service
+
+[Service]
+EnvironmentFile=/etc/environment
+TimeoutStartSec=300
+Restart=always
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-slurry-exchange-register-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-slurry-exchange-register-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-slurry-exchange-register-%i/kronk-run \
+"
+ExecStartPre=/bin/bash -c " \
+  /run/kronk/octoblu-slurry-exchange-register-%i/kronk-run \
+    /kronk/register/start-pre octoblu-slurry-exchange-%i \
+      octoblu \
+      slurry-exchange \
+      %i \
+"
+ExecStart=/bin/sh -c " \
+  /run/kronk/octoblu-slurry-exchange-register-%i/kronk-run \
+    /kronk/register/start octoblu-slurry-exchange-%i \
+      octoblu \
+      slurry-exchange \
+      %i \
+"
+ExecStop=/bin/sh -c " \
+  /run/kronk/octoblu-slurry-exchange-register-%i/kronk-run \
+    /kronk/register/stop octoblu-slurry-exchange-%i \
+      octoblu \
+      slurry-exchange \
+      %i \
+"
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-slurry-exchange@%i.service

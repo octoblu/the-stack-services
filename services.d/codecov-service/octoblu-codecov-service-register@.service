@@ -1,0 +1,39 @@
+[Unit]
+Description=octoblu-codecov-service-register
+After=octoblu-codecov-service@%i.service
+
+[Service]
+EnvironmentFile=/etc/environment
+TimeoutStartSec=300
+Restart=always
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-codecov-service-register-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-codecov-service-register-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-codecov-service-register-%i/kronk-run \
+"
+ExecStartPre=/bin/bash -c " \
+  /run/kronk/octoblu-codecov-service-register-%i/kronk-run \
+    /kronk/register/start-pre octoblu-codecov-service-%i \
+      octoblu \
+      codecov-service \
+      %i \
+"
+ExecStart=/bin/sh -c " \
+  /run/kronk/octoblu-codecov-service-register-%i/kronk-run \
+    /kronk/register/start octoblu-codecov-service-%i \
+      octoblu \
+      codecov-service \
+      %i \
+"
+ExecStop=/bin/sh -c " \
+  /run/kronk/octoblu-codecov-service-register-%i/kronk-run \
+    /kronk/register/stop octoblu-codecov-service-%i \
+      octoblu \
+      codecov-service \
+      %i \
+"
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-codecov-service@%i.service

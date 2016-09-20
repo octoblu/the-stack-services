@@ -1,0 +1,39 @@
+[Unit]
+Description=octoblu-endo-exchange-register
+After=octoblu-endo-exchange@%i.service
+
+[Service]
+EnvironmentFile=/etc/environment
+TimeoutStartSec=300
+Restart=always
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-endo-exchange-register-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-endo-exchange-register-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-endo-exchange-register-%i/kronk-run \
+"
+ExecStartPre=/bin/bash -c " \
+  /run/kronk/octoblu-endo-exchange-register-%i/kronk-run \
+    /kronk/register/start-pre octoblu-endo-exchange-%i \
+      octoblu \
+      endo-exchange \
+      %i \
+"
+ExecStart=/bin/sh -c " \
+  /run/kronk/octoblu-endo-exchange-register-%i/kronk-run \
+    /kronk/register/start octoblu-endo-exchange-%i \
+      octoblu \
+      endo-exchange \
+      %i \
+"
+ExecStop=/bin/sh -c " \
+  /run/kronk/octoblu-endo-exchange-register-%i/kronk-run \
+    /kronk/register/stop octoblu-endo-exchange-%i \
+      octoblu \
+      endo-exchange \
+      %i \
+"
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-endo-exchange@%i.service

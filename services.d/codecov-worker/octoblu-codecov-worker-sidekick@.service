@@ -1,0 +1,28 @@
+[Unit]
+Description=octoblu-codecov-worker-sidekick
+After=octoblu-codecov-worker@%i.service
+
+[Service]
+EnvironmentFile=/etc/environment
+TimeoutStartSec=30
+Restart=always
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-codecov-worker-sidekick-%i \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-codecov-worker-sidekick-%i/kronk-run \
+  && chmod +x /run/kronk/octoblu-codecov-worker-sidekick-%i/kronk-run \
+"
+ExecStart=/bin/sh -c " \
+  /run/kronk/octoblu-codecov-worker-sidekick-%i/kronk-run \
+    /kronk/sidekick/start octoblu-codecov-worker-%i \
+    octoblu \
+    codecov-worker \
+    %i \
+"
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+X-ConditionMachineOf=octoblu-codecov-worker@%i.service

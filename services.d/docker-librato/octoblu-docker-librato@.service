@@ -1,0 +1,42 @@
+[Unit]
+Description=octoblu-docker-librato
+Wants=octoblu-docker-librato-sidekick.service
+
+[Service]
+EnvironmentFile=/etc/environment
+TimeoutStartSec=300
+StartLimitInterval=30
+StartLimitBurst=30
+Restart=always
+
+ExecStartPre=/bin/bash -c " \
+  echo 'Writing kronk' \
+  && mkdir -p /run/kronk/octoblu-docker-librato \
+  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-docker-librato/kronk-run \
+  && chmod +x /run/kronk/octoblu-docker-librato/kronk-run \
+"
+ExecStartPre=/bin/bash -c " \
+  /run/kronk/octoblu-docker-librato/kronk-run \
+    /kronk/service/start-pre octoblu-docker-librato \
+      octoblu \
+      docker-librato
+"
+ExecStart=/bin/bash -c " \
+  /run/kronk/octoblu-docker-librato/kronk-run \
+    /kronk/service/start octoblu-docker-librato \
+      octoblu \
+      docker-librato
+"
+ExecStop=/bin/bash -c " \
+  /run/kronk/octoblu-docker-librato/kronk-run \
+    /kronk/service/stop octoblu-docker-librato \
+      octoblu \
+      docker-librato
+"
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+Global=true
+MachineMetadata=Services=true

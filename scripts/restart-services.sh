@@ -2,7 +2,7 @@
 
 SERVICES_DIR="$HOME/Projects/Octoblu/the-stack-services/services.d"
 
-DEBUG_KEY='restart-failed'
+DEBUG_KEY='restart-services'
 
 debug() {
   if [ -z "$DEBUG" ]; then
@@ -46,9 +46,9 @@ filter_units() {
   done
 }
 
-get_failed_units() {
+get_units() {
   local filter="$1"
-  local units="$(fleetctl list-units | grep failed | grep 'service' | awk '{print $1}' | uniq)"
+  local units="$(fleetctl list-units | grep 'service' | awk '{print $1}' | uniq)"
   if [ -n "$filter" ]; then
     filter_units "${units[@]}" | grep "$filter"
   else
@@ -65,7 +65,7 @@ is_instance() {
 }
 
 usage(){
-  echo 'USAGE: restart-failed.sh <filter>'
+  echo 'USAGE: restart-services.sh <filter>'
   echo ''
   echo 'Arguments:'
   echo '  -h, --help         print this help text'
@@ -106,7 +106,7 @@ main() {
 
   trap 'echo "Exiting!"; exit;' SIGINT
 
-  local units=( $(get_failed_units "$filter") )
+  local units=( $(get_units "$filter") )
 
   if [ "$?" != "0" ]; then
     fatal 'unable to list units'
@@ -114,22 +114,7 @@ main() {
 
   for unit in "${units[@]}"; do
     echo "Processing unit: $unit"
-    is_instance "$unit"
-    local is_instance_code=$?
-    local unit_file_name="${unit%\@*}"
-    if [ "$is_instance_code" == "0" ]; then
-      unit_file_name="$(echo "${unit_file_name}@.service")"
-    fi
-    local unit_file="$(find "$SERVICES_DIR" -type f -name "$unit_file_name" | head -n 1)"
-    if [ ! -f "$unit_file" ]; then
-      echo "Service file for $unit does not exist"
-      echo "SKIPPING..."
-      continue;
-    fi
-    run_on_fleet 'destroy' "$unit" || echo "Failed to destroy"
-    if [ "$is_instance_code" != "0" ]; then
-      run_on_fleet 'submit' "$unit_file" || echo "Failed to submit"
-    fi
+    run_on_fleet 'stop' "$unit" || echo "Failed to stop"
     run_on_fleet 'start' "$unit" || echo "Failed to start"
     sleep 10
   done

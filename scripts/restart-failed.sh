@@ -118,10 +118,8 @@ main() {
     local is_instance_code=$?
     local unit_file_name="${unit%\@*}"
     if [ "$is_instance_code" == "0" ]; then
-      unit_file_name="$(echo "${unit_file_name}@")"
+      unit_file_name="$(echo "${unit_file_name}@.service")"
     fi
-    unit_file_name="$(echo "${unit_file_name}.service")"
-
     local unit_file="$(find "$SERVICES_DIR" -type f -name "$unit_file_name" | head -n 1)"
     if [ ! -f "$unit_file" ]; then
       echo "Service file for $unit does not exist"

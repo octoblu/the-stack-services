@@ -36,7 +36,7 @@ script_directory(){
 run_on_fleet() {
   local command="$1"
   local unit="$2"
-  try gtimeout 15s fleetctl "${command}" "${unit}" > /dev/null
+  try gtimeout 10s fleetctl "${command}" "${unit}" > /dev/null
 }
 
 filter_units() {
@@ -114,9 +114,24 @@ main() {
 
   for unit in "${units[@]}"; do
     echo "Processing unit: $unit"
-    run_on_fleet 'stop' "$unit" || echo "Failed to stop"
+    is_instance "$unit"
+    local is_instance_code=$?
+    local unit_file_name="${unit%\@*}"
+    if [ "$is_instance_code" == "0" ]; then
+      unit_file_name="$(echo "${unit_file_name}@.service")"
+    fi
+    local unit_file="$(find "$SERVICES_DIR" -type f -name "$unit_file_name" | head -n 1)"
+    if [ ! -f "$unit_file" ]; then
+      echo "Service file for $unit does not exist"
+      echo "SKIPPING..."
+      continue;
+    fi
+    run_on_fleet 'destroy' "$unit" || echo "Failed to destroy"
+    if [ "$is_instance_code" != "0" ]; then
+      run_on_fleet 'submit' "$unit_file" || echo "Failed to submit"
+    fi
     run_on_fleet 'start' "$unit" || echo "Failed to start"
-    sleep 10
+    sleep 3
   done
 }
 

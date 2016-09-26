@@ -8,6 +8,8 @@ StartLimitInterval=30
 StartLimitBurst=30
 Restart=always
 
+ExecStartPre=/usr/bin/sleep 3
+
 ExecStartPre=/bin/bash -c " \
   /usr/bin/docker run --rm \
     --net 'host' \

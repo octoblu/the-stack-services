@@ -4,6 +4,7 @@ Description=octoblu-meshblu-verifier-amqp
 [Service]
 Type=simple
 TimeoutStartSec=300
+ExecStartPre=/usr/bin/sleep 3
 ExecStartPre=/usr/bin/etcdctl get /octoblu/meshblu-verifier-amqp/docker_url || /usr/bin/echo "etcd did not contain /octoblu/meshblu-verifier-amqp/docker_url" && exit 1
 ExecStartPre=-/bin/sh -c "/usr/bin/docker rm --force \
   octoblu-meshblu-verifier-amqp-env \

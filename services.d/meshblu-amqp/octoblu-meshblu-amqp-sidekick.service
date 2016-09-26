@@ -4,6 +4,7 @@ Description=octoblu-meshblu-amqp-sidekick
 [Service]
 TimeoutStartSec=30
 Restart=always
+ExecStartPre=/usr/bin/sleep 3
 ExecStartPre=/bin/bash -c " \
   echo 'Writing kronk to /tmp' \
   && /usr/bin/etcdctl get /kronk/sidekick/start > /tmp/octoblu-meshblu-amqp-sidekick-kronk-start \

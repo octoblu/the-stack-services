@@ -6,6 +6,7 @@ After=vulcand.service
 [Service]
 Type=simple
 TimeoutStartSec=300
+ExecStartPre=/usr/bin/sleep 3
 ExecStartPre=/usr/bin/etcdctl get /octoblu/meshblu-verifier-coap/docker_url || /usr/bin/echo "etcd did not contain /octoblu/meshblu-verifier-coap/docker_url" && exit 1
 ExecStartPre=-/bin/sh -c "/usr/bin/docker rm --force \
   octoblu-meshblu-verifier-coap-env \

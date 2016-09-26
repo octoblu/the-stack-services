@@ -4,6 +4,7 @@ Description=octoblu-meshblu-haproxy-sidekick
 [Service]
 TimeoutStartSec=30
 Restart=always
+ExecStartPre=/usr/bin/sleep 3
 ExecStart=/bin/sh -c "/usr/bin/etcdctl exec-watch \
   /octoblu/meshblu-haproxy/restart \
   -- sh -c \"(docker inspect --format='{{.Id}}' --type=image \$(etcdctl get /octoblu/meshblu-haproxy/docker_url) \

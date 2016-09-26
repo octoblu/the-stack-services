@@ -13,7 +13,7 @@ Restart=always
 ExecStartPre=/bin/bash -c " \
   echo 'Writing kronk' \
   && mkdir -p /run/kronk/octoblu-data-forwarder-mongodb-%i \
-  && /usr/bin/etcdctl get /kronk/wrapper/run > /run/kronk/octoblu-data-forwarder-mongodb-%i/kronk-run \
+  && /usr/bin/curl -s http://kronk.octoblu.com/latest/wrapper/run > /run/kronk/octoblu-data-forwarder-mongodb-%i/kronk-run \
   && chmod +x /run/kronk/octoblu-data-forwarder-mongodb-%i/kronk-run \
 "
 ExecStartPre=/bin/bash -c " \

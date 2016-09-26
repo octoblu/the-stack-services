@@ -5,6 +5,7 @@ Description=octoblu-meshblu-haproxy
 TimeoutStartSec=300
 Restart=always
 EnvironmentFile=/etc/environment
+ExecStartPre=/usr/bin/sleep 3
 ExecStartPre=/usr/bin/etcdctl get /octoblu/meshblu-haproxy/docker_url || /usr/bin/echo "etcd did not contain /octoblu/meshblu-haproxy/docker_url" && exit 1
 ExecStartPre=-/usr/bin/docker rm --force octoblu-meshblu-haproxy-env octoblu-meshblu-haproxy
 ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \

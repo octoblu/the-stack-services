@@ -5,6 +5,7 @@ Description=octoblu-meshblu-amqp
 EnvironmentFile=/etc/environment
 TimeoutStartSec=300
 Restart=always
+ExecStartPre=/usr/bin/sleep 3
 ExecStartPre=/usr/bin/etcdctl get /octoblu/meshblu-amqp/docker_url || /usr/bin/echo "etcd did not contain /octoblu/meshblu-amqp/docker_url" && exit 1
 ExecStartPre=-/usr/bin/docker rm --force octoblu-meshblu-amqp-env octoblu-meshblu-amqp
 ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \

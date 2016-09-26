@@ -10,6 +10,7 @@ StartLimitInterval=30
 StartLimitBurst=30
 Restart=always
 
+ExecStartPre=/usr/bin/sleep 3
 ExecStartPre=-/usr/bin/docker rm -f octoblu-vulcand-control-%i
 ExecStart=/usr/bin/sh -c "/usr/bin/docker run    \
   --rm \

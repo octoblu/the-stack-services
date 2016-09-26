@@ -4,6 +4,7 @@ Description=octoblu-meshblu-balancer-firehose-socket.io-register-elb
 [Service]
 TimeoutStartSec=30
 EnvironmentFile=/etc/environment
+ExecStartPre=/usr/bin/sleep 3
 ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
   --name register-service-elb-env \
   -e ETCDCTL_PEERS=http://$(ifconfig docker0 | grep 'inet ' | awk '{print $2}'):2379 \

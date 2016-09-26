@@ -3,6 +3,7 @@ Description=octoblu-meshblu-haproxy-sidekick-elb
 
 [Service]
 TimeoutStartSec=30
+ExecStartPre=/usr/bin/sleep 3
 ExecStartPre=-/usr/bin/docker rm --force octoblu-meshblu-haproxy-register-single-service octoblu-meshblu-haproxy-register-single-service-env
 ExecStartPre=/bin/sh -c "/usr/bin/docker run --rm \
   --name octoblu-meshblu-haproxy-register-single-service-env \

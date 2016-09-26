@@ -31,10 +31,6 @@ script_directory(){
   echo "$dir"
 }
 
-get_private_ips() {
-  fleetctl list-machines | grep -v MACHINE | awk '{print $2}'
-}
-
 get_service_instances() {
   local tag="$1"
   local region="$AWS_REGION"
@@ -98,22 +94,26 @@ main() {
     exit 1
   fi
 
-  local private_ips=( $(get_private_ips) )
   local service_instances=( $(get_service_instances "$tag") )
-
-  for private_ip in "${private_ips[@]}"; do
-    for service_instance in "${service_instances[@]}"; do
-      local public_ip="$(echo "$service_instance" | jq -r '.PublicIpAddress')"
-      local check_private_ip="$(echo "$service_instance" | jq -r '.PrivateIpAddress')"
-      if [ "$private_ip" == "$check_private_ip" ]; then
-        test_ssh "$public_ip"
-        local ssh_exit_code=$?
-        if [ "$ssh_exit_code" != "0" ]; then
-          echo "OH NO! I can't ssh into $private_ip $public_ip"
-        fi
-        sleep 1
+  for service_instance in "${service_instances[@]}"; do
+    if [ -z "$service_instance" ]; then
+      continue;
+    fi
+    local public_ip="$(echo "$service_instance" | jq -r '.PublicIpAddress')"
+    local private_ip="$(echo "$service_instance" | jq -r '.PrivateIpAddress')"
+    if [ -z "$public_ip" ]; then
+      continue;
+    fi
+    echo "public ip $public_ip"
+    echo "private ip $private_ip"
+    if [ "$private_ip" == "$private_ip" ]; then
+      test_ssh "$public_ip"
+      local ssh_exit_code=$?
+      if [ "$ssh_exit_code" != "0" ]; then
+        echo "OH NO! I can't ssh into $private_ip $public_ip"
       fi
-    done
+      sleep 1
+    fi
   done
 }
 

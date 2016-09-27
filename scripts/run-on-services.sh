@@ -10,7 +10,7 @@ run_commands() {
   local commands=( ${commands_str//,/ } )
 
   for single_command in "${commands[@]}"; do
-    run_command "$single_command" "$service_name" 
+    run_command "$single_command" "$service_name"
   done
 }
 
@@ -54,7 +54,7 @@ run_destroy() {
   local instance="$(get_instance "$service")"
   local at="$(get_at "$service")"
   local instance_file="${file_name}${at}${instance}.service"
-  run_fleet_cmd destroy "$instance_file" 
+  run_fleet_cmd destroy "$instance_file"
   # local root_file="${file_name}${at}.service"
   # if [ "$root_file" == "$instance_file" ]; then
   #   return 0
@@ -146,9 +146,9 @@ process_file_instances() {
   local has_instances="false"
   local service_instances=( $(filter_units "$units" | grep "$file_name" ) )
   for instance in "${service_instances[@]}"; do
-    local i="${instance/$file_name}" 
+    local i="${instance/$file_name}"
     echo "* running on an existing instance ${instance}"
-    run_commands "$commands" "${file_name}${i}" 
+    run_commands "$commands" "${file_name}${i}"
     has_instances="true"
   done
   if [ "$has_instances" == "false" ]; then
@@ -162,7 +162,7 @@ run_count_on_instances() {
   echo "* running ${INSTANCE_COUNT} instances..."
   for i in $(seq 1 $INSTANCE_COUNT); do
     run_commands "$commands" "${file_name}${i}"
-  done   
+  done
 }
 
 prompt_for_count() {
@@ -180,16 +180,16 @@ process_file() {
   is_instance_file "$file_name"
   local is_instance="$?"
   if [ "$is_instance" != "0" ]; then
-    echo "* running on global $file_name" 
-    run_commands "$commands" "$file_name" 
+    echo "* running on global $file_name"
+    run_commands "$commands" "$file_name"
     return "$?"
   fi
-  process_file_instances "$commands" "$file_name" "$units" 
+  process_file_instances "$commands" "$file_name" "$units"
   local has_instances="$?"
   if [ "$has_instances" == "0" ]; then
     return 0
   fi
-  if [ ! -z "$INSTANCE_COUNT" ] && [ "$INSTANCE_COUNT" != "0" ]; then 
+  if [ ! -z "$INSTANCE_COUNT" ] && [ "$INSTANCE_COUNT" != "0" ]; then
     run_count_on_instances "$commands" "$file_name"
     return 0
   fi
@@ -268,7 +268,7 @@ main() {
   trap 'echo "Exiting!"; exit;' SIGINT
 
   local query="$2"
-  if [ -z "$query" ]; then 
+  if [ -z "$query" ]; then
     query='*'
   fi
 

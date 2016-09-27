@@ -33,10 +33,44 @@ script_directory(){
   echo "$dir"
 }
 
+handle_fleetctl() {
+  local cmd="$@"
+  local result="$(gtimeout 10s $cmd 2>&1)"
+  if [[ "$result" =~ 'code 500' ]]; then
+    return 1
+  fi
+  return 0
+}
+
+try_cmd() {
+  local count=1
+  until handle_fleetctl "$@"; do
+    if [ $count > 5 ]; then
+      echo "exceeded trys"
+      return 1
+    fi
+    echo "trying again..."
+    count+=1
+    sleep 3
+  done
+}
+
 run_on_fleet() {
-  local command="$1"
-  local unit="$2"
-  try gtimeout 10s fleetctl "${command}" "${unit}" > /dev/null
+  local dry_run="$1"
+  local cmd="$2"
+  local unit="$3"
+  if [ "$dry_run" == "true" ]; then
+    echo "fleetctl ${cmd} ${unit}"
+  else
+    debug "fleetctl ${cmd} ${unit}"
+    try_cmd 'fleetctl' "${cmd}" "${unit}" > /dev/null
+  fi
+  if [ "$cmd" == "destroy" ]; then
+    debug 'destroyed - sleeping for 3 seconds'
+    if [ "$dry_run" == "false" ]; then
+      sleep 3
+    fi
+  fi
 }
 
 filter_units() {
@@ -46,9 +80,12 @@ filter_units() {
   done
 }
 
-get_units() {
+get_failed_units() {
   local filter="$1"
   local units="$(fleetctl list-units | grep 'service' | awk '{print $1}' | uniq)"
+  if [ "$?" != "0" ]; then
+    return 1
+  fi
   if [ -n "$filter" ]; then
     filter_units "${units[@]}" | grep "$filter"
   else
@@ -56,20 +93,23 @@ get_units() {
   fi
 }
 
-is_instance() {
+check_instance() {
   local unit="$1"
   if [[ "$unit" =~ @ ]]; then
+    echo "true"
     return 0
   fi
-  return 1
+  echo "false"
 }
 
 usage(){
   echo 'USAGE: restart-services.sh <filter>'
   echo ''
   echo 'Arguments:'
+  echo '  -dry-run           print the execution of the fleetctl, instead of running it'
   echo '  -h, --help         print this help text'
   echo '  -v, --version      print the version'
+  echo ''
 }
 
 version(){
@@ -78,6 +118,7 @@ version(){
 
 main() {
   local filter="$1";
+  local dry_run="false"
   while [ "$1" != "" ]; do
     local param="$1"
     local value="$2"
@@ -89,6 +130,9 @@ main() {
       -v | --version)
         version
         exit 0
+        ;;
+      --dry-run)
+        dry_run="true"
         ;;
       *)
         if [ "${param::1}" == '-' ]; then
@@ -104,34 +148,54 @@ main() {
     shift
   done
 
-  trap 'echo "Exiting!"; exit;' SIGINT
-
-  local units=( $(get_units "$filter") )
+  local units=( $(get_failed_units "$filter") )
+  local destroyed_units=()
 
   if [ "$?" != "0" ]; then
     fatal 'unable to list units'
   fi
+  debug "dry_run $dry_run"
 
   for unit in "${units[@]}"; do
     echo "Processing unit: $unit"
-    is_instance "$unit"
-    local is_instance_code=$?
+    local is_instance="$(check_instance "$unit")"
     local unit_file_name="${unit%\@*}"
-    if [ "$is_instance_code" == "0" ]; then
+    if [ "$is_instance" == "true" ]; then
       unit_file_name="$(echo "${unit_file_name}@.service")"
     fi
+    debug "unit_file_name $unit_file_name"
     local unit_file="$(find "$SERVICES_DIR" -type f -name "$unit_file_name" | head -n 1)"
+    unit_file="${unit_file/$PWD\//./}"
+    debug "unit_file $unit_file"
     if [ ! -f "$unit_file" ]; then
       echo "Service file for $unit does not exist"
       echo "SKIPPING..."
       continue;
     fi
-    run_on_fleet 'destroy' "$unit" || echo "Failed to destroy"
-    if [ "$is_instance_code" != "0" ]; then
-      run_on_fleet 'submit' "$unit_file" || echo "Failed to submit"
+    local should_destroy_global="true"
+    for destroyed_unit in "${destroyed_units[@]}"; do
+      if [ "$destroyed_unit" == "$unit_file_name" ]; then
+        should_destroy_global="false"
+        break;
+      fi
+    done
+    if [ "$should_destroy_global" == "true" ]; then
+      debug "destroying global $unit_file_name"
+      run_on_fleet "$dry_run" 'destroy' "$unit_file_name" || echo "Failed to destroy global"
+      debug "submitting $unit_file"
+      run_on_fleet "$dry_run" 'submit' "$unit_file" || echo "Failed to submit"
+      destroyed_units+=("$unit_file_name")
     fi
-    run_on_fleet 'start' "$unit" || echo "Failed to start"
-    sleep 3
+    if [ "$is_instance" == "true" ]; then
+      debug "destroying instance $unit"
+      run_on_fleet "$dry_run" 'destroy' "$unit" || echo "Failed to destroy instance"
+    fi
+    debug "starting $unit"
+    run_on_fleet "$dry_run" 'start' "$unit" || echo "Failed to start"
+    debug "done with $unit - sleeping for 3 seconds"
+    if [ "$dry_run" == "false" ]; then
+      sleep 3
+    fi
   done
 }
 

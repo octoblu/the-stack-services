@@ -96,12 +96,9 @@ main() {
 
   local service_instances=( $(get_service_instances "$tag") )
   for service_instance in "${service_instances[@]}"; do
-    if [ -z "$service_instance" ]; then
-      continue;
-    fi
     local public_ip="$(echo "$service_instance" | jq -r '.PublicIpAddress')"
     local private_ip="$(echo "$service_instance" | jq -r '.PrivateIpAddress')"
-    if [ -z "$public_ip" ]; then
+    if [ -z "$public_ip" -o -z "$private_ip" ]; then
       continue;
     fi
     echo "public ip $public_ip"

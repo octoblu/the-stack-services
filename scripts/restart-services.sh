@@ -1,15 +1,16 @@
 #!/bin/bash
 
 SERVICES_DIR="$HOME/Projects/Octoblu/the-stack-services/services.d"
-
 DEBUG_KEY='restart-services'
+CYAN='\033[0;36m'
+NOCOLOR='\033[0m'
 
 debug() {
   if [ -z "$DEBUG" ]; then
     return 0
   fi
-  local message="$1"
-  echo "$DEBUG_KEY: $message"
+  local message="$@"
+  echo -e "[${CYAN}${DEBUG_KEY}${NOCOLOR}]: $message"
 }
 
 fatal() {
@@ -73,23 +74,12 @@ run_on_fleet() {
   fi
 }
 
-filter_units() {
-  local units=( $@ )
-  for unit in "${units[@]}"; do
-    echo "$unit"
-  done
-}
-
-get_failed_units() {
+get_units() {
   local filter="$1"
-  local units="$(fleetctl list-units | grep 'service' | awk '{print $1}' | uniq)"
-  if [ "$?" != "0" ]; then
-    return 1
-  fi
   if [ -n "$filter" ]; then
-    filter_units "${units[@]}" | grep "$filter"
+    fleetctl list-units | grep 'service' | grep "$filter" | awk '{print $1}' | uniq || fatal 'unable to get units'
   else
-    filter_units "${units[@]}"
+    fleetctl list-units | grep 'service' | awk '{print $1}' | uniq || fatal 'unable to get units'
   fi
 }
 
@@ -148,7 +138,9 @@ main() {
     shift
   done
 
-  local units=( $(get_failed_units "$filter") )
+  local units=( $(get_units "$filter") )
+  debug "found ${#units[@]} units"
+
   local destroyed_units=()
 
   if [ "$?" != "0" ]; then
